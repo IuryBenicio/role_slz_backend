@@ -1,4 +1,6 @@
 package com.example.roleslz_backend.users.DTOS;
 
-public record PasswordDTO() {
+import jakarta.validation.constraints.NotBlank;
+
+public record PasswordDTO(@NotBlank String password) {
 }

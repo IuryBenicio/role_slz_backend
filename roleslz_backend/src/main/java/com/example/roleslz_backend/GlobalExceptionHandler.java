@@ -1,18 +1,45 @@
 package com.example.roleslz_backend;
 
-import com.example.roleslz_backend.users.exceptions.PasswordDoesntMatch;
-import com.example.roleslz_backend.users.exceptions.UserExists;
+import com.example.roleslz_backend.events.exceptions.EventNotFounded;
+import com.example.roleslz_backend.users.exceptions.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Repository;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-    public ResponseEntity<String> BusinessNotFounded(UserExists ex){
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(ex.getMessage());
+
+    @ExceptionHandler(UserDontExists.class)
+    public ResponseEntity<String> UserDontExists(UserDontExists ex){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
-    public ResponseEntity<String> BusinessNotFounded(PasswordDoesntMatch ex){
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(ex.getMessage());
+
+    @ExceptionHandler(UserNotEdited.class)
+    public ResponseEntity<String> UserNotEdited(UserNotEdited ex){
+        return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(UserNotCreated.class)
+    public ResponseEntity<String> UserNotCreated(UserNotCreated ex){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+    @ExceptionHandler(UserNotDeleted.class)
+    public ResponseEntity<String> UserNotDeleted(UserNotDeleted ex){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+    @ExceptionHandler(PasswordDoesntMatch.class)
+    public ResponseEntity<String> PasswordDoesntMatch(PasswordDoesntMatch ex){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(UserExists.class)
+    public ResponseEntity<String> UserExists(UserExists ex){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(EventNotFounded.class)
+    public ResponseEntity<String> EventNotFounded(EventNotFounded ex){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 }

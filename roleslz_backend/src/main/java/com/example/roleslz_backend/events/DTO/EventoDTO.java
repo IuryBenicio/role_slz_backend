@@ -1,4 +1,18 @@
 package com.example.roleslz_backend.events.DTO;
 
-public record EventoDTO() {
+import com.example.roleslz_backend.users.entity.UserEntity;
+import jakarta.validation.constraints.NotBlank;
+import org.locationtech.jts.geom.Point;
+
+import java.time.LocalDateTime;
+import java.util.Set;
+
+public record EventoDTO(@NotBlank String title,
+                        @NotBlank String description,
+                        @NotBlank LocalDateTime startDate,
+                        @NotBlank LocalDateTime endDate,
+                        @NotBlank Point localization,
+                        @NotBlank String enderecoExtenso,
+                        @NotBlank UserEntity organizador,
+                        @NotBlank Set<UserEntity> confirmacoes) {
 }

@@ -1,4 +1,4 @@
-package com.example.roleslz_backend.BaseEntity;
+package com.example.roleslz_backend.Utills.BaseEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;

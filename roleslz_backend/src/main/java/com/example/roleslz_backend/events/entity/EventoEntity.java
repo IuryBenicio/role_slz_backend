@@ -1,12 +1,13 @@
 package com.example.roleslz_backend.events.entity;
 
-import com.example.roleslz_backend.BaseEntity.BaseEntity;
+import com.example.roleslz_backend.Utills.BaseEntity.BaseEntity;
 import com.example.roleslz_backend.users.entity.UserEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.data.geo.Point;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Entity
 @Table(name = "eventos")
@@ -20,7 +21,7 @@ public class EventoEntity extends BaseEntity {
     @NotBlank(message = "campo obrigatório")
     private String title;
 
-    @Column(name = "description")
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
     @Column(name = "start_date")
@@ -39,4 +40,12 @@ public class EventoEntity extends BaseEntity {
     @ManyToOne()
     @JoinColumn(nullable = false, name = "user_id")
     private UserEntity organizador;
+
+    @ManyToMany
+    @JoinTable(
+            name = "eventos_confirmacoes",
+            joinColumns = @JoinColumn(name = "evento_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private Set<UserEntity> confirmacoes;
 }

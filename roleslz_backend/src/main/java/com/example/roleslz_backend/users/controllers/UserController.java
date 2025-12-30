@@ -1,27 +1,58 @@
 package com.example.roleslz_backend.users.controllers;
 
+import com.example.roleslz_backend.users.DTOS.PasswordDTO;
+import com.example.roleslz_backend.users.DTOS.UserDTODetails;
 import com.example.roleslz_backend.users.DTOS.UserDTORegister;
 import com.example.roleslz_backend.users.entity.UserEntity;
+
+import com.example.roleslz_backend.users.mapper.UserDetailsMapper;
 import com.example.roleslz_backend.users.services.UserService;
-import jakarta.validation.constraints.NotBlank;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(name = "user")
+@RequestMapping("/user")
 public class UserController {
 
-    @Autowired
-    UserService userService;
+    private final UserService userService;
+    private final UserDetailsMapper userDetailsMapper;
 
+    public UserController(UserService userService, UserDetailsMapper userDetailsMapper) {
+        this.userService = userService;
+        this.userDetailsMapper = userDetailsMapper;
+    }
 
     //rotas
-    @PostMapping("")
-    public ResponseEntity<String> addNewUser(@NotBlank @RequestBody UserDTORegister userDTORegister){
+    @PostMapping("register")
+    public ResponseEntity<?> addNewUser(@Valid @RequestBody UserDTORegister userDTORegister){
         UserEntity user = userService.addNewUserService(userDTORegister);
+        return ResponseEntity.ok(userDetailsMapper.toDTO(user));
     }
+
+    @PatchMapping("edit/{id}")
+    public ResponseEntity<?> editUser(@PathVariable long id, @Valid @RequestBody UserDTODetails userDTODetails){
+        UserDTODetails user = userService.editUserDetails(userDTODetails, id);
+        return ResponseEntity.ok(user);
+    }
+
+    @PatchMapping("verify_password/{id}")
+    public ResponseEntity<String> verifyPassword(@PathVariable long id, @Valid @RequestBody PasswordDTO passwordDTO){
+            userService.verifyPassword(id, passwordDTO);
+            return ResponseEntity.status(HttpStatus.OK).body("Senha verificada");
+    }
+
+    @PatchMapping("edit_password/{id}")
+    public ResponseEntity<String> editPassword(@PathVariable long id, @Valid @RequestBody PasswordDTO passwordDTO){
+        userService.editPassword(id, passwordDTO);
+        return ResponseEntity.ok("Senha editada");
+    }
+
+    @DeleteMapping("delete/{id}")
+    public ResponseEntity<String> deleteUser(@PathVariable long id){
+        userService.deleteUser(id);
+        return ResponseEntity.ok("Usuário deletado");
+    }
+
 }
