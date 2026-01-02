@@ -1,7 +1,7 @@
 package com.example.roleslz_backend;
 
-import com.example.roleslz_backend.events.exceptions.EventNotFounded;
-import com.example.roleslz_backend.users.exceptions.*;
+import com.example.roleslz_backend.Tables.events.exceptions.EventNotFounded;
+import com.example.roleslz_backend.Tables.users.exceptions.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;

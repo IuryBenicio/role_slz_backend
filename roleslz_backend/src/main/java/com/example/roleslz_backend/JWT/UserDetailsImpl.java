@@ -1,6 +1,6 @@
 package com.example.roleslz_backend.JWT;
 
-import com.example.roleslz_backend.users.entity.UserEntity;
+import com.example.roleslz_backend.Tables.users.entity.UserEntity;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
@@ -8,7 +8,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
 public class UserDetailsImpl implements UserDetails {
 

@@ -1,10 +1,10 @@
 package com.example.roleslz_backend.JWT.controller;
 import com.example.roleslz_backend.JWT.UserDetailsImpl;
 import com.example.roleslz_backend.infra.service.SecurityService;
-import com.example.roleslz_backend.users.DTOS.UserDTOLogin;
-import com.example.roleslz_backend.users.DTOS.UserDTORegister;
-import com.example.roleslz_backend.users.entity.UserEntity;
-import com.example.roleslz_backend.users.services.UserService;
+import com.example.roleslz_backend.Tables.users.DTOS.UserDTOLogin;
+import com.example.roleslz_backend.Tables.users.DTOS.UserDTORegister;
+import com.example.roleslz_backend.Tables.users.entity.UserEntity;
+import com.example.roleslz_backend.Tables.users.services.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -1,7 +1,7 @@
 package com.example.roleslz_backend.infra;
 
 import com.example.roleslz_backend.infra.service.SecurityService;
-import com.example.roleslz_backend.users.repository.UserRepository;
+import com.example.roleslz_backend.Tables.users.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
