@@ -1,16 +1,24 @@
 package com.example.roleslz_backend.Tables.events.entity;
 
+import com.example.roleslz_backend.Tables.comentarios.entity.ComentarioEntity;
 import com.example.roleslz_backend.Utills.BaseEntity.BaseEntity;
 import com.example.roleslz_backend.Tables.users.entity.UserEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import org.springframework.data.geo.Point;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.locationtech.jts.geom.Point;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 @Entity
 @Table(name = "eventos")
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class EventoEntity extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -51,4 +59,12 @@ public class EventoEntity extends BaseEntity {
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     private Set<UserEntity> confirmacoes;
+
+    @ManyToMany
+    @JoinTable(
+            name = "eventos_comentarios",
+            joinColumns = @JoinColumn(name = "evento_id"),
+            inverseJoinColumns = @JoinColumn(name = "comentario_id")
+    )
+    private List<ComentarioEntity> comentarios;
 }

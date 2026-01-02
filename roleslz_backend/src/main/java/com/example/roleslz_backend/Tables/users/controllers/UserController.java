@@ -25,11 +25,6 @@ public class UserController {
     }
 
     //rotas
-    @PostMapping("register")
-    public ResponseEntity<?> addNewUser(@Valid @RequestBody UserDTORegister userDTORegister){
-        UserEntity user = userService.addNewUserService(userDTORegister);
-        return ResponseEntity.ok(userDetailsMapper.toDTO(user));
-    }
 
     @PatchMapping("edit/{id}")
     public ResponseEntity<?> editUser(@PathVariable long id, @Valid @RequestBody UserDTODetails userDTODetails){

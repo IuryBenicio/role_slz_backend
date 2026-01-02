@@ -1,5 +1,6 @@
 package com.example.roleslz_backend;
 
+import com.example.roleslz_backend.Tables.events.exceptions.EventExists;
 import com.example.roleslz_backend.Tables.events.exceptions.EventNotFounded;
 import com.example.roleslz_backend.Tables.users.exceptions.*;
 import org.springframework.http.HttpStatus;
@@ -41,5 +42,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(EventNotFounded.class)
     public ResponseEntity<String> EventNotFounded(EventNotFounded ex){
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(EventExists.class)
+    public ResponseEntity<String> EventExists(EventExists ex){
+        return ResponseEntity.status(HttpStatus.FOUND).body(ex.getMessage());
     }
 }

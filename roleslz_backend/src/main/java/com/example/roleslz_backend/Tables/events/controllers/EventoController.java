@@ -17,8 +17,9 @@ public class EventoController {
     }
 
     @PostMapping("create")
-    public ResponseEntity<?> createEvento(@RequestBody EventoEntity eventoEntity){
-        return null;
+    public ResponseEntity<?> createEvento(@RequestBody EventoDTO eventoDTO){
+        EventoDTO evento = eventoService.createEvento(eventoDTO);
+        return ResponseEntity.ok(evento);
     }
 
     @GetMapping("get/{id}")
@@ -28,8 +29,9 @@ public class EventoController {
     }
 
     @PatchMapping("edit/{id}")
-    public ResponseEntity<?> editEvent(){
-        return null;
+    public ResponseEntity<?> editEvent(@PathVariable long id, @RequestBody EventoDTO eventoDTO){
+        EventoDTO evento = eventoService.editEvento(id, eventoDTO);
+        return ResponseEntity.ok(evento);
     }
 
     @GetMapping("get_confirms/{id}")

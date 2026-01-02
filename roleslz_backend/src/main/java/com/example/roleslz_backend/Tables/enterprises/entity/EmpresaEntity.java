@@ -1,4 +1,4 @@
-package com.example.roleslz_backend.Tables.enterprises.Entity;
+package com.example.roleslz_backend.Tables.enterprises.entity;
 
 import com.example.roleslz_backend.Utills.BaseEntity.BaseEntity;
 import com.example.roleslz_backend.Utills.FuncionamentoClass;

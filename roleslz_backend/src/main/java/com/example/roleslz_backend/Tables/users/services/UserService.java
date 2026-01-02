@@ -6,7 +6,6 @@ import com.example.roleslz_backend.Tables.users.DTOS.UserDTOLogin;
 import com.example.roleslz_backend.Tables.users.DTOS.UserDTORegister;
 import com.example.roleslz_backend.Tables.users.entity.UserEntity;
 import com.example.roleslz_backend.Tables.users.exceptions.*;
-import com.example.roleslz_backend.users.exceptions.*;
 import com.example.roleslz_backend.Tables.users.mapper.UserDetailsMapper;
 import com.example.roleslz_backend.Tables.users.mapper.UserRegisterMapper;
 import com.example.roleslz_backend.Tables.users.repository.UserRepository;
@@ -63,10 +62,8 @@ public class UserService {
     public UserDTODetails editUserDetails(UserDTODetails userDTODetails, long id){
         UserEntity userBefore = userRepository.findById(id).orElseThrow(()->new UserDontExists("Usuário não encontrado"));
 
-        userBefore.setNome(userDTODetails.nome());
-        userBefore.setSobrenome(userDTODetails.sobrenome());
-        userBefore.setSexo(userDTODetails.sexo());
-        userBefore.setIdade(userDTODetails.idade());
+        userDetailsMapper.updateEntityFromDto(userDTODetails, userBefore);
+
         try{
             userRepository.save(userBefore);
             return userDetailsMapper.toDTO(userBefore);
