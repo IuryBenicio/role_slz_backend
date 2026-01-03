@@ -1,5 +1,9 @@
 package com.example.roleslz_backend;
 
+import com.example.roleslz_backend.Tables.avaliacao.exceptions.AvaliacaoAlreadyExists;
+import com.example.roleslz_backend.Tables.avaliacao.exceptions.AvaliacaoDoesntExists;
+import com.example.roleslz_backend.Tables.avaliacao.exceptions.AvaliacaoNotDeleted;
+import com.example.roleslz_backend.Tables.avaliacao.exceptions.AvaliacaoNotEdited;
 import com.example.roleslz_backend.Tables.events.exceptions.EventExists;
 import com.example.roleslz_backend.Tables.events.exceptions.EventNotFounded;
 import com.example.roleslz_backend.Tables.users.exceptions.*;
@@ -47,5 +51,25 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(EventExists.class)
     public ResponseEntity<String> EventExists(EventExists ex){
         return ResponseEntity.status(HttpStatus.FOUND).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(AvaliacaoAlreadyExists.class)
+    public ResponseEntity<String> AvaliacaoAlreadyExists(AvaliacaoAlreadyExists ex){
+        return ResponseEntity.status(HttpStatus.FOUND).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(AvaliacaoAlreadyExists.class)
+    public ResponseEntity<String> AvaliacaoDoesntExists(AvaliacaoDoesntExists ex){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(AvaliacaoAlreadyExists.class)
+    public ResponseEntity<String> AvaliacaoNotDeleted(AvaliacaoNotDeleted ex){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(AvaliacaoNotEdited.class)
+    public ResponseEntity<String> AvaliacaoNotEdited(AvaliacaoNotEdited ex){
+        return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body(ex.getMessage());
     }
 }

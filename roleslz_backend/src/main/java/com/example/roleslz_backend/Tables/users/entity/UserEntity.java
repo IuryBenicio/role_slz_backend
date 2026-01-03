@@ -61,11 +61,11 @@ public class UserEntity extends BaseEntity implements UserDetails {
     @NotBlank(message = "idade é obrigatória")
     private Integer idade;
 
-    @Column(columnDefinition = "geometry(Point, 4326)")
-    private Point coordenadas;
-
     @OneToMany(mappedBy = "organizador", orphanRemoval = true)
     private List<EventoEntity> eventos;
+
+    @Column(name = "historico_eventos")
+    private List<EventoEntity> historicoEventos;
 
     //Spring Security
         @Override

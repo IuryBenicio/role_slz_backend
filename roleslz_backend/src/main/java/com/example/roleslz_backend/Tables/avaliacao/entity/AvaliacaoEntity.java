@@ -1,5 +1,6 @@
 package com.example.roleslz_backend.Tables.avaliacao.entity;
 
+import com.example.roleslz_backend.Tables.events.entity.EventoEntity;
 import com.example.roleslz_backend.Utills.BaseEntity.BaseEntity;
 import com.example.roleslz_backend.Tables.users.entity.UserEntity;
 import jakarta.persistence.*;
@@ -26,4 +27,9 @@ public class AvaliacaoEntity extends BaseEntity {
     @NotNull(message = "a avaliação precisa de um autor")
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
+
+    @OneToMany
+    @NotNull
+    @JoinColumn(name = "evento_id")
+    private EventoEntity evento;
 }

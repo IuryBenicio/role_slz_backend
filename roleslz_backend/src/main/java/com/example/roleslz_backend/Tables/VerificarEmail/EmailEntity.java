@@ -1,4 +1,4 @@
-package com.example.roleslz_backend.Tables.users.VerificarEmail;
+package com.example.roleslz_backend.Tables.VerificarEmail;
 
 import com.example.roleslz_backend.Tables.users.entity.UserEntity;
 import jakarta.persistence.*;

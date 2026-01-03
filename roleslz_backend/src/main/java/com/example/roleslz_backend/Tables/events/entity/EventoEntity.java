@@ -1,5 +1,6 @@
 package com.example.roleslz_backend.Tables.events.entity;
 
+import com.example.roleslz_backend.Tables.avaliacao.entity.AvaliacaoEntity;
 import com.example.roleslz_backend.Tables.comentarios.entity.ComentarioEntity;
 import com.example.roleslz_backend.Utills.BaseEntity.BaseEntity;
 import com.example.roleslz_backend.Tables.users.entity.UserEntity;
@@ -38,7 +39,7 @@ public class EventoEntity extends BaseEntity {
     @Column(name = "end_date")
     private LocalDateTime endDate;
 
-    @Column(name = "local")
+    @Column(columnDefinition = "geometry(Point, 4326)", name = "local")
     private Point local;
 
     @Column(name = "endereco_ext")
@@ -60,11 +61,22 @@ public class EventoEntity extends BaseEntity {
     )
     private Set<UserEntity> confirmacoes;
 
+    @Column(name = "estado_evento")
+    private EstadoEvento estadoEvento;
+
     @ManyToMany
     @JoinTable(
             name = "eventos_comentarios",
             joinColumns = @JoinColumn(name = "evento_id"),
             inverseJoinColumns = @JoinColumn(name = "comentario_id")
     )
-    private List<ComentarioEntity> comentarios;
+    private Set<ComentarioEntity> comentarios;
+
+    @ManyToMany
+    @JoinTable(
+            name = "evento_avaliacoes",
+            joinColumns = @JoinColumn(name = "evento_id"),
+            inverseJoinColumns = @JoinColumn(name = "avaliacoes_id")
+    )
+    private Set<AvaliacaoEntity> avaliacoes;
 }
