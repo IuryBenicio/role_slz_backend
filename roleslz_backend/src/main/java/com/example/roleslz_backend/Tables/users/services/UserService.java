@@ -1,5 +1,8 @@
 package com.example.roleslz_backend.Tables.users.services;
 
+import com.example.roleslz_backend.Tables.events.entity.EventoEntity;
+import com.example.roleslz_backend.Tables.events.exceptions.EventNotFounded;
+import com.example.roleslz_backend.Tables.events.repository.EventoRepository;
 import com.example.roleslz_backend.Tables.users.DTOS.PasswordDTO;
 import com.example.roleslz_backend.Tables.users.DTOS.UserDTODetails;
 import com.example.roleslz_backend.Tables.users.DTOS.UserDTOLogin;
@@ -9,6 +12,7 @@ import com.example.roleslz_backend.Tables.users.exceptions.*;
 import com.example.roleslz_backend.Tables.users.mapper.UserDetailsMapper;
 import com.example.roleslz_backend.Tables.users.mapper.UserRegisterMapper;
 import com.example.roleslz_backend.Tables.users.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -20,12 +24,14 @@ public class UserService {
     private final UserRegisterMapper userRegisterMapper;
     private final UserDetailsMapper userDetailsMapper;
     private final PasswordEncoder passwordEncoder;
+    private final EventoRepository eventoRepository;
 
-    public UserService(UserRepository userRepository, UserRegisterMapper userRegisterMapper, UserDetailsMapper userDetailsMapper, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, UserRegisterMapper userRegisterMapper, UserDetailsMapper userDetailsMapper, PasswordEncoder passwordEncoder, EventoRepository eventoRepository) {
         this.userRepository = userRepository;
         this.userRegisterMapper = userRegisterMapper;
         this.userDetailsMapper = userDetailsMapper;
         this.passwordEncoder = passwordEncoder;
+        this.eventoRepository = eventoRepository;
     }
 
     public UserEntity addNewUserService(UserDTORegister userDTORegister){
@@ -111,6 +117,22 @@ public class UserService {
             userRepository.delete(user);
         } catch (Exception e) {
             throw new UserNotDeleted("Usuário não deletado");
+        }
+    }
+
+    @Transactional
+    public void confirmPresence(long userId, long eventoId){
+        EventoEntity evento = eventoRepository.findById(eventoId).orElseThrow(()-> new EventNotFounded("Evento não encontrado"));
+        UserEntity user = userRepository.findById(userId).orElseThrow(()-> new UserNotFounded("Usuário não encontrado"));
+
+        try{
+        evento.getConfirmacoes().add(user);
+        user.getEventos().add(evento);
+
+        userRepository.save(user);
+        eventoRepository.save(evento);
+        } catch (Exception e) {
+            throw new PresenceNotConfirmated("Presença não confirmada" + e.getMessage());
         }
     }
 }

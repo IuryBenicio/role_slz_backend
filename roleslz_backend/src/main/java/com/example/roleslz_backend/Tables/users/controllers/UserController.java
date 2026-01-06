@@ -1,5 +1,6 @@
 package com.example.roleslz_backend.Tables.users.controllers;
 
+import com.example.roleslz_backend.Tables.events.DTO.EventoDTO;
 import com.example.roleslz_backend.Tables.users.DTOS.PasswordDTO;
 import com.example.roleslz_backend.Tables.users.DTOS.UserDTODetails;
 import com.example.roleslz_backend.Tables.users.DTOS.UserDTORegister;
@@ -50,4 +51,9 @@ public class UserController {
         return ResponseEntity.ok("Usuário deletado");
     }
 
+    @PatchMapping("confirm_presence/{userId}/event/{eventId}")
+    public ResponseEntity<String> confirmePresence(@PathVariable long userId, @PathVariable long eventId, @RequestBody EventoDTO eventoDTO){
+        userService.confirmPresence(userId, eventId);
+        return ResponseEntity.ok("Usuário confirmado no evento "+ eventoDTO.title()+ ".");
+    }
 }

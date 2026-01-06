@@ -2,6 +2,7 @@ package com.example.roleslz_backend.Tables.comentarios.entity;
 
 import com.example.roleslz_backend.Tables.events.entity.EventoEntity;
 import com.example.roleslz_backend.Tables.users.entity.UserEntity;
+import com.example.roleslz_backend.Utills.BaseEntity.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -12,7 +13,7 @@ import lombok.*;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ComentarioEntity {
+public class ComentarioEntity extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -7,10 +7,12 @@ import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
 
-public record ComentariosDTO(
+public record ComentariosDTOTimeStamp(
         @NotNull UserEntity user,
         @NotBlank String title,
         @NotBlank String comentario,
-        @NotNull EventoEntity evento
-        ) {
+        @NotNull EventoEntity evento,
+        @NotNull LocalDateTime createdAt,
+        @NotNull LocalDateTime updatedAt
+) {
 }

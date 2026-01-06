@@ -1,8 +1,8 @@
 package com.example.roleslz_backend.Tables.events.controllers;
 
 import com.example.roleslz_backend.Tables.events.DTO.EventoDTO;
-import com.example.roleslz_backend.Tables.events.entity.EventoEntity;
 import com.example.roleslz_backend.Tables.events.services.EventoService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,10 +44,12 @@ public class EventoController {
         return null;
     }
 
-    @DeleteMapping("delete")
-    public ResponseEntity<?> delete(){
-        return null;
+    @DeleteMapping("delete/{id}")
+    public ResponseEntity<?> delete(@PathVariable long id){
+        eventoService.deleteEvento(id);
+        return ResponseEntity.status(HttpStatus.OK).body("Evento deletado");
     }
+
 
 
 }

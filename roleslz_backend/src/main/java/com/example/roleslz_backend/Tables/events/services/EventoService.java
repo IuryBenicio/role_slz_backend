@@ -1,9 +1,11 @@
 package com.example.roleslz_backend.Tables.events.services;
 
 import com.example.roleslz_backend.Tables.events.DTO.EventoDTO;
+import com.example.roleslz_backend.Tables.events.entity.EstadoEvento;
 import com.example.roleslz_backend.Tables.events.entity.EventoEntity;
 import com.example.roleslz_backend.Tables.events.exceptions.EventExists;
 import com.example.roleslz_backend.Tables.events.exceptions.EventNotFounded;
+import com.example.roleslz_backend.Tables.events.exceptions.EventoNotDeleted;
 import com.example.roleslz_backend.Tables.events.mapper.EventoMapper;
 import com.example.roleslz_backend.Tables.events.repository.EventoRepository;
 import org.springframework.stereotype.Service;
@@ -37,6 +39,10 @@ public class EventoService {
             throw new EventExists("Evento já existe");
         }
 
+        if(eventoDTO.estadoEvento().equals(EstadoEvento.POS)){
+            throw new EventExists("Evento com estado incorreto");
+        }
+
         EventoEntity novoEvento = eventoMapper.toEntity(eventoDTO);
 
         EventoEntity evento = eventoRepository.save(novoEvento);
@@ -53,4 +59,13 @@ public class EventoService {
 
        return eventoMapper.toDTO(salvo);
     }
-}
+
+    public void deleteEvento(long id){
+        EventoEntity evento = eventoRepository.findById(id).orElseThrow(()-> new EventNotFounded("Evento não encontrado"));
+
+        try{
+            eventoRepository.delete(evento);
+        } catch (Exception e) {
+            throw new EventoNotDeleted("Evento não deletado");
+        }
+    }}
