@@ -45,8 +45,8 @@ public class UserEntity extends BaseEntity implements UserDetails {
     @NotBlank(message = "email é obrigatório")
     private String email;
 
-    @Column(name = "email_verify")
-    private boolean emailVerify = false;
+    @Column(name = "is_enable")
+    private boolean enable = false;
 
     @Column(name = "password")
     @NotBlank(message = "senha é obrigatória")
@@ -63,7 +63,8 @@ public class UserEntity extends BaseEntity implements UserDetails {
     @OneToMany(mappedBy = "organizador", orphanRemoval = true)
     private List<EventoEntity> eventos;
 
-    @Column(name = "historico_eventos")
+    @OneToMany
+    @JoinColumn(name = "historico_eventos")
     private List<EventoEntity> historicoEventos;
 
     //Spring Security
@@ -94,7 +95,7 @@ public class UserEntity extends BaseEntity implements UserDetails {
 
         @Override
         public boolean isEnabled() {
-        return true;
+        return enable;
     }
 
 }

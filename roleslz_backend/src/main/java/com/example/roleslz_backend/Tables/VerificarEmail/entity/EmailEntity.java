@@ -1,4 +1,4 @@
-package com.example.roleslz_backend.Tables.VerificarEmail;
+package com.example.roleslz_backend.Tables.VerificarEmail.entity;
 
 import com.example.roleslz_backend.Tables.users.entity.UserEntity;
 import jakarta.persistence.*;
@@ -27,7 +27,7 @@ public class EmailEntity {
         private boolean used = false;
 
         @OneToOne
-        @Column(name = "user_entity")
+        @JoinColumn(name = "user_id")
         private UserEntity usuario;
 
 }

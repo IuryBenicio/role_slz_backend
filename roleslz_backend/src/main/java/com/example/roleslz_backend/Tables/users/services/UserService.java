@@ -1,5 +1,6 @@
 package com.example.roleslz_backend.Tables.users.services;
 
+import com.example.roleslz_backend.Tables.VerificarEmail.service.EmailService;
 import com.example.roleslz_backend.Tables.events.entity.EventoEntity;
 import com.example.roleslz_backend.Tables.events.exceptions.EventNotFounded;
 import com.example.roleslz_backend.Tables.events.repository.EventoRepository;
@@ -12,6 +13,7 @@ import com.example.roleslz_backend.Tables.users.exceptions.*;
 import com.example.roleslz_backend.Tables.users.mapper.UserDetailsMapper;
 import com.example.roleslz_backend.Tables.users.mapper.UserRegisterMapper;
 import com.example.roleslz_backend.Tables.users.repository.UserRepository;
+import com.example.roleslz_backend.infra.service.SecurityService;
 import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -25,13 +27,18 @@ public class UserService {
     private final UserDetailsMapper userDetailsMapper;
     private final PasswordEncoder passwordEncoder;
     private final EventoRepository eventoRepository;
+    private final SecurityService securityService;
+    private final EmailService emailService;
 
-    public UserService(UserRepository userRepository, UserRegisterMapper userRegisterMapper, UserDetailsMapper userDetailsMapper, PasswordEncoder passwordEncoder, EventoRepository eventoRepository) {
+
+    public UserService(UserRepository userRepository, UserRegisterMapper userRegisterMapper, UserDetailsMapper userDetailsMapper, PasswordEncoder passwordEncoder, EventoRepository eventoRepository, SecurityService securityService, EmailService emailService) {
         this.userRepository = userRepository;
         this.userRegisterMapper = userRegisterMapper;
         this.userDetailsMapper = userDetailsMapper;
         this.passwordEncoder = passwordEncoder;
         this.eventoRepository = eventoRepository;
+        this.securityService = securityService;
+        this.emailService = emailService;
     }
 
     public UserEntity addNewUserService(UserDTORegister userDTORegister){
@@ -44,7 +51,12 @@ public class UserService {
 
         UserEntity user = userRegisterMapper.toEntity(userDTORegister);
 
+        user.setEnable(false);
         user.setPassword(hashedPassword);
+
+        String token = securityService.generateToken(user);
+
+        emailService.sendVerificationEmail(user.getEmail(), token);
 
         try{
             return userRepository.save(user);
@@ -89,6 +101,18 @@ public class UserService {
         else {
             return true;
         }
+    }
+
+    public void verifyUserByEmail(String token){
+        String email = securityService.validateToken(token);
+
+        if(email.isEmpty()){
+            throw new InvalidToken("Token inválido");
+        }
+
+        UserEntity user = userRepository.findByEmail(email).orElseThrow(()-> new UserNotFounded("Usuário não encontrado pelo email"));
+            user.setEnable(true);
+            userRepository.save(user);
     }
 
     public void editPassword(long id ,PasswordDTO data){

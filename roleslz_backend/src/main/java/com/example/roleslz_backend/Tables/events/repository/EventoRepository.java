@@ -8,5 +8,5 @@ import java.util.Optional;
 
 @Repository
 public interface EventoRepository extends JpaRepository<EventoEntity, Long> {
-    Optional<EventoEntity> findByName(String name);
+    Optional<EventoEntity> findByTitle(String name);
 }

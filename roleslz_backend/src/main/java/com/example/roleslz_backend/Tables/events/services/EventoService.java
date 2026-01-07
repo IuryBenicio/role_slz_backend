@@ -42,7 +42,7 @@ public class EventoService {
     }
 
     public EventoDTO createEvento(EventoDTO eventoDTO){
-        Optional<EventoEntity> exists = eventoRepository.findByName(eventoDTO.title());
+        Optional<EventoEntity> exists = eventoRepository.findByTitle(eventoDTO.title());
         if(exists.isPresent()){
             throw new EventExists("Evento já existe");
         }

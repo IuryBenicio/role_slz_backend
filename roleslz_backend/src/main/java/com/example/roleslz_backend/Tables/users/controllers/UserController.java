@@ -39,6 +39,12 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.OK).body("Senha verificada");
     }
 
+    @PatchMapping("verify_email")
+    public ResponseEntity<String> verifyPassword(@RequestParam("token") String token){
+        userService.verifyUserByEmail(token);
+        return ResponseEntity.status(HttpStatus.OK).body("Usuário verificado");
+    }
+
     @PatchMapping("edit_password/{id}")
     public ResponseEntity<String> editPassword(@PathVariable long id, @Valid @RequestBody PasswordDTO passwordDTO){
         userService.editPassword(id, passwordDTO);

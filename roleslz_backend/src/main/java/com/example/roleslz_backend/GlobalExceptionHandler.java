@@ -67,12 +67,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.FOUND).body(ex.getMessage());
     }
 
-    @ExceptionHandler(AvaliacaoAlreadyExists.class)
+    @ExceptionHandler(AvaliacaoDoesntExists.class)
     public ResponseEntity<String> AvaliacaoDoesntExists(AvaliacaoDoesntExists ex){
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 
-    @ExceptionHandler(AvaliacaoAlreadyExists.class)
+    @ExceptionHandler(AvaliacaoNotDeleted.class)
     public ResponseEntity<String> AvaliacaoNotDeleted(AvaliacaoNotDeleted ex){
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
@@ -119,6 +119,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(PresenceNotConfirmated.class)
     public ResponseEntity<String> PresenceNotConfirmated(PresenceNotConfirmated ex){
+        return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(InvalidToken.class)
+    public ResponseEntity<String> InvalidToken(InvalidToken ex){
         return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body(ex.getMessage());
     }
 
