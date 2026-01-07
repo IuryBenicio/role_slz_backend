@@ -28,8 +28,8 @@ public class AvaliacaoEntity extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
 
-    @OneToMany
     @NotNull
+    @ManyToOne
     @JoinColumn(name = "evento_id")
     private EventoEntity evento;
 }

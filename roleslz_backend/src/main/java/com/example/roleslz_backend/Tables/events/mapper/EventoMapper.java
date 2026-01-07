@@ -13,6 +13,4 @@ public interface EventoMapper {
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateEntityFromDto(EventoDTO dto, @MappingTarget EventoEntity entity);
 
-    @Mapping(target = "id", ignore = true)
-    EventoEntity replicate(EventoEntity original);
 }

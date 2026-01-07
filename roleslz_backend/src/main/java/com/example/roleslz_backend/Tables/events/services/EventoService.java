@@ -8,19 +8,27 @@ import com.example.roleslz_backend.Tables.events.exceptions.EventNotFounded;
 import com.example.roleslz_backend.Tables.events.exceptions.EventoNotDeleted;
 import com.example.roleslz_backend.Tables.events.mapper.EventoMapper;
 import com.example.roleslz_backend.Tables.events.repository.EventoRepository;
+import com.example.roleslz_backend.Tables.users.DTOS.UserDTODetails;
+import com.example.roleslz_backend.Tables.users.entity.UserEntity;
+import com.example.roleslz_backend.Tables.users.mapper.UserDetailsMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class EventoService {
 
     private final EventoRepository eventoRepository;
     private final EventoMapper eventoMapper;
+    private final UserDetailsMapper userDetailsMapper;
 
-    public EventoService(EventoRepository eventoRepository, EventoMapper eventoMapper) {
+    public EventoService(EventoRepository eventoRepository, EventoMapper eventoMapper, UserDetailsMapper userDetailsMapper) {
         this.eventoRepository = eventoRepository;
         this.eventoMapper = eventoMapper;
+        this.userDetailsMapper = userDetailsMapper;
     }
 
     //Services
@@ -68,4 +76,30 @@ public class EventoService {
         } catch (Exception e) {
             throw new EventoNotDeleted("Evento não deletado");
         }
-    }}
+    }
+
+    public Set<UserDTODetails> getConfirms (long eventoId){
+        EventoEntity evento = eventoRepository.findById(eventoId).orElseThrow(()-> new EventNotFounded("Evento não encontrado"));
+
+        try{
+            Set<UserEntity> confirms = evento.getConfirmacoes();
+            Set<UserDTODetails> confirmsDto = evento.getConfirmacoes().stream().map(user -> userDetailsMapper.toDTO(user)).collect(Collectors.toSet());
+            return confirmsDto;
+        } catch (Exception e) {
+            throw new RuntimeException("Confirmações não retornadas " + e.getMessage());
+        }
+    }
+
+    public void removeConfirms (long event_id, long user_id){
+        EventoEntity evento = eventoRepository.findById(event_id).orElseThrow(()-> new EventNotFounded("Evento não encontrado"));
+
+        UserEntity confirm = evento.getConfirmacoes().stream().filter((a)-> a.getId() == user_id).findFirst().orElseThrow(()->new EventNotFounded("Confirmação não encontrada"));
+
+        try{
+            evento.getConfirmacoes().remove(confirm);
+            eventoRepository.save(evento);
+        } catch (Exception e) {
+            throw new EventoNotDeleted("Confirmação não deletada");
+        }
+    }
+}

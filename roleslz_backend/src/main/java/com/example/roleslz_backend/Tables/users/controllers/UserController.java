@@ -56,4 +56,10 @@ public class UserController {
         userService.confirmPresence(userId, eventId);
         return ResponseEntity.ok("Usuário confirmado no evento "+ eventoDTO.title()+ ".");
     }
+
+    @PatchMapping("unconfirm_presence/{userId}/event/{eventId}")
+    public ResponseEntity<String> unconfirmPresence(@PathVariable long userId, @PathVariable long eventId, @RequestBody EventoDTO eventoDTO){
+        userService.unconfirmPresence(userId, eventId);
+        return ResponseEntity.ok("confirmação retirada do evento "+ eventoDTO.title()+ ".");
+    }
 }

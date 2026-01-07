@@ -120,6 +120,7 @@ public class UserService {
         }
     }
 
+    //por ser many to many, é necessário usar a anotation @Transactional para poder efetuar a persistencia das duas tabelas relativas criadas
     @Transactional
     public void confirmPresence(long userId, long eventoId){
         EventoEntity evento = eventoRepository.findById(eventoId).orElseThrow(()-> new EventNotFounded("Evento não encontrado"));
@@ -133,6 +134,26 @@ public class UserService {
         eventoRepository.save(evento);
         } catch (Exception e) {
             throw new PresenceNotConfirmated("Presença não confirmada" + e.getMessage());
+        }
+    }
+
+    @Transactional
+    public void unconfirmPresence(long userId, long eventoId){
+        EventoEntity evento = eventoRepository.findById(eventoId).orElseThrow(()-> new EventNotFounded("Evento não encontrado"));
+        UserEntity user = userRepository.findById(userId).orElseThrow(()-> new UserNotFounded("Usuário não encontrado"));
+
+        try{
+            if(evento.getConfirmacoes().contains(user)){
+                evento.getConfirmacoes().remove(user);
+            }
+            if(user.getEventos().contains(evento)){
+                user.getEventos().remove(evento);
+            }
+
+            userRepository.save(user);
+            eventoRepository.save(evento);
+        } catch (Exception e) {
+            throw new PresenceNotConfirmated("Presença não retirada" + e.getMessage());
         }
     }
 }

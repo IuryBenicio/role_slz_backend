@@ -24,7 +24,7 @@ public class EventoEntity extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private long Id;
+    private long id;
 
     @Column(name = "title")
     @NotBlank(message = "campo obrigatório")
@@ -72,11 +72,6 @@ public class EventoEntity extends BaseEntity {
     )
     private Set<ComentarioEntity> comentarios;
 
-    @ManyToMany
-    @JoinTable(
-            name = "evento_avaliacoes",
-            joinColumns = @JoinColumn(name = "evento_id"),
-            inverseJoinColumns = @JoinColumn(name = "avaliacoes_id")
-    )
+    @OneToMany(mappedBy = "evento")
     private Set<AvaliacaoEntity> avaliacoes;
 }

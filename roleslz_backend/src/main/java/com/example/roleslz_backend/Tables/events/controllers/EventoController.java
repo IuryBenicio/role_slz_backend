@@ -2,9 +2,13 @@ package com.example.roleslz_backend.Tables.events.controllers;
 
 import com.example.roleslz_backend.Tables.events.DTO.EventoDTO;
 import com.example.roleslz_backend.Tables.events.services.EventoService;
+import com.example.roleslz_backend.Tables.users.DTOS.UserDTODetails;
+import com.example.roleslz_backend.Tables.users.entity.UserEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Set;
 
 @RestController
 @RequestMapping("/evento")
@@ -35,8 +39,9 @@ public class EventoController {
     }
 
     @GetMapping("get_confirms/{id}")
-    public ResponseEntity<?> getConfirms(){
-        return null;
+    public ResponseEntity<?> getConfirms(@PathVariable long id){
+        Set<UserDTODetails> confirms = eventoService.getConfirms(id);
+        return ResponseEntity.ok(confirms);
     }
 
     @PatchMapping("remove_confirm/{event_id}/user/{user_id}")
@@ -49,7 +54,4 @@ public class EventoController {
         eventoService.deleteEvento(id);
         return ResponseEntity.status(HttpStatus.OK).body("Evento deletado");
     }
-
-
-
 }
