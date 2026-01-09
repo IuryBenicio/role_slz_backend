@@ -1,6 +1,7 @@
 package com.example.roleslz_backend.Tables.events.controllers;
 
 import com.example.roleslz_backend.Tables.events.DTO.EventoDTO;
+import com.example.roleslz_backend.Tables.events.DTO.NewPriceDTO;
 import com.example.roleslz_backend.Tables.events.services.EventoService;
 import com.example.roleslz_backend.Tables.users.DTOS.UserDTODetails;
 import com.example.roleslz_backend.Tables.users.entity.UserEntity;
@@ -8,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.Set;
 
 @RestController
@@ -36,6 +38,12 @@ public class EventoController {
     public ResponseEntity<?> editEvent(@PathVariable long id, @RequestBody EventoDTO eventoDTO){
         EventoDTO evento = eventoService.editEvento(id, eventoDTO);
         return ResponseEntity.ok(evento);
+    }
+
+    @PatchMapping("edit_price/{id}")
+    public ResponseEntity<?> editPrice(@PathVariable long id, @RequestBody NewPriceDTO newPriceDTO){
+        eventoService.editPrice(id, newPriceDTO);
+        return ResponseEntity.ok(newPriceDTO);
     }
 
     @GetMapping("get_confirms/{id}")

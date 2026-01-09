@@ -1,4 +1,4 @@
-package com.example.roleslz_backend.Tables.VerificarEmail.service;
+package com.example.roleslz_backend.Tables.verificarEmail.service;
 
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;

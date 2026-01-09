@@ -9,6 +9,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.locationtech.jts.geom.Point;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Set;
 
@@ -23,5 +24,6 @@ public record EventoDTO(@NotBlank String title,
                         @NotBlank String imageUrl,
                         @NotNull EstadoEvento estadoEvento,
                         @NotNull Set<ComentarioEntity> comentarios,
-                        @NotNull Set<AvaliacaoEntity> avaliacoes) {
+                        @NotNull Set<AvaliacaoEntity> avaliacoes,
+                        @NotNull BigDecimal price) {
 }

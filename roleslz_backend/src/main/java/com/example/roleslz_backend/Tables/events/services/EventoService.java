@@ -1,11 +1,10 @@
 package com.example.roleslz_backend.Tables.events.services;
 
 import com.example.roleslz_backend.Tables.events.DTO.EventoDTO;
+import com.example.roleslz_backend.Tables.events.DTO.NewPriceDTO;
 import com.example.roleslz_backend.Tables.events.entity.EstadoEvento;
 import com.example.roleslz_backend.Tables.events.entity.EventoEntity;
-import com.example.roleslz_backend.Tables.events.exceptions.EventExists;
-import com.example.roleslz_backend.Tables.events.exceptions.EventNotFounded;
-import com.example.roleslz_backend.Tables.events.exceptions.EventoNotDeleted;
+import com.example.roleslz_backend.Tables.events.exceptions.*;
 import com.example.roleslz_backend.Tables.events.mapper.EventoMapper;
 import com.example.roleslz_backend.Tables.events.repository.EventoRepository;
 import com.example.roleslz_backend.Tables.users.DTOS.UserDTODetails;
@@ -13,6 +12,7 @@ import com.example.roleslz_backend.Tables.users.entity.UserEntity;
 import com.example.roleslz_backend.Tables.users.mapper.UserDetailsMapper;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -56,6 +56,24 @@ public class EventoService {
         EventoEntity evento = eventoRepository.save(novoEvento);
 
         return eventoMapper.toDTO(evento);
+    }
+
+    public void editPrice(long id, NewPriceDTO price){
+        EventoEntity evento = eventoRepository.findById(id).orElseThrow(()->new EventNotFounded("Evento não encontrado"));
+
+        BigDecimal zero = BigDecimal.ZERO;
+
+        if(price.newPrice().compareTo(zero) < 0){
+            throw new InvalidPrice("Preço inválido");
+        }
+
+        try{
+            evento.setPrice(price.newPrice());
+            eventoRepository.save(evento);
+        } catch (Exception e) {
+            throw new EventNotEdited("Evento não editado");
+        }
+
     }
 
     public EventoDTO editEvento(long id,EventoDTO eventoDTO){

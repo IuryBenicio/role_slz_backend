@@ -1,5 +1,6 @@
 package com.example.roleslz_backend.Tables.users.entity;
 
+import com.example.roleslz_backend.Tables.business.entity.BusinessEntity;
 import com.example.roleslz_backend.Utills.BaseEntity.BaseEntity;
 import com.example.roleslz_backend.Tables.events.entity.EventoEntity;
 import jakarta.persistence.*;
@@ -66,6 +67,11 @@ public class UserEntity extends BaseEntity implements UserDetails {
     @OneToMany
     @JoinColumn(name = "historico_eventos")
     private List<EventoEntity> historicoEventos;
+
+    @OneToOne
+    @JoinColumn(name = "business_id")
+    private BusinessEntity business;
+
 
     //Spring Security
         @Override

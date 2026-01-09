@@ -11,8 +11,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.locationtech.jts.geom.Point;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -52,6 +52,9 @@ public class EventoEntity extends BaseEntity {
 
     @Column(name="image_url")
     private String imageUrl;
+
+    @Column(name = "price")
+    private BigDecimal price;
 
     @ManyToMany
     @JoinTable(

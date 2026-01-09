@@ -1,5 +1,6 @@
-package com.example.roleslz_backend.Tables.enterprises.entity;
+package com.example.roleslz_backend.Tables.business.entity;
 
+import com.example.roleslz_backend.Tables.users.entity.UserEntity;
 import com.example.roleslz_backend.Utills.BaseEntity.BaseEntity;
 import com.example.roleslz_backend.Utills.FuncionamentoClass;
 import jakarta.persistence.*;
@@ -12,8 +13,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "empresa")
-public class EmpresaEntity extends BaseEntity {
+@Table(name = "owner")
+public class BusinessEntity extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,6 +31,9 @@ public class EmpresaEntity extends BaseEntity {
     @Column(name = "logoTipoUrl")
     @NotBlank(message = "Logo tipo precisa ter URL")
     private String logoTipoUrl;
+
+    @OneToOne(orphanRemoval = true)
+    private UserEntity user;
 
     @Embedded
     private FuncionamentoClass funcionamento;

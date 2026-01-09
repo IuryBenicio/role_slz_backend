@@ -4,10 +4,12 @@ import com.example.roleslz_backend.Tables.avaliacao.exceptions.AvaliacaoAlreadyE
 import com.example.roleslz_backend.Tables.avaliacao.exceptions.AvaliacaoDoesntExists;
 import com.example.roleslz_backend.Tables.avaliacao.exceptions.AvaliacaoNotDeleted;
 import com.example.roleslz_backend.Tables.avaliacao.exceptions.AvaliacaoNotEdited;
+import com.example.roleslz_backend.Tables.business.exceptions.BusinessAlreadyCreated;
+import com.example.roleslz_backend.Tables.business.exceptions.BusinessNotCreated;
+import com.example.roleslz_backend.Tables.business.exceptions.BusinessNotDeleted;
+import com.example.roleslz_backend.Tables.business.exceptions.BusinessNotFounded;
 import com.example.roleslz_backend.Tables.comentarios.exceptions.*;
-import com.example.roleslz_backend.Tables.events.exceptions.EventExists;
-import com.example.roleslz_backend.Tables.events.exceptions.EventNotFounded;
-import com.example.roleslz_backend.Tables.events.exceptions.EventoNotDeleted;
+import com.example.roleslz_backend.Tables.events.exceptions.*;
 import com.example.roleslz_backend.Tables.users.exceptions.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -117,6 +119,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body(ex.getMessage());
     }
 
+    @ExceptionHandler(BusinessAlreadyCreated.class)
+    public ResponseEntity<String> BusinessNotCreated(BusinessAlreadyCreated ex){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
     @ExceptionHandler(PresenceNotConfirmated.class)
     public ResponseEntity<String> PresenceNotConfirmated(PresenceNotConfirmated ex){
         return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body(ex.getMessage());
@@ -124,7 +131,32 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(InvalidToken.class)
     public ResponseEntity<String> InvalidToken(InvalidToken ex){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(EventNotEdited.class)
+    public ResponseEntity<String> EventNotEdited(EventNotEdited ex){
         return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(InvalidPrice.class)
+    public ResponseEntity<String> InvalidPrice(InvalidPrice ex){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(BusinessNotCreated.class)
+    public ResponseEntity<String> BusinessNotCreated(BusinessNotCreated ex){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(BusinessNotFounded.class)
+    public ResponseEntity<String> BusinessNotFounded(BusinessNotFounded ex){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(BusinessNotDeleted.class)
+    public ResponseEntity<String> BusinessNotDeleted(BusinessNotDeleted ex){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 
 }

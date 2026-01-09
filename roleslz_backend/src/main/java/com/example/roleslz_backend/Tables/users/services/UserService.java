@@ -1,6 +1,6 @@
 package com.example.roleslz_backend.Tables.users.services;
 
-import com.example.roleslz_backend.Tables.VerificarEmail.service.EmailService;
+import com.example.roleslz_backend.Tables.verificarEmail.service.EmailService;
 import com.example.roleslz_backend.Tables.events.entity.EventoEntity;
 import com.example.roleslz_backend.Tables.events.exceptions.EventNotFounded;
 import com.example.roleslz_backend.Tables.events.repository.EventoRepository;
