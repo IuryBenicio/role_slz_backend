@@ -11,6 +11,7 @@ import com.example.roleslz_backend.Tables.business.exceptions.BusinessNotFounded
 import com.example.roleslz_backend.Tables.comentarios.exceptions.*;
 import com.example.roleslz_backend.Tables.events.exceptions.*;
 import com.example.roleslz_backend.Tables.users.exceptions.*;
+import com.example.roleslz_backend.Utills.notificationsServices.exceptions.NotifyFail;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -22,6 +23,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UserDontExists.class)
     public ResponseEntity<String> UserDontExists(UserDontExists ex){
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(NotifyFail.class)
+    public ResponseEntity<String> NotifyFail(NotifyFail ex){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 
     @ExceptionHandler(UserNotEdited.class)

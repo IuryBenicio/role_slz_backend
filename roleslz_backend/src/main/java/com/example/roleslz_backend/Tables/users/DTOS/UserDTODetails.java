@@ -15,6 +15,6 @@ public record UserDTODetails(
         @NotBlank String email,
         @NotBlank Integer idade,
         @NotNull List<EventoEntity> eventos,
-        @NotNull List<EventoEntity> historicoEventos
-        ) {
+        @NotNull List<EventoEntity> historicoEventos,
+        @NotNull String fcmToken) {
 }

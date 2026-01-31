@@ -34,6 +34,7 @@ public class EventoController {
         return ResponseEntity.ok(evento);
     }
 
+
     @PatchMapping("edit/{id}")
     public ResponseEntity<?> editEvent(@PathVariable long id, @RequestBody EventoDTO eventoDTO){
         EventoDTO evento = eventoService.editEvento(id, eventoDTO);

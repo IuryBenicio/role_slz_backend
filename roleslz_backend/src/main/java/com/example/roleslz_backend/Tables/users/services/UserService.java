@@ -103,6 +103,17 @@ public class UserService {
         }
     }
 
+    @Transactional
+    public void addFirebaseToken(long id, String token){
+        UserEntity user = userRepository.findById(id).orElseThrow(()->new UserNotFounded("Usuário não encontrado"));
+        try{
+            user.setFcmToken(token);
+            userRepository.save(user);
+        } catch (Exception e) {
+            throw new UserNotEdited("Usuário não editado" + e);
+        }
+    }
+
     public void verifyUserByEmail(String token){
         String email = securityService.validateToken(token);
 

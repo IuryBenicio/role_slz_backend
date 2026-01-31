@@ -33,6 +33,12 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
+    @PostMapping("add_f_token/{id}")
+    public ResponseEntity<String> addFirebaseToken(@PathVariable long id, @RequestBody String token){
+        userService.addFirebaseToken(id,token);
+        return ResponseEntity.ok("Token atualizado");
+    }
+
     @PatchMapping("verify_password/{id}")
     public ResponseEntity<String> verifyPassword(@PathVariable long id, @Valid @RequestBody PasswordDTO passwordDTO){
             userService.verifyPassword(id, passwordDTO);

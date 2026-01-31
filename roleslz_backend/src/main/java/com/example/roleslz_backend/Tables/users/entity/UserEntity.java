@@ -57,6 +57,9 @@ public class UserEntity extends BaseEntity implements UserDetails {
     @NotBlank(message = "role obrigatória")
     private Roles role = Roles.REGULAR;
 
+    @Column(name = "fcm_token")
+    private String fcmToken;
+
     @Column(name = "idade")
     @NotBlank(message = "idade é obrigatória")
     private Integer idade;
