@@ -13,7 +13,7 @@ public class WebSocketsConfiguration implements WebSocketMessageBrokerConfigurer
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config){
-        // Criamos um agendador de tarefas para os batimentos
+        //agendador de tarefas para os batimentos
         ThreadPoolTaskScheduler te = new ThreadPoolTaskScheduler();
         te.setPoolSize(1);
         te.setThreadNamePrefix("ws-heartbeat-");
@@ -21,9 +21,9 @@ public class WebSocketsConfiguration implements WebSocketMessageBrokerConfigurer
 
         // Habilita um broker simples na memória para enviar mensagens aos clientes
         config.enableSimpleBroker("/topic")
-                // Primeiro valor: quanto o servidor envia (10s)
-                // Segundo valor: quanto o servidor espera receber (10s)
-                .setHeartbeatValue(new long[]{10000, 10000})
+                // Primeiro valor: quanto o servidor envia para mostrar que está ativo (10s)
+                // Segundo valor: quanto o servidor espera receber a resposta do dispositívo (10s)
+                .setHeartbeatValue(new long[]{20000, 20000})
                 .setTaskScheduler(te);
         // Prefixo para mensagens que saem do cliente para o servidor
         config.setApplicationDestinationPrefixes("/app");
