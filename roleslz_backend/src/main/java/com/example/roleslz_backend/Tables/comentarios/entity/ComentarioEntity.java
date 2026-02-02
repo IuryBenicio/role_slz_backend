@@ -32,8 +32,7 @@ public class ComentarioEntity extends BaseEntity {
     @NotBlank(message = "o comentário precisa ser feito")
     private String comentario;
 
-    @ManyToOne
-    @JoinColumn(name = "evento_id", nullable = false)
+    @ManyToMany(mappedBy = "comentarios")
     @NotNull(message = "o comentário precisa de um evento ligado a ele")
     private EventoEntity evento;
 

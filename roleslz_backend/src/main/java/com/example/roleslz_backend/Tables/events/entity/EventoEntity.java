@@ -1,6 +1,7 @@
 package com.example.roleslz_backend.Tables.events.entity;
 
 import com.example.roleslz_backend.Tables.avaliacao.entity.AvaliacaoEntity;
+import com.example.roleslz_backend.Tables.categoria.CategoriaEntity;
 import com.example.roleslz_backend.Tables.comentarios.entity.ComentarioEntity;
 import com.example.roleslz_backend.Utills.BaseEntity.BaseEntity;
 import com.example.roleslz_backend.Tables.users.entity.UserEntity;
@@ -74,6 +75,14 @@ public class EventoEntity extends BaseEntity {
             inverseJoinColumns = @JoinColumn(name = "comentario_id")
     )
     private Set<ComentarioEntity> comentarios;
+
+    @ManyToMany
+    @JoinTable(
+            name = "eventos_categoria",
+            joinColumns = @JoinColumn(name = "evento_id"),
+            inverseJoinColumns = @JoinColumn(name = "categoria_id")
+    )
+    private Set<CategoriaEntity> categorias;
 
     @OneToMany(mappedBy = "evento")
     private Set<AvaliacaoEntity> avaliacoes;
