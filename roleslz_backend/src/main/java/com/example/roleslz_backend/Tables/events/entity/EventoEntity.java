@@ -1,7 +1,7 @@
 package com.example.roleslz_backend.Tables.events.entity;
 
 import com.example.roleslz_backend.Tables.avaliacao.entity.AvaliacaoEntity;
-import com.example.roleslz_backend.Tables.categoria.CategoriaEntity;
+import com.example.roleslz_backend.Tables.categoria.entity.CategoriaEntity;
 import com.example.roleslz_backend.Tables.comentarios.entity.ComentarioEntity;
 import com.example.roleslz_backend.Utills.BaseEntity.BaseEntity;
 import com.example.roleslz_backend.Tables.users.entity.UserEntity;

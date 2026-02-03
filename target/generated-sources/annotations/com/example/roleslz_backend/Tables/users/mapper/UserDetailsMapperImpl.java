@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-01-06T20:10:48-0300",
+    date = "2026-02-03T10:18:02-0300",
     comments = "version: 1.5.5.Final, compiler: javac, environment: Java 21.0.8 (Oracle Corporation)"
 )
 @Component
@@ -40,8 +40,9 @@ public class UserDetailsMapperImpl implements UserDetailsMapper {
         Integer idade = null;
         List<EventoEntity> eventos = null;
         List<EventoEntity> historicoEventos = null;
+        String fcmToken = null;
 
-        UserDTODetails userDTODetails = new UserDTODetails( nome, sobrenome, sexo, email, idade, eventos, historicoEventos );
+        UserDTODetails userDTODetails = new UserDTODetails( nome, sobrenome, sexo, email, idade, eventos, historicoEventos, fcmToken );
 
         return userDTODetails;
     }

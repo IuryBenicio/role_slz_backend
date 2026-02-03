@@ -1,4 +1,4 @@
-package com.example.roleslz_backend.Tables.categoria;
+package com.example.roleslz_backend.Tables.categoria.entity;
 
 import com.example.roleslz_backend.Tables.events.entity.EventoEntity;
 import jakarta.persistence.*;
@@ -23,7 +23,6 @@ public class CategoriaEntity {
     private String name;
 
     @ManyToMany(mappedBy = "categorias")
-    @JoinColumn(name = "evento_id")
     private Set<EventoEntity> eventos;
 
 }
