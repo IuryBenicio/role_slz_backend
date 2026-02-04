@@ -3,6 +3,7 @@ package com.example.roleslz_backend.Tables.events.entity;
 import com.example.roleslz_backend.Tables.avaliacao.entity.AvaliacaoEntity;
 import com.example.roleslz_backend.Tables.categoria.entity.CategoriaEntity;
 import com.example.roleslz_backend.Tables.comentarios.entity.ComentarioEntity;
+import com.example.roleslz_backend.Tables.spot.entity.SpotEntity;
 import com.example.roleslz_backend.Utills.BaseEntity.BaseEntity;
 import com.example.roleslz_backend.Tables.users.entity.UserEntity;
 import jakarta.persistence.*;
@@ -40,9 +41,6 @@ public class EventoEntity extends BaseEntity {
     @Column(name = "end_date")
     private LocalDateTime endDate;
 
-    @Column(columnDefinition = "geometry(Point, 4326)", name = "local")
-    private Point local;
-
     @Column(name = "endereco_ext")
     @NotBlank(message = "campo obrigatório")
     private String enderecoExtenso;
@@ -56,6 +54,10 @@ public class EventoEntity extends BaseEntity {
 
     @Column(name = "price")
     private BigDecimal price;
+
+    @ManyToOne
+    @JoinColumn(nullable = false, name = "spot_id")
+    private SpotEntity spot;
 
     @ManyToMany
     @JoinTable(

@@ -7,9 +7,14 @@ import com.example.roleslz_backend.Tables.events.entity.EventoEntity;
 import com.example.roleslz_backend.Tables.events.exceptions.*;
 import com.example.roleslz_backend.Tables.events.mapper.EventoMapper;
 import com.example.roleslz_backend.Tables.events.repository.EventoRepository;
+import com.example.roleslz_backend.Tables.spot.entity.SpotEntity;
 import com.example.roleslz_backend.Tables.users.DTOS.UserDTODetails;
 import com.example.roleslz_backend.Tables.users.entity.UserEntity;
 import com.example.roleslz_backend.Tables.users.mapper.UserDetailsMapper;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -51,7 +56,16 @@ public class EventoService {
             throw new EventExists("Evento com estado incorreto");
         }
 
+        GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
+        Point localizacao = factory.createPoint(new Coordinate(eventoDTO.latitude(), eventoDTO.latitude()));
+
         EventoEntity novoEvento = eventoMapper.toEntity(eventoDTO);
+
+        SpotEntity spot = new SpotEntity();
+
+        spot.setLocalizacao(localizacao);
+
+        novoEvento.setSpot(spot);
 
         EventoEntity evento = eventoRepository.save(novoEvento);
 
