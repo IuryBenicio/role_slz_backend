@@ -1,9 +1,9 @@
 package com.example.roleslz_backend.Tables.events.DTO;
 
 import com.example.roleslz_backend.Tables.avaliacao.entity.AvaliacaoEntity;
+import com.example.roleslz_backend.Tables.categoria.entity.CategoriaEntity;
 import com.example.roleslz_backend.Tables.comentarios.entity.ComentarioEntity;
 import com.example.roleslz_backend.Tables.events.entity.EstadoEvento;
-import com.example.roleslz_backend.Tables.spot.entity.SpotEntity;
 import com.example.roleslz_backend.Tables.users.DTOS.UserDTODetails;
 import com.example.roleslz_backend.Tables.users.entity.UserEntity;
 import jakarta.validation.constraints.NotBlank;
@@ -26,9 +26,8 @@ public record EventoDTO(@NotBlank String title,
                         @NotNull EstadoEvento estadoEvento,
                         @NotNull Set<ComentarioEntity> comentarios,
                         @NotNull Set<AvaliacaoEntity> avaliacoes,
+                        @NotNull Set<CategoriaEntity> categorias,
                         @NotNull BigDecimal price,
                         //SPOT
-                        @NotBlank String someSpot,
-                        @NotNull double latitude,
-                        @NotNull double longitude
+                        @NotNull Point spot
                         ) {}

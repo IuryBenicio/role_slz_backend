@@ -1,15 +1,12 @@
 package com.example.roleslz_backend.Tables.events.controllers;
 
-import com.example.roleslz_backend.Tables.events.DTO.EventoDTO;
-import com.example.roleslz_backend.Tables.events.DTO.NewPriceDTO;
+import com.example.roleslz_backend.Tables.events.DTO.*;
 import com.example.roleslz_backend.Tables.events.services.EventoService;
 import com.example.roleslz_backend.Tables.users.DTOS.UserDTODetails;
-import com.example.roleslz_backend.Tables.users.entity.UserEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.Set;
 
 @RestController
@@ -23,9 +20,22 @@ public class EventoController {
     }
 
     @PostMapping("create")
-    public ResponseEntity<?> createEvento(@RequestBody EventoDTO eventoDTO){
+    public ResponseEntity<?> createEvento(@RequestBody EventoDTORequest eventoDTO){
         EventoDTO evento = eventoService.createEvento(eventoDTO);
         return ResponseEntity.ok(evento);
+    }
+
+    @GetMapping("get_events_around")
+    public ResponseEntity<?> getEventsAround(@RequestBody GetEventsAroundDTO getEventsAroundDTO){
+        Set<EventoDTOResponseDistance> eventos = eventoService.getEventsAround(getEventsAroundDTO.lat(), getEventsAroundDTO.lng(), getEventsAroundDTO.raioKm());
+
+        return ResponseEntity.ok(eventos);
+    }
+
+    @GetMapping("get_events_in_map_area")
+    public ResponseEntity<?> getEventsInMapArea(@RequestBody GetsEventsInMapAreaDTO getsEventsInMapAreaDTO){
+        Set<EventoDTOResponseDistance> eventos = eventoService.getEventosInMapArea(getsEventsInMapAreaDTO.minLat(), getsEventsInMapAreaDTO.minLon(), getsEventsInMapAreaDTO.maxLat(), getsEventsInMapAreaDTO.maxLon());
+        return ResponseEntity.ok(eventos);
     }
 
     @GetMapping("get/{id}")

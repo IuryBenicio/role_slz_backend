@@ -1,11 +1,15 @@
 package com.example.roleslz_backend.Tables.events.services;
 
 import com.example.roleslz_backend.Tables.events.DTO.EventoDTO;
+import com.example.roleslz_backend.Tables.events.DTO.EventoDTORequest;
+import com.example.roleslz_backend.Tables.events.DTO.EventoDTOResponseDistance;
 import com.example.roleslz_backend.Tables.events.DTO.NewPriceDTO;
+import com.example.roleslz_backend.Tables.events.Projections.EventoComDistanciaProjection;
 import com.example.roleslz_backend.Tables.events.entity.EstadoEvento;
 import com.example.roleslz_backend.Tables.events.entity.EventoEntity;
 import com.example.roleslz_backend.Tables.events.exceptions.*;
 import com.example.roleslz_backend.Tables.events.mapper.EventoMapper;
+import com.example.roleslz_backend.Tables.events.mapper.EventoWithDistanciaMapper;
 import com.example.roleslz_backend.Tables.events.repository.EventoRepository;
 import com.example.roleslz_backend.Tables.spot.entity.SpotEntity;
 import com.example.roleslz_backend.Tables.users.DTOS.UserDTODetails;
@@ -28,13 +32,52 @@ public class EventoService {
 
     private final EventoRepository eventoRepository;
     private final EventoMapper eventoMapper;
+    private final EventoWithDistanciaMapper eventoWithDistanciaMapper;
     private final UserDetailsMapper userDetailsMapper;
 
-    public EventoService(EventoRepository eventoRepository, EventoMapper eventoMapper, UserDetailsMapper userDetailsMapper) {
+    public EventoService(EventoRepository eventoRepository, EventoMapper eventoMapper, EventoWithDistanciaMapper eventoWithDistanciaMapper, UserDetailsMapper userDetailsMapper) {
         this.eventoRepository = eventoRepository;
         this.eventoMapper = eventoMapper;
+        this.eventoWithDistanciaMapper = eventoWithDistanciaMapper;
         this.userDetailsMapper = userDetailsMapper;
     }
+
+    private final GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
+
+    //Services de localização
+    public Set<EventoDTOResponseDistance> getEventsAround(double lat, double lng, double raioKm){
+        try{
+            //point se usa da Longitude e Latitude
+            Point userPoint = factory.createPoint(new Coordinate(lng, lat));
+
+            //conversão para metros
+            Double raioMetros = raioKm * 1000;
+
+            List<EventoComDistanciaProjection> eventos = eventoRepository.findEventosComDistancia(userPoint, raioMetros);
+
+            return eventos.stream().map((a)->eventoWithDistanciaMapper.toDTO(a)).collect(Collectors.toSet());
+        } catch (Exception e) {
+            throw new RuntimeException("Tivemos problemas para pegar eventos em volta " + e);
+        }
+    }
+
+    public Set<EventoDTOResponseDistance> getEventosInMapArea(double minLat, double minLon, double maxLat, double maxLon){
+        try{
+            Point centroMapa = factory.createPoint(new Coordinate((minLon + maxLon)/2, (minLat + maxLat)/2));
+
+            List<EventoComDistanciaProjection> eventos = eventoRepository.findEventosNoMapa(
+                    minLon, minLat, maxLon, maxLat, centroMapa
+            );
+
+            return eventos.stream()
+                    .map(eventoWithDistanciaMapper::toDTO)
+                    .collect(Collectors.toSet());
+        } catch (Exception e) {
+            throw new RuntimeException("Tivemos problemas para pegar eventos na area " + e);
+        }
+    }
+
+
 
     //Services
     public EventoDTO getEvento(long id){
@@ -46,8 +89,9 @@ public class EventoService {
         }
     }
 
-    public EventoDTO createEvento(EventoDTO eventoDTO){
+    public EventoDTO createEvento(EventoDTORequest eventoDTO){
         Optional<EventoEntity> exists = eventoRepository.findByTitle(eventoDTO.title());
+
         if(exists.isPresent()){
             throw new EventExists("Evento já existe");
         }
@@ -57,7 +101,7 @@ public class EventoService {
         }
 
         GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
-        Point localizacao = factory.createPoint(new Coordinate(eventoDTO.latitude(), eventoDTO.latitude()));
+        Point localizacao = factory.createPoint(new Coordinate(eventoDTO.longitude(), eventoDTO.latitude()));
 
         EventoEntity novoEvento = eventoMapper.toEntity(eventoDTO);
 
