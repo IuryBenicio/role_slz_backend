@@ -55,7 +55,7 @@ public class EventoEntity extends BaseEntity {
     @Column(name = "price")
     private BigDecimal price;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(nullable = false, name = "spot_id")
     private SpotEntity spot;
 
