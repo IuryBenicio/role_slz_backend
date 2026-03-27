@@ -4,9 +4,9 @@ import com.example.roleslz_backend.Tables.avaliacao.exceptions.AvaliacaoAlreadyE
 import com.example.roleslz_backend.Tables.avaliacao.exceptions.AvaliacaoDoesntExists;
 import com.example.roleslz_backend.Tables.avaliacao.exceptions.AvaliacaoNotDeleted;
 import com.example.roleslz_backend.Tables.avaliacao.exceptions.AvaliacaoNotEdited;
-import com.example.roleslz_backend.Tables.avaliacao.mapper.AvaliacaoMapper;
 import com.example.roleslz_backend.Tables.avaliacao.DTO.AvaliacaoDTO;
 import com.example.roleslz_backend.Tables.avaliacao.entity.AvaliacaoEntity;
+import com.example.roleslz_backend.Tables.avaliacao.mapper.AvaliacaoMapperClass;
 import com.example.roleslz_backend.Tables.avaliacao.repository.AvaliacaoRepository;
 import org.springframework.stereotype.Service;
 
@@ -15,11 +15,11 @@ import java.util.Optional;
 @Service
 public class AvaliacaoService {
 
-    private final AvaliacaoMapper avaliacaoMapper;
+    private final AvaliacaoMapperClass avaliacaoMapperClass;
     private final AvaliacaoRepository avaliacaoRepository;
 
-    public AvaliacaoService(AvaliacaoMapper avaliacaoMapper, AvaliacaoRepository avaliacaoRepository) {
-        this.avaliacaoMapper = avaliacaoMapper;
+    public AvaliacaoService(AvaliacaoMapperClass avaliacaoMapperClass, AvaliacaoRepository avaliacaoRepository) {
+        this.avaliacaoMapperClass = avaliacaoMapperClass;
         this.avaliacaoRepository = avaliacaoRepository;
     }
 
@@ -32,11 +32,11 @@ public class AvaliacaoService {
             throw new AvaliacaoAlreadyExists("Avaliação já existe!");
         }
 
-        AvaliacaoEntity novaAvaliacao = avaliacaoMapper.toEntity(avaliacaoDTO);
+        AvaliacaoEntity novaAvaliacao = avaliacaoMapperClass.toEntity(avaliacaoDTO);
 
         try{
             avaliacaoRepository.save(novaAvaliacao);
-            return avaliacaoMapper.toDto(novaAvaliacao);
+            return avaliacaoMapperClass.toDto(novaAvaliacao);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -59,7 +59,7 @@ public class AvaliacaoService {
 
         try {
             avaliacaoRepository.save(avaliacao);
-            return avaliacaoMapper.toDto(avaliacao);
+            return avaliacaoMapperClass.toDto(avaliacao);
         } catch (Exception e) {
             throw new AvaliacaoNotEdited("Avaliação não editada");
         }

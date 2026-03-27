@@ -59,6 +59,7 @@ public class EventoEntity extends BaseEntity {
     @JoinColumn(nullable = false, name = "spot_id")
     private SpotEntity spot;
 
+
     @ManyToMany
     @JoinTable(
             name = "eventos_confirmacoes",

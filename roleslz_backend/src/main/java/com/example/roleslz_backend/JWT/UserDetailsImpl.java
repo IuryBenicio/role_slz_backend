@@ -1,7 +1,6 @@
 package com.example.roleslz_backend.JWT;
 
 import com.example.roleslz_backend.Tables.users.entity.UserEntity;
-import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -28,7 +27,7 @@ public class UserDetailsImpl implements UserDetails {
     }
 
     @Override
-    public @Nullable String getPassword() {
+    public String getPassword() {
         return user.getPassword();
     }
 

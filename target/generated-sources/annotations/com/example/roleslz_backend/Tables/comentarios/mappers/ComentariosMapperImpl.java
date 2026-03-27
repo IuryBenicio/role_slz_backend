@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-02-03T10:18:02-0300",
+    date = "2026-03-27T15:40:10-0300",
     comments = "version: 1.5.5.Final, compiler: javac, environment: Java 21.0.8 (Oracle Corporation)"
 )
 @Component
@@ -22,6 +22,11 @@ public class ComentariosMapperImpl implements ComentariosMapper {
         }
 
         ComentarioEntity comentarioEntity = new ComentarioEntity();
+
+        comentarioEntity.setUser( dto.user() );
+        comentarioEntity.setTitle( dto.title() );
+        comentarioEntity.setComentario( dto.comentario() );
+        comentarioEntity.setEvento( dto.evento() );
 
         return comentarioEntity;
     }
@@ -37,6 +42,11 @@ public class ComentariosMapperImpl implements ComentariosMapper {
         String comentario = null;
         EventoEntity evento = null;
 
+        user = entity.getUser();
+        title = entity.getTitle();
+        comentario = entity.getComentario();
+        evento = entity.getEvento();
+
         ComentariosDTO comentariosDTO = new ComentariosDTO( user, title, comentario, evento );
 
         return comentariosDTO;
@@ -46,6 +56,19 @@ public class ComentariosMapperImpl implements ComentariosMapper {
     public void updateEntityFromDto(ComentariosDTO dto, ComentarioEntity entity) {
         if ( dto == null ) {
             return;
+        }
+
+        if ( dto.user() != null ) {
+            entity.setUser( dto.user() );
+        }
+        if ( dto.title() != null ) {
+            entity.setTitle( dto.title() );
+        }
+        if ( dto.comentario() != null ) {
+            entity.setComentario( dto.comentario() );
+        }
+        if ( dto.evento() != null ) {
+            entity.setEvento( dto.evento() );
         }
     }
 }

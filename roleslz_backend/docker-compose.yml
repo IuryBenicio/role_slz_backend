@@ -1,0 +1,18 @@
+services:
+  spotrole-backend:
+    build: .
+    container_name: spotrole_api
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_DATASOURCE_URL=${DB_URL}
+      - SPRING_DATASOURCE_USERNAME=${DB_USER}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASS}
+
+      - SPRING_MAIL=${MAIL_USER}
+      - SPRING_MAIL_PASSWORD=${MAIL_PASS}
+
+      - CLOUDINARY_NAME=${CLOUD_NAME}
+      - CLOUDINARY_API=${CLOUD_API}
+      - CLOUDINARY_SECRET=${CLOUD_SECRET}
+    restart: unless-stopped

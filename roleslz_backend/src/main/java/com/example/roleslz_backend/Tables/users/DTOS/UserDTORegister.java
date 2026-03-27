@@ -2,12 +2,13 @@ package com.example.roleslz_backend.Tables.users.DTOS;
 
 import com.example.roleslz_backend.Tables.users.entity.Sexo;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 public record UserDTORegister(
         @NotBlank String nome,
         @NotBlank String sobrenome,
-        @NotBlank Sexo sexo,
+        @NotNull Sexo sexo,
         @NotBlank String email,
         @NotBlank String password,
-        @NotBlank String idade) {
+        @NotNull Integer idade) {
 }

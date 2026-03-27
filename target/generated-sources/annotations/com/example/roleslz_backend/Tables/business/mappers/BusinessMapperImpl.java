@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-02-03T10:18:02-0300",
+    date = "2026-03-27T15:40:11-0300",
     comments = "version: 1.5.5.Final, compiler: javac, environment: Java 21.0.8 (Oracle Corporation)"
 )
 @Component
@@ -22,6 +22,10 @@ public class BusinessMapperImpl implements BusinessMapper {
 
         BusinessEntity businessEntity = new BusinessEntity();
 
+        businessEntity.setCnpj( dto.cnpj() );
+        businessEntity.setNomeFantasia( dto.nomeFantasia() );
+        businessEntity.setLogoTipoUrl( dto.logoTipoUrl() );
+
         return businessEntity;
     }
 
@@ -34,6 +38,11 @@ public class BusinessMapperImpl implements BusinessMapper {
         String cnpj = null;
         String nomeFantasia = null;
         String logoTipoUrl = null;
+
+        cnpj = entity.getCnpj();
+        nomeFantasia = entity.getNomeFantasia();
+        logoTipoUrl = entity.getLogoTipoUrl();
+
         FuncionamentoClass funcionamentoClass = null;
 
         BusinessDTO businessDTO = new BusinessDTO( cnpj, nomeFantasia, logoTipoUrl, funcionamentoClass );
@@ -45,6 +54,16 @@ public class BusinessMapperImpl implements BusinessMapper {
     public void updateEntityFromDto(BusinessDTO dto, BusinessEntity entity) {
         if ( dto == null ) {
             return;
+        }
+
+        if ( dto.cnpj() != null ) {
+            entity.setCnpj( dto.cnpj() );
+        }
+        if ( dto.nomeFantasia() != null ) {
+            entity.setNomeFantasia( dto.nomeFantasia() );
+        }
+        if ( dto.logoTipoUrl() != null ) {
+            entity.setLogoTipoUrl( dto.logoTipoUrl() );
         }
     }
 }

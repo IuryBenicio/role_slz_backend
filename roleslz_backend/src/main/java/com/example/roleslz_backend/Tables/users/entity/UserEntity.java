@@ -6,6 +6,7 @@ import com.example.roleslz_backend.Tables.events.entity.EventoEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -38,7 +39,8 @@ public class UserEntity extends BaseEntity implements UserDetails {
     private String sobrenome;
 
     @Column(name = "sexo")
-    @NotBlank(message = "sexo é obrigatória")
+    @NotNull(message = "sexo é obrigatória")
+    @Enumerated(EnumType.STRING)
     private Sexo sexo;
 
     @Column(name = "email", unique = true)
@@ -54,14 +56,14 @@ public class UserEntity extends BaseEntity implements UserDetails {
     private String password;
 
     @Column(name = "role")
-    @NotBlank(message = "role obrigatória")
+    @NotNull(message = "role obrigatória")
     private Roles role = Roles.REGULAR;
 
     @Column(name = "fcm_token")
     private String fcmToken;
 
     @Column(name = "idade")
-    @NotBlank(message = "idade é obrigatória")
+    @NotNull(message = "idade é obrigatória")
     private Integer idade;
 
     @OneToMany(mappedBy = "organizador", orphanRemoval = true)

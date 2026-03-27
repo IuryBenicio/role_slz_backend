@@ -1,14 +1,11 @@
 package com.example.roleslz_backend.Tables.events.services;
 
-import com.example.roleslz_backend.Tables.events.DTO.EventoDTO;
-import com.example.roleslz_backend.Tables.events.DTO.EventoDTORequest;
-import com.example.roleslz_backend.Tables.events.DTO.EventoDTOResponseDistance;
-import com.example.roleslz_backend.Tables.events.DTO.NewPriceDTO;
+import com.example.roleslz_backend.Tables.events.DTO.*;
 import com.example.roleslz_backend.Tables.events.Projections.EventoComDistanciaProjection;
 import com.example.roleslz_backend.Tables.events.entity.EstadoEvento;
 import com.example.roleslz_backend.Tables.events.entity.EventoEntity;
 import com.example.roleslz_backend.Tables.events.exceptions.*;
-import com.example.roleslz_backend.Tables.events.mapper.EventoMapper;
+import com.example.roleslz_backend.Tables.events.mapper.EventoMapperClass;
 import com.example.roleslz_backend.Tables.events.mapper.EventoWithDistanciaMapper;
 import com.example.roleslz_backend.Tables.events.repository.EventoRepository;
 import com.example.roleslz_backend.Tables.spot.entity.SpotEntity;
@@ -31,13 +28,14 @@ import java.util.stream.Collectors;
 public class EventoService {
 
     private final EventoRepository eventoRepository;
-    private final EventoMapper eventoMapper;
+
+    private final EventoMapperClass eventoMapperClass;
     private final EventoWithDistanciaMapper eventoWithDistanciaMapper;
     private final UserDetailsMapper userDetailsMapper;
 
-    public EventoService(EventoRepository eventoRepository, EventoMapper eventoMapper, EventoWithDistanciaMapper eventoWithDistanciaMapper, UserDetailsMapper userDetailsMapper) {
+    public EventoService(EventoRepository eventoRepository, EventoMapperClass eventoMapperClass, EventoWithDistanciaMapper eventoWithDistanciaMapper, UserDetailsMapper userDetailsMapper) {
         this.eventoRepository = eventoRepository;
-        this.eventoMapper = eventoMapper;
+        this.eventoMapperClass = eventoMapperClass;
         this.eventoWithDistanciaMapper = eventoWithDistanciaMapper;
         this.userDetailsMapper = userDetailsMapper;
     }
@@ -80,30 +78,30 @@ public class EventoService {
 
 
     //Services
-    public EventoDTO getEvento(long id){
+    public EventDTOClass getEvento(long id){
         EventoEntity evento = eventoRepository.findById(id).orElseThrow(()->new EventNotFounded("Evento não encontrado"));
         try{
-            return eventoMapper.toDTO(evento);
+            return eventoMapperClass.toDTO(evento);
         } catch (Exception e) {
             throw new EventNotFounded("Evento não retornado");
         }
     }
 
-    public EventoDTO createEvento(EventoDTORequest eventoDTO){
-        Optional<EventoEntity> exists = eventoRepository.findByTitle(eventoDTO.title());
+    public EventDTOClass createEvento(EventDTORequestClass eventoDTO){
+        Optional<EventoEntity> exists = eventoRepository.findByTitle(eventoDTO.getTitle());
 
         if(exists.isPresent()){
             throw new EventExists("Evento já existe");
         }
 
-        if(eventoDTO.estadoEvento().equals(EstadoEvento.POS)){
+        if(eventoDTO.getEstadoEvento().equals(EstadoEvento.POS)){
             throw new EventExists("Evento com estado incorreto");
         }
 
         GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
-        Point localizacao = factory.createPoint(new Coordinate(eventoDTO.longitude(), eventoDTO.latitude()));
+        Point localizacao = factory.createPoint(new Coordinate(eventoDTO.getLongitude(), eventoDTO.getLatitude()));
 
-        EventoEntity novoEvento = eventoMapper.toEntity(eventoDTO);
+        EventoEntity novoEvento = eventoMapperClass.toEntity(eventoDTO);
 
         SpotEntity spot = new SpotEntity();
 
@@ -113,7 +111,7 @@ public class EventoService {
 
         EventoEntity evento = eventoRepository.save(novoEvento);
 
-        return eventoMapper.toDTO(evento);
+        return eventoMapperClass.toDTO(evento);
     }
 
     public void editPrice(long id, NewPriceDTO price){
@@ -134,14 +132,14 @@ public class EventoService {
 
     }
 
-    public EventoDTO editEvento(long id,EventoDTO eventoDTO){
+    public EventDTOClass editEvento(long id,EventDTORequestClass eventoDTO){
        EventoEntity evento = eventoRepository.findById(id).orElseThrow(()-> new EventNotFounded("Evento não encontrado"));
 
-       eventoMapper.updateEntityFromDto(eventoDTO, evento);
+       eventoMapperClass.updateEntityFromDto(eventoDTO, evento);
 
        EventoEntity salvo = eventoRepository.save(evento);
 
-       return eventoMapper.toDTO(salvo);
+       return eventoMapperClass.toDTO(salvo);
     }
 
     public void deleteEvento(long id){

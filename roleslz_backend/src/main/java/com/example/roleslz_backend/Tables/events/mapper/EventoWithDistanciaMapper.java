@@ -11,7 +11,7 @@ import org.mapstruct.*;
 public interface EventoWithDistanciaMapper {
 
     @Mapping(target = "lat", expression = "java(entity.getLocalizacao().getY())")
-    @Mapping(target = "longitude", expression = "java(p.getLocalizacao().getX())")
+    @Mapping(target = "lng", expression = "java(entity.getLocalizacao().getX())")
     @Mapping(target = "distanciaMetros", source = "distancia_metros")
     EventoDTOResponseDistance toDTO(EventoComDistanciaProjection entity);
 

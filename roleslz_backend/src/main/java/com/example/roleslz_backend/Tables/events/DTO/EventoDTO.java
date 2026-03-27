@@ -28,6 +28,8 @@ public record EventoDTO(@NotBlank String title,
                         @NotNull Set<AvaliacaoEntity> avaliacoes,
                         @NotNull Set<CategoriaEntity> categorias,
                         @NotNull BigDecimal price,
-                        //SPOT
+                        Double latitude,
+                        Double longitude,
                         @NotNull Point spot
-                        ) {}
+                        ) {
+}

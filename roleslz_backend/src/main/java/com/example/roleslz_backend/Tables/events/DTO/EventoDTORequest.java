@@ -1,7 +1,9 @@
 package com.example.roleslz_backend.Tables.events.DTO;
 
+import com.example.roleslz_backend.Tables.avaliacao.DTO.AvaliacaoDTO;
 import com.example.roleslz_backend.Tables.avaliacao.entity.AvaliacaoEntity;
 import com.example.roleslz_backend.Tables.categoria.entity.CategoriaEntity;
+import com.example.roleslz_backend.Tables.comentarios.DTO.ComentariosDTO;
 import com.example.roleslz_backend.Tables.comentarios.entity.ComentarioEntity;
 import com.example.roleslz_backend.Tables.events.entity.EstadoEvento;
 import com.example.roleslz_backend.Tables.users.DTOS.UserDTODetails;
@@ -24,8 +26,8 @@ public record EventoDTORequest(@NotBlank String title,
                                @NotNull Set<UserDTODetails> confirmacoes,
                                @NotBlank String imageUrl,
                                @NotNull EstadoEvento estadoEvento,
-                               @NotNull Set<ComentarioEntity> comentarios,
-                               @NotNull Set<AvaliacaoEntity> avaliacoes,
+                               @NotNull Set<ComentariosDTO> comentarios,
+                               @NotNull Set<AvaliacaoDTO> avaliacoes,
                                @NotNull Set<CategoriaEntity> categorias,
                                @NotNull BigDecimal price,
                                //SPOT

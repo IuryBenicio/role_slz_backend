@@ -21,6 +21,8 @@ public class WebSocketsConfiguration implements WebSocketMessageBrokerConfigurer
 
         // Habilita um broker simples na memória para enviar mensagens aos clientes
         config.enableSimpleBroker("/topic")
+                // BROKER: é um componente intermediário de software que gerencia o roteamento, recebimento e distribuição de mensagens entre clientes conectados.
+
                 // Primeiro valor: quanto o servidor envia para mostrar que está ativo (10s)
                 // Segundo valor: quanto o servidor espera receber a resposta do dispositívo (10s)
                 .setHeartbeatValue(new long[]{20000, 20000})
