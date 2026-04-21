@@ -23,7 +23,7 @@ public class SecurityService {
             String token = JWT.create()
                     .withIssuer("role_slz")
                     .withSubject(user.getEmail())
-                    .withClaim("id", user.getId()) // <<< adicione esta linha
+                    .withClaim("id", user.getId())
                     .withExpiresAt(genExpirationDate())
                     .sign(algorithm);
             return token;

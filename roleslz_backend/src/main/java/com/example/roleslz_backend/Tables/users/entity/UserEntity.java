@@ -38,6 +38,9 @@ public class UserEntity extends BaseEntity implements UserDetails {
     @NotBlank(message = "sobrenome é obrigatório")
     private String sobrenome;
 
+    @Column(name = "verification_token")
+    private String verificationToken;
+
     @Column(name = "sexo")
     @NotNull(message = "sexo é obrigatória")
     @Enumerated(EnumType.STRING)

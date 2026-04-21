@@ -10,7 +10,6 @@ import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.springframework.security.core.userdetails.UserDetails;
 
-@Mapper(componentModel = "spring")
 public interface UserDetailsMapper {
     UserEntity toEntity(UserDTODetails dto);
 

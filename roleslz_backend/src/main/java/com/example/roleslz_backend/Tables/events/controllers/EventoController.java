@@ -27,14 +27,14 @@ public class EventoController {
 
     @GetMapping("get_events_around")
     public ResponseEntity<?> getEventsAround(@RequestBody GetEventsAroundDTO getEventsAroundDTO){
-        Set<EventoDTOResponseDistance> eventos = eventoService.getEventsAround(getEventsAroundDTO.lat(), getEventsAroundDTO.lng(), getEventsAroundDTO.raioKm());
+        Set<EventoDTOResponseDistanceClass> eventos = eventoService.getEventsAround(getEventsAroundDTO.lat(), getEventsAroundDTO.lng(), getEventsAroundDTO.raioKm());
 
         return ResponseEntity.ok(eventos);
     }
 
     @GetMapping("get_events_in_map_area")
     public ResponseEntity<?> getEventsInMapArea(@RequestBody GetsEventsInMapAreaDTO getsEventsInMapAreaDTO){
-        Set<EventoDTOResponseDistance> eventos = eventoService.getEventosInMapArea(getsEventsInMapAreaDTO.minLat(), getsEventsInMapAreaDTO.minLon(), getsEventsInMapAreaDTO.maxLat(), getsEventsInMapAreaDTO.maxLon());
+        Set<EventoDTOResponseDistanceClass> eventos = eventoService.getEventosInMapArea(getsEventsInMapAreaDTO.minLat(), getsEventsInMapAreaDTO.minLon(), getsEventsInMapAreaDTO.maxLat(), getsEventsInMapAreaDTO.maxLon());
         return ResponseEntity.ok(eventos);
     }
 
@@ -65,7 +65,8 @@ public class EventoController {
 
     @PatchMapping("remove_confirm/{event_id}/user/{user_id}")
     public ResponseEntity<?> removeConfirm(@PathVariable long event_id, @PathVariable long user_id){
-        return null;
+        eventoService.removeConfirms(event_id, user_id);
+        return ResponseEntity.status(202).body("Confirmação removida");
     }
 
     @DeleteMapping("delete/{id}")

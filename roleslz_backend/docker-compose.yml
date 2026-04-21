@@ -15,4 +15,26 @@ services:
       - CLOUDINARY_NAME=${CLOUD_NAME}
       - CLOUDINARY_API=${CLOUD_API}
       - CLOUDINARY_SECRET=${CLOUD_SECRET}
+    # Isso diz ao Docker para só ligar a API DEPOIS que o banco existir
+    depends_on:
+      - db_spotrole
     restart: unless-stopped
+
+  # --- NOSSO BANCO DE DADOS ---
+  db_spotrole:
+    image: postgres:16-alpine
+    container_name: spotrole_database
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=spotrole_db
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASS}
+    volumes:
+      # Salva os dados do banco no seu PC para não perder tudo se o container desligar
+      - spotrole_pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+# Declaração do volume que criamos ali em cima
+volumes:
+  spotrole_pgdata:

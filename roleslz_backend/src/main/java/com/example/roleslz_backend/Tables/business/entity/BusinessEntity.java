@@ -32,7 +32,7 @@ public class BusinessEntity extends BaseEntity {
     @NotBlank(message = "Logo tipo precisa ter URL")
     private String logoTipoUrl;
 
-    @OneToOne(orphanRemoval = true)
+    @OneToOne(mappedBy = "business")
     private UserEntity user;
 
     @Embedded

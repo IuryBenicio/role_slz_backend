@@ -3,10 +3,7 @@ package com.example.roleslz_backend.Tables.users.controllers;
 import com.example.roleslz_backend.Tables.events.DTO.EventoDTO;
 import com.example.roleslz_backend.Tables.users.DTOS.PasswordDTO;
 import com.example.roleslz_backend.Tables.users.DTOS.UserDTODetails;
-import com.example.roleslz_backend.Tables.users.DTOS.UserDTORegister;
-import com.example.roleslz_backend.Tables.users.entity.UserEntity;
-
-import com.example.roleslz_backend.Tables.users.mapper.UserDetailsMapper;
+import com.example.roleslz_backend.Tables.users.mapper.UserDetailsMapperClass;
 import com.example.roleslz_backend.Tables.users.services.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -18,9 +15,9 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
-    private final UserDetailsMapper userDetailsMapper;
+    private final UserDetailsMapperClass userDetailsMapper;
 
-    public UserController(UserService userService, UserDetailsMapper userDetailsMapper) {
+    public UserController(UserService userService, UserDetailsMapperClass userDetailsMapper) {
         this.userService = userService;
         this.userDetailsMapper = userDetailsMapper;
     }

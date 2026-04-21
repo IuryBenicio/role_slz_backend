@@ -4,10 +4,10 @@ import com.example.roleslz_backend.Tables.avaliacao.exceptions.AvaliacaoAlreadyE
 import com.example.roleslz_backend.Tables.avaliacao.exceptions.AvaliacaoDoesntExists;
 import com.example.roleslz_backend.Tables.avaliacao.exceptions.AvaliacaoNotDeleted;
 import com.example.roleslz_backend.Tables.avaliacao.exceptions.AvaliacaoNotEdited;
-import com.example.roleslz_backend.Tables.business.exceptions.BusinessAlreadyCreated;
-import com.example.roleslz_backend.Tables.business.exceptions.BusinessNotCreated;
-import com.example.roleslz_backend.Tables.business.exceptions.BusinessNotDeleted;
-import com.example.roleslz_backend.Tables.business.exceptions.BusinessNotFounded;
+import com.example.roleslz_backend.Tables.business.exceptions.*;
+import com.example.roleslz_backend.Tables.categoria.exceptions.CategoriaExists;
+import com.example.roleslz_backend.Tables.categoria.exceptions.CategoriaNotDeleted;
+import com.example.roleslz_backend.Tables.categoria.exceptions.CategoryNotFounded;
 import com.example.roleslz_backend.Tables.comentarios.exceptions.*;
 import com.example.roleslz_backend.Tables.events.exceptions.*;
 import com.example.roleslz_backend.Tables.users.exceptions.*;
@@ -163,6 +163,26 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BusinessNotDeleted.class)
     public ResponseEntity<String> BusinessNotDeleted(BusinessNotDeleted ex){
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(CategoriaExists.class)
+    public ResponseEntity<String> CategoriaExists(CategoriaExists ex){
+        return ResponseEntity.status(HttpStatus.FOUND).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(CategoriaNotDeleted.class)
+    public ResponseEntity<String> CategoriaNotDeleted(CategoriaNotDeleted ex){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(CategoryNotFounded.class)
+    public ResponseEntity<String> CategoriaNotFounded(CategoriaNotDeleted ex){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(CnpjNaoConfirmado.class)
+    public ResponseEntity<String> CnpjNaoConfirmado(CnpjNaoConfirmado ex){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 
 }

@@ -1,11 +1,12 @@
 package com.example.roleslz_backend.Tables.business.services;
 
 import com.example.roleslz_backend.Tables.business.DTO.BusinessDTO;
+import com.example.roleslz_backend.Tables.business.DTO.CnpjAPI.CNPJDtoResponse;
 import com.example.roleslz_backend.Tables.business.entity.BusinessEntity;
 import com.example.roleslz_backend.Tables.business.exceptions.BusinessAlreadyCreated;
 import com.example.roleslz_backend.Tables.business.exceptions.BusinessNotCreated;
 import com.example.roleslz_backend.Tables.business.exceptions.BusinessNotFounded;
-import com.example.roleslz_backend.Tables.business.mappers.BusinessMapper;
+import com.example.roleslz_backend.Tables.business.mappers.BusinessMapperClass;
 import com.example.roleslz_backend.Tables.business.repository.BusinessRepository;
 import org.springframework.stereotype.Service;
 
@@ -13,11 +14,13 @@ import org.springframework.stereotype.Service;
 public class BusinessServices {
 
     private final BusinessRepository businessRepository;
-    private final BusinessMapper businessMapper;
+    private final BusinessMapperClass businessMapper;
+    private final CNPJVerificationService cnpjVerificationService;
 
-    public BusinessServices(BusinessRepository businessRepository, BusinessMapper businessMapper) {
+    public BusinessServices(BusinessRepository businessRepository, BusinessMapperClass businessMapper, CNPJVerificationService cnpjVerificationService) {
         this.businessRepository = businessRepository;
         this.businessMapper = businessMapper;
+        this.cnpjVerificationService = cnpjVerificationService;
     }
 
     public BusinessDTO createBusiness(BusinessDTO businessDTO){
@@ -27,10 +30,12 @@ public class BusinessServices {
         businessRepository.findByCnpj(businessDTO.cnpj())
                 .ifPresent(b -> { throw new BusinessAlreadyCreated("Empresa já cadastrada com este CNPJ"); });
 
+        CNPJDtoResponse cnpjDtoResponse = cnpjVerificationService.buscarCnpj(businessDTO.cnpj());
+
         try{
             BusinessEntity newBusiness = new BusinessEntity();
-            newBusiness.setCnpj(businessDTO.cnpj());
-            newBusiness.setNomeFantasia(businessDTO.nomeFantasia());
+            newBusiness.setCnpj(cnpjDtoResponse.getCnpj());
+            newBusiness.setNomeFantasia(cnpjDtoResponse.getNomeFantasia());
             newBusiness.setLogoTipoUrl(businessDTO.logoTipoUrl());
             newBusiness.setFuncionamento(businessDTO.funcionamentoClass());
 

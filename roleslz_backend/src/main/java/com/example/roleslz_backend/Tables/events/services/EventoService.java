@@ -6,12 +6,11 @@ import com.example.roleslz_backend.Tables.events.entity.EstadoEvento;
 import com.example.roleslz_backend.Tables.events.entity.EventoEntity;
 import com.example.roleslz_backend.Tables.events.exceptions.*;
 import com.example.roleslz_backend.Tables.events.mapper.EventoMapperClass;
-import com.example.roleslz_backend.Tables.events.mapper.EventoWithDistanciaMapper;
 import com.example.roleslz_backend.Tables.events.repository.EventoRepository;
 import com.example.roleslz_backend.Tables.spot.entity.SpotEntity;
 import com.example.roleslz_backend.Tables.users.DTOS.UserDTODetails;
 import com.example.roleslz_backend.Tables.users.entity.UserEntity;
-import com.example.roleslz_backend.Tables.users.mapper.UserDetailsMapper;
+import com.example.roleslz_backend.Tables.users.mapper.UserDetailsMapperClass;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
@@ -30,10 +29,10 @@ public class EventoService {
     private final EventoRepository eventoRepository;
 
     private final EventoMapperClass eventoMapperClass;
-    private final EventoWithDistanciaMapper eventoWithDistanciaMapper;
-    private final UserDetailsMapper userDetailsMapper;
+    private final EventoMapperClass eventoWithDistanciaMapper;
+    private final UserDetailsMapperClass userDetailsMapper;
 
-    public EventoService(EventoRepository eventoRepository, EventoMapperClass eventoMapperClass, EventoWithDistanciaMapper eventoWithDistanciaMapper, UserDetailsMapper userDetailsMapper) {
+    public EventoService(EventoRepository eventoRepository, EventoMapperClass eventoMapperClass, EventoMapperClass eventoWithDistanciaMapper, UserDetailsMapperClass userDetailsMapper) {
         this.eventoRepository = eventoRepository;
         this.eventoMapperClass = eventoMapperClass;
         this.eventoWithDistanciaMapper = eventoWithDistanciaMapper;
@@ -43,7 +42,7 @@ public class EventoService {
     private final GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
 
     //Services de localização
-    public Set<EventoDTOResponseDistance> getEventsAround(double lat, double lng, double raioKm){
+    public Set<EventoDTOResponseDistanceClass> getEventsAround(double lat, double lng, double raioKm){
         try{
             //point se usa da Longitude e Latitude
             Point userPoint = factory.createPoint(new Coordinate(lng, lat));
@@ -53,13 +52,13 @@ public class EventoService {
 
             List<EventoComDistanciaProjection> eventos = eventoRepository.findEventosComDistancia(userPoint, raioMetros);
 
-            return eventos.stream().map((a)->eventoWithDistanciaMapper.toDTO(a)).collect(Collectors.toSet());
+            return eventos.stream().map((a)->eventoWithDistanciaMapper.toDTOResponseDistance(a)).collect(Collectors.toSet());
         } catch (Exception e) {
             throw new RuntimeException("Tivemos problemas para pegar eventos em volta " + e);
         }
     }
 
-    public Set<EventoDTOResponseDistance> getEventosInMapArea(double minLat, double minLon, double maxLat, double maxLon){
+    public Set<EventoDTOResponseDistanceClass> getEventosInMapArea(double minLat, double minLon, double maxLat, double maxLon){
         try{
             Point centroMapa = factory.createPoint(new Coordinate((minLon + maxLon)/2, (minLat + maxLat)/2));
 
@@ -68,8 +67,7 @@ public class EventoService {
             );
 
             return eventos.stream()
-                    .map(eventoWithDistanciaMapper::toDTO)
-                    .collect(Collectors.toSet());
+                    .map(e->eventoWithDistanciaMapper.toDTOResponseDistance(e)).collect(Collectors.toSet());
         } catch (Exception e) {
             throw new RuntimeException("Tivemos problemas para pegar eventos na area " + e);
         }

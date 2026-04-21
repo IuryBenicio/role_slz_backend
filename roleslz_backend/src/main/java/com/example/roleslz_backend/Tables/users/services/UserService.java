@@ -1,5 +1,7 @@
 package com.example.roleslz_backend.Tables.users.services;
 
+import com.example.roleslz_backend.Tables.users.mapper.UserDetailsMapperClass;
+import com.example.roleslz_backend.Tables.users.mapper.UserRegisterMapperClass;
 import com.example.roleslz_backend.Tables.verificarEmail.service.EmailService;
 import com.example.roleslz_backend.Tables.events.entity.EventoEntity;
 import com.example.roleslz_backend.Tables.events.exceptions.EventNotFounded;
@@ -10,8 +12,6 @@ import com.example.roleslz_backend.Tables.users.DTOS.UserDTOLogin;
 import com.example.roleslz_backend.Tables.users.DTOS.UserDTORegister;
 import com.example.roleslz_backend.Tables.users.entity.UserEntity;
 import com.example.roleslz_backend.Tables.users.exceptions.*;
-import com.example.roleslz_backend.Tables.users.mapper.UserDetailsMapper;
-import com.example.roleslz_backend.Tables.users.mapper.UserRegisterMapper;
 import com.example.roleslz_backend.Tables.users.repository.UserRepository;
 import com.example.roleslz_backend.infra.service.SecurityService;
 import jakarta.transaction.Transactional;
@@ -23,15 +23,15 @@ public class UserService {
 
 
     private final UserRepository userRepository;
-    private final UserRegisterMapper userRegisterMapper;
-    private final UserDetailsMapper userDetailsMapper;
+    private final UserRegisterMapperClass userRegisterMapper;
+    private final UserDetailsMapperClass userDetailsMapper;
     private final PasswordEncoder passwordEncoder;
     private final EventoRepository eventoRepository;
     private final SecurityService securityService;
     private final EmailService emailService;
 
 
-    public UserService(UserRepository userRepository, UserRegisterMapper userRegisterMapper, UserDetailsMapper userDetailsMapper, PasswordEncoder passwordEncoder, EventoRepository eventoRepository, SecurityService securityService, EmailService emailService) {
+    public UserService(UserRepository userRepository, UserRegisterMapperClass userRegisterMapper, UserDetailsMapperClass userDetailsMapper, PasswordEncoder passwordEncoder, EventoRepository eventoRepository, SecurityService securityService, EmailService emailService) {
         this.userRepository = userRepository;
         this.userRegisterMapper = userRegisterMapper;
         this.userDetailsMapper = userDetailsMapper;
@@ -50,6 +50,9 @@ public class UserService {
         String hashedPassword = passwordEncoder.encode(userDTORegister.password());
 
         UserEntity user = userRegisterMapper.toEntity(userDTORegister);
+
+        String tokenVerificacao = java.util.UUID.randomUUID().toString();
+        user.setVerificationToken(tokenVerificacao);
 
         user.setEnable(false);
         user.setPassword(hashedPassword);

@@ -1,0 +1,1 @@
+ALTER TABLE user_entity ADD COLUMN verification_token VARCHAR(255);

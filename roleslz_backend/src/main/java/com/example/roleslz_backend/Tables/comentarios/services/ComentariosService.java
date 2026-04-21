@@ -3,7 +3,7 @@ package com.example.roleslz_backend.Tables.comentarios.services;
 import com.example.roleslz_backend.Tables.comentarios.DTO.ComentariosDTO;
 import com.example.roleslz_backend.Tables.comentarios.entity.ComentarioEntity;
 import com.example.roleslz_backend.Tables.comentarios.exceptions.*;
-import com.example.roleslz_backend.Tables.comentarios.mappers.ComentariosMapper;
+import com.example.roleslz_backend.Tables.comentarios.mappers.ComentariosMapperClass;
 import com.example.roleslz_backend.Tables.comentarios.repository.ComentariosRepository;
 import com.example.roleslz_backend.Tables.events.entity.EventoEntity;
 import com.example.roleslz_backend.Tables.events.exceptions.EventNotFounded;
@@ -19,9 +19,9 @@ public class ComentariosService {
     private final ComentariosRepository comentariosRepository;
     private final EventoRepository eventoRepository;
     private final UserRepository userRepository;
-    private final ComentariosMapper comentariosMapper;
+    private final ComentariosMapperClass comentariosMapper;
 
-    public ComentariosService(ComentariosRepository comentariosRepository, EventoRepository eventoRepository, UserRepository userRepository, ComentariosMapper comentariosMapper) {
+    public ComentariosService(ComentariosRepository comentariosRepository, EventoRepository eventoRepository, UserRepository userRepository, ComentariosMapperClass comentariosMapper) {
         this.comentariosRepository = comentariosRepository;
         this.eventoRepository = eventoRepository;
         this.userRepository = userRepository;
