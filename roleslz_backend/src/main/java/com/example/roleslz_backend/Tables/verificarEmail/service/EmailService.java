@@ -3,6 +3,7 @@ package com.example.roleslz_backend.Tables.verificarEmail.service;
 import com.example.roleslz_backend.Tables.users.entity.UserEntity;
 import com.example.roleslz_backend.Tables.users.exceptions.UserNotFounded;
 import com.example.roleslz_backend.Tables.users.repository.UserRepository;
+import com.example.roleslz_backend.Tables.verificarEmail.exceptions.ErrorOnAccountActivation;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -29,6 +30,14 @@ public class EmailService {
 
     @Value("${server.port}")
     private String appPort;
+
+    public void sendVerficationAccountEmail(String to, String codigo){
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(emailRemetente);
+        message.setTo(to);
+        message.setSubject("Este é o seu código de confirmação - Spot Rolê");
+        message.setText("Olá! Este é o seu código de confirmação: " + codigo);
+    }
 
 
     // CRIO O EMAIL PARA VERIFICAÇÃO
@@ -64,7 +73,7 @@ public class EmailService {
 
             sendConfirmationEmail(user.getEmail());
         } catch (Exception e) {
-            throw new RuntimeException("ERRO NA ATIVAÇÃO DA CONTA - erro: " + e);
+            throw new ErrorOnAccountActivation("ERRO NA ATIVAÇÃO DA CONTA - erro: " + e);
         }
     }
 }

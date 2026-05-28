@@ -1,9 +1,9 @@
 package com.example.roleslz_backend.JWT.controller;
 import com.example.roleslz_backend.JWT.UserDetailsImpl;
+import com.example.roleslz_backend.Tables.users.DTOS.*;
+import com.example.roleslz_backend.Tables.users.mapper.UserDetailsMapperClass;
 import com.example.roleslz_backend.Tables.verificarEmail.service.EmailService;
 import com.example.roleslz_backend.infra.service.SecurityService;
-import com.example.roleslz_backend.Tables.users.DTOS.UserDTOLogin;
-import com.example.roleslz_backend.Tables.users.DTOS.UserDTORegister;
 import com.example.roleslz_backend.Tables.users.entity.UserEntity;
 import com.example.roleslz_backend.Tables.users.services.UserService;
 import jakarta.validation.Valid;
@@ -23,16 +23,18 @@ public class AuthController {
     private final UserService userService;
     private final SecurityService tokenService;
     private final EmailService emailService;
+    private final UserDetailsMapperClass userDetailsMapperClass;
 
-    public AuthController(AuthenticationManager authenticationManager, UserService userService, SecurityService tokenService, EmailService emailService) {
+    public AuthController(AuthenticationManager authenticationManager, UserService userService, SecurityService tokenService, EmailService emailService, UserDetailsMapperClass userDetailsMapperClass) {
         this.authenticationManager = authenticationManager;
         this.userService = userService;
         this.tokenService = tokenService;
         this.emailService = emailService;
+        this.userDetailsMapperClass = userDetailsMapperClass;
     }
 
     @PostMapping("login")
-    public ResponseEntity<Map> login(@RequestBody @Valid UserDTOLogin userLoginDTO){
+    public ResponseEntity<Map<String, Object>> login(@RequestBody @Valid UserDTOLogin userLoginDTO){
         var usernamePassword = new UsernamePasswordAuthenticationToken(userLoginDTO.email(), userLoginDTO.password());
         var auth = this.authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(userLoginDTO.email(), userLoginDTO.password())
@@ -41,16 +43,27 @@ public class AuthController {
 
         var token = tokenService.generateToken(userEntity);
 
-        return ResponseEntity.ok(Map.of("token", token, "message", "Login feito com sucesso"));
+        UserDTODetailsWithId userResponse = userDetailsMapperClass.toDTOWithId(userEntity);
+
+        return ResponseEntity.ok(Map.of("token", token, "message", "Login feito com sucesso", "user", userResponse));
     }
 
     @PostMapping("register")
-    public ResponseEntity<Map> RegisterUser (@RequestBody @Valid UserDTORegister userDTO){
+    public ResponseEntity<Map<String, String>> RegisterUser (@RequestBody @Valid UserDTORegister userDTO){
 
         UserEntity response = userService.addNewUserService(userDTO);
         String token = tokenService.generateToken(response);
 
         return ResponseEntity.status(HttpStatus.OK).body(Map.of("token", token,"message", "Usuário registrado"));
+    }
+
+    @PostMapping("register_google")
+    public ResponseEntity<Map<String, String>> RegisterUserGoogle (@RequestBody @Valid UserDTORegisterSocial dto){
+
+        UserEntity response = userService.addNewUserGoogle(dto);
+        String token = tokenService.generateToken(response);
+
+        return ResponseEntity.status(HttpStatus.OK).body(Map.of("token", token,"message", "Usuário registrado através do google"));
     }
 
     @GetMapping("verify?token={token}")

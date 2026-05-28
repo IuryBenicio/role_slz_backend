@@ -5,6 +5,7 @@ import com.example.roleslz_backend.Tables.events.DTO.EventDTORequestClass;
 import com.example.roleslz_backend.Tables.events.controllers.EventoController;
 import com.example.roleslz_backend.Tables.events.exceptions.EventExists;
 import com.example.roleslz_backend.Tables.events.services.EventoService;
+import com.example.roleslz_backend.infra.service.SecurityService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
@@ -28,6 +30,9 @@ class EventoControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @MockitoBean
+    private SecurityService securityService;
 
     @Autowired
     private ObjectMapper objectMapper;

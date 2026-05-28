@@ -1,5 +1,6 @@
 package com.example.roleslz_backend.Tables.categoria.DTO;
 
+import com.example.roleslz_backend.Tables.categoria.entity.CategoriaEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,4 +11,9 @@ import lombok.NoArgsConstructor;
 public class CategoriaSumaryDTO {
     private long id;
     private String name;
+
+    public static CategoriaSumaryDTO toSummaryDTO(CategoriaEntity entity) {
+        if (entity == null) return null;
+        return new CategoriaSumaryDTO(entity.getId(), entity.getName());
+    }
 }

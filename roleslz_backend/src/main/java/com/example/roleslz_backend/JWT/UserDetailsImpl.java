@@ -1,24 +1,21 @@
 package com.example.roleslz_backend.JWT;
 
 import com.example.roleslz_backend.Tables.users.entity.UserEntity;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.Collections;
 
+@Getter
 public class UserDetailsImpl implements UserDetails {
 
-    @Autowired
     UserEntity user;
+
 
     public UserDetailsImpl(UserEntity user){
         this.user = user;
-    }
-
-    public UserEntity getUser(){
-        return this.user;
     }
 
     @Override

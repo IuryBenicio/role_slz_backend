@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Set;
 
 @Entity
-@Table
+@Table(name = "users")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -67,11 +67,18 @@ public class UserEntity extends BaseEntity implements UserDetails {
     @Column(name = "fcm_token")
     private String fcmToken;
 
+    @Column(name = "auth_provider")
+    @Enumerated(EnumType.STRING)
+    private AuthProvider authProvider;
+
+    @Column(name = "provider_id")
+    private String providerId;
+
     @Column(name = "idade")
     @NotNull(message = "idade é obrigatória")
     private Integer idade;
 
-    @OneToMany(mappedBy = "organizador", orphanRemoval = true)
+    @OneToMany(mappedBy = "organizador")
     private List<EventoEntity> eventos;
 
     @OneToMany

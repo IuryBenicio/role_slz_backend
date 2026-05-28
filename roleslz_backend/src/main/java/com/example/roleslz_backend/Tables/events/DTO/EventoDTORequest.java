@@ -2,14 +2,11 @@ package com.example.roleslz_backend.Tables.events.DTO;
 
 import com.example.roleslz_backend.Tables.avaliacao.DTO.AvaliacaoDTO;
 import com.example.roleslz_backend.Tables.categoria.DTO.CategoriaSumaryDTO;
-import com.example.roleslz_backend.Tables.categoria.entity.CategoriaEntity;
 import com.example.roleslz_backend.Tables.comentarios.DTO.ComentariosDTO;
 import com.example.roleslz_backend.Tables.events.entity.EstadoEvento;
 import com.example.roleslz_backend.Tables.events.entity.EventPrivacity;
 import com.example.roleslz_backend.Tables.events.entity.EventType;
-import com.example.roleslz_backend.Tables.users.DTOS.UserDTODetails;
 import com.example.roleslz_backend.Tables.users.DTOS.UserSummaryDTO;
-import com.example.roleslz_backend.Tables.users.entity.UserEntity;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.locationtech.jts.geom.Point;

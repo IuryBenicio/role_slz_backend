@@ -1,29 +1,26 @@
 package com.example.roleslz_backend.Tables.users.services;
 
+import com.example.roleslz_backend.Tables.users.DTOS.*;
+import com.example.roleslz_backend.Tables.users.DTOS.Req.UserDTOProfileReq;
+import com.example.roleslz_backend.Tables.users.entity.AuthProvider;
 import com.example.roleslz_backend.Tables.users.mapper.UserDetailsMapperClass;
 import com.example.roleslz_backend.Tables.users.mapper.UserRegisterMapperClass;
 import com.example.roleslz_backend.Tables.verificarEmail.service.EmailService;
 import com.example.roleslz_backend.Tables.events.entity.EventoEntity;
 import com.example.roleslz_backend.Tables.events.exceptions.EventNotFounded;
 import com.example.roleslz_backend.Tables.events.repository.EventoRepository;
-import com.example.roleslz_backend.Tables.users.DTOS.PasswordDTO;
-import com.example.roleslz_backend.Tables.users.DTOS.UserDTODetails;
-import com.example.roleslz_backend.Tables.users.DTOS.UserDTOLogin;
-import com.example.roleslz_backend.Tables.users.DTOS.UserDTORegister;
 import com.example.roleslz_backend.Tables.users.entity.UserEntity;
 import com.example.roleslz_backend.Tables.users.exceptions.*;
 import com.example.roleslz_backend.Tables.users.repository.UserRepository;
+import com.example.roleslz_backend.Utills.GoogleService;
 import com.example.roleslz_backend.infra.service.SecurityService;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
 import jakarta.transaction.Transactional;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,9 +34,9 @@ public class UserService {
     private final EventoRepository eventoRepository;
     private final SecurityService securityService;
     private final EmailService emailService;
+    private final GoogleService googleService;
 
-
-    public UserService(UserRepository userRepository, UserRegisterMapperClass userRegisterMapper, UserDetailsMapperClass userDetailsMapper, PasswordEncoder passwordEncoder, EventoRepository eventoRepository, SecurityService securityService, EmailService emailService) {
+    public UserService(UserRepository userRepository, UserRegisterMapperClass userRegisterMapper, UserDetailsMapperClass userDetailsMapper, PasswordEncoder passwordEncoder, EventoRepository eventoRepository, SecurityService securityService, EmailService emailService, GoogleService googleService) {
         this.userRepository = userRepository;
         this.userRegisterMapper = userRegisterMapper;
         this.userDetailsMapper = userDetailsMapper;
@@ -47,8 +44,10 @@ public class UserService {
         this.eventoRepository = eventoRepository;
         this.securityService = securityService;
         this.emailService = emailService;
+        this.googleService = googleService;
     }
 
+    @Transactional
     public UserEntity addNewUserService(UserDTORegister userDTORegister){
         boolean userExists = userRepository.findByEmail(userDTORegister.email()).isPresent();
         if (userExists){
@@ -76,6 +75,29 @@ public class UserService {
         }
     }
 
+    public UserEntity addNewUserGoogle(UserDTORegisterSocial dto){
+        var payload = googleService.validarToken(dto.providerId());
+
+        String googleId = payload.getSubject();
+        String email = payload.getEmail();
+        String nome = (String) payload.get("given_name"); // Pega só o primeiro nome do Google
+
+        UserEntity novoUsuario = new UserEntity();
+        novoUsuario.setEmail(email);
+        novoUsuario.setNome(nome);
+        novoUsuario.setSobrenome(dto.sobrenome());
+        novoUsuario.setIdade(dto.idade());
+        novoUsuario.setSexo(dto.sexo());
+        novoUsuario.setAuthProvider(AuthProvider.GOOGLE);
+        novoUsuario.setProviderId(googleId);
+        novoUsuario.setEnable(true);
+
+        novoUsuario.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
+
+        return userRepository.save(novoUsuario);
+    }
+
+    @Transactional
     public UserEntity getUser(UserDTOLogin userDTOLogin){
         UserEntity user = userRepository.findByEmail(userDTOLogin.email()).orElseThrow(()->new UserExists("Não encontramos nenhum usuário ligado a esse email"));
 
@@ -88,9 +110,35 @@ public class UserService {
         return user;
     }
 
+    public UserProjectionProfile getUserProfile(UserDTOProfileReq dto){
+        UserProjectionProfile user = userRepository.findByNome(dto.getEmail()).orElseThrow(()->new UserExists("Não encontramos nenhum usuário ligado a esse email"));
+
+        if(user == null){
+            throw new UserNotFounded("Usuário não encontrado");
+        }
+
+        return user;
+    }
+
     public UserDTODetails getUserById(long id){
         UserEntity user = userRepository.findById(id).orElseThrow(()->new UserDontExists("Usuário não encontrado"));
         return userDetailsMapper.toDTO(user);
+    }
+
+    public boolean userHasEvent(long id){
+         UserEntity user = userRepository.findById(id).orElseThrow(()-> new UserNotFounded("Usuário não encontrado!"));
+         if(user.getEventos().isEmpty()){
+             return false;
+         }
+         return true;
+    }
+
+    public boolean userHasBusiness(long id){
+        UserEntity user = userRepository.findById(id).orElseThrow(()-> new UserNotFounded("Usuário não encontrado!"));
+        if(user.getBusiness() == null){
+            return false;
+        }
+        return true;
     }
 
     public Set<UserDTODetails>getUsersPages(int pagina, int itens){
@@ -98,6 +146,7 @@ public class UserService {
         return users.stream().map(e->userDetailsMapper.toDTO(e)).collect(Collectors.toSet());
     }
 
+    @Transactional
     public UserDTODetails editUserDetails(UserDTODetails userDTODetails, long id){
         UserEntity userBefore = userRepository.findById(id).orElseThrow(()->new UserDontExists("Usuário não encontrado"));
 
@@ -147,6 +196,7 @@ public class UserService {
             userRepository.save(user);
     }
 
+    @Transactional
     public void editPassword(long id ,PasswordDTO data){
         UserEntity user = userRepository.findById(id).orElseThrow(()-> new UserNotEdited("Senha não editada"));
 
@@ -164,9 +214,30 @@ public class UserService {
         } catch (Exception e) {
             throw new UserNotEdited("Senha não alterada");
         }
-
     }
 
+    @Transactional
+    public void editPasswordByEmail(String email , String novaSenha){
+        UserEntity user = userRepository.findByEmail(email).orElseThrow(()-> new UserNotEdited("Senha não editada"));
+
+        Boolean verificaSenha = passwordEncoder.matches(novaSenha, user.getPassword());
+
+        if(verificaSenha){
+            throw new PasswordDoesntMatch("Senhas igual a sua atual. Digite uma nova senha!");
+        }
+
+        String hashedPassword = passwordEncoder.encode(novaSenha);
+
+        try{
+            user.setPassword(hashedPassword);
+            userRepository.save(user);
+        } catch (Exception e) {
+            throw new UserNotEdited("Senha não alterada");
+        }
+    }
+
+
+    @Transactional
     public void deleteUser(long id){
         UserEntity user = userRepository.findById(id).orElseThrow(()-> new UserDontExists("usuário não encontrado"));
         try{
@@ -176,7 +247,6 @@ public class UserService {
         }
     }
 
-    //por ser many to many, é necessário usar a anotation @Transactional para poder efetuar a persistencia das duas tabelas relativas criadas
     @Transactional
     public void confirmPresence(long userId, long eventoId){
         EventoEntity evento = eventoRepository.findById(eventoId).orElseThrow(()-> new EventNotFounded("Evento não encontrado"));

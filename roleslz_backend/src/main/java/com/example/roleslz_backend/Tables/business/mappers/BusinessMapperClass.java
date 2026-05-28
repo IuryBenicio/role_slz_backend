@@ -26,15 +26,13 @@ public class BusinessMapperClass {
             return null;
         }
 
-        BusinessDTO dto = new BusinessDTO(
+        return new BusinessDTO(
                 entity.getCnpj(),
                 entity.getNomeFantasia(),
                 entity.getLogoTipoUrl(),
                 entity.getFuncionamento(),
                 entity.getDescription()
         );
-
-        return dto;
     }
 
     public void updateEntityFromDto(BusinessDTO dto, BusinessEntity entity) {

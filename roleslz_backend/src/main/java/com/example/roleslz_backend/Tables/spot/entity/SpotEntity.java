@@ -21,6 +21,9 @@ public class SpotEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @Column(name = "nome")
+    private String nome;
+
     @Column(columnDefinition = "geometry(Point, 4326)")
     @NotNull(message = "Localização precisa existir")
     private Point localizacao;

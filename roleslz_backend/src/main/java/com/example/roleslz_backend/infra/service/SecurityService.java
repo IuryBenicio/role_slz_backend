@@ -5,6 +5,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.example.roleslz_backend.Tables.users.entity.UserEntity;
+import com.example.roleslz_backend.infra.security.ErrorToGenerateToken;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -20,15 +21,14 @@ public class SecurityService {
     public String generateToken(UserEntity user){
         try{
             Algorithm algorithm = Algorithm.HMAC256(secret);
-            String token = JWT.create()
-                    .withIssuer("role_slz")
+            return JWT.create()
+                    .withIssuer("spot_slz")
                     .withSubject(user.getEmail())
                     .withClaim("id", user.getId())
                     .withExpiresAt(genExpirationDate())
                     .sign(algorithm);
-            return token;
         }catch(JWTCreationException ex){
-            throw new RuntimeException("Erro ao criar token!" + ex);
+            throw new ErrorToGenerateToken("Erro ao criar token!" + ex);
         }
     }
 
@@ -36,7 +36,7 @@ public class SecurityService {
         try{
             Algorithm algorithm = Algorithm.HMAC256(secret);
             return JWT.require(algorithm)
-                    .withIssuer("auth-api")
+                    .withIssuer("spot_slz")
                     .build()
                     .verify(token)
                     .getSubject();
@@ -46,6 +46,6 @@ public class SecurityService {
     }
 
     private Instant genExpirationDate(){
-        return LocalDateTime.now().plusHours(2).toInstant(ZoneOffset.of("-05:00"));
+        return LocalDateTime.now().plusYears(1).toInstant(ZoneOffset.of("-05:00"));
     }
 }

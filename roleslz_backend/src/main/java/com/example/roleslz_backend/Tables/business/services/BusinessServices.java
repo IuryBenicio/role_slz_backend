@@ -3,9 +3,7 @@ package com.example.roleslz_backend.Tables.business.services;
 import com.example.roleslz_backend.Tables.business.DTO.BusinessDTO;
 import com.example.roleslz_backend.Tables.business.DTO.CnpjAPI.CNPJDtoResponse;
 import com.example.roleslz_backend.Tables.business.entity.BusinessEntity;
-import com.example.roleslz_backend.Tables.business.exceptions.BusinessAlreadyCreated;
-import com.example.roleslz_backend.Tables.business.exceptions.BusinessNotCreated;
-import com.example.roleslz_backend.Tables.business.exceptions.BusinessNotFounded;
+import com.example.roleslz_backend.Tables.business.exceptions.*;
 import com.example.roleslz_backend.Tables.business.mappers.BusinessMapperClass;
 import com.example.roleslz_backend.Tables.business.repository.BusinessRepository;
 import org.springframework.stereotype.Service;
@@ -50,7 +48,7 @@ public class BusinessServices {
         try{
             businessRepository.delete(business);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new BusinessNotDeleted("Business não deletado!");
         }
     }
 
@@ -62,7 +60,7 @@ public class BusinessServices {
         try{
             businessRepository.save(business);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new BusinessNotEdited("Business não editado!");
         }
     }
 }

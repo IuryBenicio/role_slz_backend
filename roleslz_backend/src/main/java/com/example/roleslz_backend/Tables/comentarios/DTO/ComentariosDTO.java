@@ -1,13 +1,9 @@
 package com.example.roleslz_backend.Tables.comentarios.DTO;
 
 import com.example.roleslz_backend.Tables.events.DTO.EventDTOSumary;
-import com.example.roleslz_backend.Tables.events.entity.EventoEntity;
 import com.example.roleslz_backend.Tables.users.DTOS.UserSummaryDTO;
-import com.example.roleslz_backend.Tables.users.entity.UserEntity;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-
-import java.time.LocalDateTime;
 
 public record ComentariosDTO(
         @NotNull UserSummaryDTO user,

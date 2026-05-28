@@ -8,6 +8,7 @@ import com.example.roleslz_backend.Tables.categoria.exceptions.CategoriaNotDelet
 import com.example.roleslz_backend.Tables.categoria.exceptions.CategoryNotFounded;
 import com.example.roleslz_backend.Tables.categoria.mapper.CategoriaMapper;
 import com.example.roleslz_backend.Tables.categoria.repository.CategoriaRepository;
+import com.example.roleslz_backend.Tables.events.DTO.EventDTOSumary;
 import com.example.roleslz_backend.Tables.events.entity.EventoEntity;
 import com.example.roleslz_backend.Tables.events.repository.EventoRepository;
 import org.springframework.stereotype.Service;
@@ -38,12 +39,12 @@ public class CategoriaServices {
 
         CategoriaEntity entity = new CategoriaEntity();
         entity.setName(dto.getName());
-        if(dto.getEventos().size() > 0 || dto.getEventos() != null){
-            List<Long> ids = dto.getEventos().stream().map(eventoDTOWithID -> eventoDTOWithID.getId()).toList();
+        if(!dto.getEventos().isEmpty()){
+            List<Long> ids = dto.getEventos().stream().map(EventDTOSumary::getId).toList();
 
             List<EventoEntity> eventos = eventoRepository.findAllById(ids);
 
-            entity.setEventos(new HashSet<EventoEntity>(eventos));
+            entity.setEventos(new HashSet<>(eventos));
         }
         return categoriaMapper.toDTO(entity);
     }

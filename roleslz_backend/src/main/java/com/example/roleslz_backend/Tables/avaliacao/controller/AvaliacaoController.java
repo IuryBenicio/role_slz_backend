@@ -18,7 +18,7 @@ public class AvaliacaoController {
 
     //controller
     @PostMapping("new_rate")
-    public ResponseEntity<?> addNewRate(@RequestBody AvaliacaoDTO avaliacaoDTO){
+    public ResponseEntity<AvaliacaoDTO> addNewRate(@RequestBody AvaliacaoDTO avaliacaoDTO){
         AvaliacaoDTO avaliacao = avaliacaoService.addAvaliacao(avaliacaoDTO, avaliacaoDTO.user().getId());
         return ResponseEntity.ok(avaliacao);
     }
@@ -30,7 +30,7 @@ public class AvaliacaoController {
     }
 
     @PatchMapping("edit/{id}")
-    public ResponseEntity<?> editRate(@PathVariable long id, @RequestBody AvaliacaoDTO avaliacaoDTO){
+    public ResponseEntity<AvaliacaoDTO> editRate(@PathVariable long id, @RequestBody AvaliacaoDTO avaliacaoDTO){
         AvaliacaoDTO avaliacao = avaliacaoService.editAvaliacao(id, avaliacaoDTO.nota());
         return ResponseEntity.ok(avaliacao);
     }

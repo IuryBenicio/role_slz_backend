@@ -1,13 +1,12 @@
 package com.example.roleslz_backend.Tables.users.mapper;
 
+import com.example.roleslz_backend.Tables.events.DTO.EventDTOSumary;
 import com.example.roleslz_backend.Tables.events.entity.EventoEntity;
-import com.example.roleslz_backend.Tables.events.mapper.EventoMapperClass;
 import com.example.roleslz_backend.Tables.events.repository.EventoRepository;
 import com.example.roleslz_backend.Tables.users.DTOS.UserDTODetails;
 import com.example.roleslz_backend.Tables.users.DTOS.UserDTODetailsWithId;
 import com.example.roleslz_backend.Tables.users.DTOS.UserSummaryDTO;
 import com.example.roleslz_backend.Tables.users.entity.UserEntity;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -16,11 +15,10 @@ import java.util.stream.Collectors;
 @Component
 public class UserDetailsMapperClass {
 
-    private final EventoMapperClass eventoMapperClass;
     private final EventoRepository eventoRepository;
 
-    public UserDetailsMapperClass(EventoMapperClass eventoMapperClass, EventoRepository eventoRepository) {
-        this.eventoMapperClass = eventoMapperClass;
+
+    public UserDetailsMapperClass(EventoRepository eventoRepository) {
         this.eventoRepository = eventoRepository;
     }
 
@@ -35,9 +33,11 @@ public class UserDetailsMapperClass {
         entity.setSexo(dto.sexo());
         entity.setEmail(dto.email());
         entity.setIdade(dto.idade());
+        entity.setProviderId(dto.providerId());
+        entity.setAuthProvider(dto.authProvider());
         if (dto.eventos() != null) {
             List<EventoEntity> eventos = dto.eventos().stream()
-                    .map(summary -> eventoRepository.getReferenceById(summary.getId())) // PERFORMANCE AQUI
+                    .map(summary -> eventoRepository.getReferenceById(summary.getId()))
                     .collect(Collectors.toList());
             entity.setEventos(eventos);
         }
@@ -63,10 +63,12 @@ public class UserDetailsMapperClass {
                 entity.getSexo(),
                 entity.getEmail(),
                 entity.getIdade(),
-                entity.getEventos().stream().map(eventoMapperClass::toSummaryDTO).collect(Collectors.toList()),
-                entity.getHistoricoEventos().stream().map(eventoMapperClass::toSummaryDTO).collect(Collectors.toList()),
-                entity.getFollowing().stream().map(this::toSummaryDTO).collect(Collectors.toSet()),
-                entity.getFollowers().stream().map(this::toSummaryDTO).collect(Collectors.toSet()),
+                entity.getEventos().stream().map(EventDTOSumary::toSummaryDTO).toList(),
+                entity.getHistoricoEventos().stream().map(EventDTOSumary::toSummaryDTO).toList(),
+                entity.getProviderId(),
+                entity.getAuthProvider(),
+                entity.getFollowing().stream().map(UserSummaryDTO::toSummaryDTO).collect(Collectors.toSet()),
+                entity.getFollowers().stream().map(UserSummaryDTO::toSummaryDTO).collect(Collectors.toSet()),
                 entity.getFcmToken()
         );
     }
@@ -79,19 +81,26 @@ public class UserDetailsMapperClass {
         UserDTODetailsWithId dto = new UserDTODetailsWithId();
         dto.setId(entity.getId());
         dto.setNome(entity.getNome());
+        dto.setFcmToken(entity.getSobrenome());
+        dto.setSexo(entity.getSexo());
+        dto.setEmail(entity.getEmail());
+        dto.setIdade(entity.getIdade());
 
         dto.setEventos(entity.getEventos().stream()
-                .map(eventoMapperClass::toSummaryDTO)
-                .collect(Collectors.toList()));
+                .map(EventDTOSumary::toSummaryDTO).toList());
 
+        dto.setHistoricoEventos(entity.getHistoricoEventos().stream()
+                .map(EventDTOSumary::toSummaryDTO).toList());
 
         dto.setFollowing(entity.getFollowing().stream()
-                .map(this::toSummaryDTO) // Método que retorna UserSummaryDTO
+                .map(UserSummaryDTO::toSummaryDTO)
                 .collect(Collectors.toSet()));
 
         dto.setFollowers(entity.getFollowers().stream()
-                .map(this::toSummaryDTO)
+                .map(UserSummaryDTO::toSummaryDTO)
                 .collect(Collectors.toSet()));
+
+        dto.setFcmToken(entity.getFcmToken());
 
         return dto;
 
@@ -117,16 +126,23 @@ public class UserDetailsMapperClass {
         if (dto.idade() != null) {
             entity.setIdade(dto.idade());
         }
+
+        if(dto.providerId() != null){
+            entity.setProviderId(dto.providerId());
+        }
+
+        if(dto.authProvider() != null){
+            entity.setAuthProvider(dto.authProvider());
+        }
+
         if (dto.eventos() != null) {
             List<EventoEntity> eventos = dto.eventos().stream()
-                    .map(summary -> eventoRepository.getReferenceById(summary.getId())) // PERFORMANCE AQUI
-                    .collect(Collectors.toList());
+                    .map(summary -> eventoRepository.getReferenceById(summary.getId())).toList();
             entity.setEventos(eventos);
         }
         if (dto.historicoEventos() != null) {
             List<EventoEntity> historicoEventos = dto.historicoEventos().stream()
-                    .map(sumary -> eventoRepository.getReferenceById(sumary.getId()))
-                    .collect(Collectors.toList());
+                    .map(sumary -> eventoRepository.getReferenceById(sumary.getId())).toList();
             entity.setHistoricoEventos(historicoEventos);
         }
         if (dto.fcmToken() != null) {
@@ -134,8 +150,4 @@ public class UserDetailsMapperClass {
         }
     }
 
-    public UserSummaryDTO toSummaryDTO(UserEntity entity) {
-        if (entity == null) return null;
-        return new UserSummaryDTO(entity.getId(), entity.getNome(), entity.getSobrenome(), entity.getSexo(), entity.getEmail(), entity.getIdade(), entity.getFcmToken());
-    }
 }

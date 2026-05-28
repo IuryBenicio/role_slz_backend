@@ -1,14 +1,11 @@
 package com.example.roleslz_backend.Tables.events.DTO;
 
 import com.example.roleslz_backend.Tables.avaliacao.DTO.AvaliacaoDTO;
-import com.example.roleslz_backend.Tables.categoria.DTO.CategoriaDTORequestClass;
 import com.example.roleslz_backend.Tables.categoria.DTO.CategoriaSumaryDTO;
-import com.example.roleslz_backend.Tables.categoria.entity.CategoriaEntity;
 import com.example.roleslz_backend.Tables.comentarios.DTO.ComentariosDTO;
 import com.example.roleslz_backend.Tables.events.entity.EstadoEvento;
 import com.example.roleslz_backend.Tables.events.entity.EventPrivacity;
 import com.example.roleslz_backend.Tables.events.entity.EventType;
-import com.example.roleslz_backend.Tables.users.DTOS.UserDTODetails;
 import com.example.roleslz_backend.Tables.users.DTOS.UserSummaryDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -43,5 +40,4 @@ public class EventDTORequestClass {
     String someSpot;
     Double latitude;
     Double longitude;
-
 }

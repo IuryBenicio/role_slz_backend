@@ -116,7 +116,6 @@ class EventoServiceIntegrationTest {
         // Arrange
         long idEventoInexistente = 999L;
 
-        // Act & Assert
         assertThatThrownBy(() -> eventoService.addCategoria(idEventoInexistente, categoria.getName()))
                 .isInstanceOf(EventNotFounded.class)
                 .hasMessage("Evento não encontrado");

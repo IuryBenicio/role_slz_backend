@@ -1,9 +1,6 @@
 package com.example.roleslz_backend;
 
-import com.example.roleslz_backend.Tables.avaliacao.exceptions.AvaliacaoAlreadyExists;
-import com.example.roleslz_backend.Tables.avaliacao.exceptions.AvaliacaoDoesntExists;
-import com.example.roleslz_backend.Tables.avaliacao.exceptions.AvaliacaoNotDeleted;
-import com.example.roleslz_backend.Tables.avaliacao.exceptions.AvaliacaoNotEdited;
+import com.example.roleslz_backend.Tables.avaliacao.exceptions.*;
 import com.example.roleslz_backend.Tables.business.exceptions.*;
 import com.example.roleslz_backend.Tables.categoria.exceptions.CategoriaExists;
 import com.example.roleslz_backend.Tables.categoria.exceptions.CategoriaNotDeleted;
@@ -11,7 +8,9 @@ import com.example.roleslz_backend.Tables.categoria.exceptions.CategoryNotFounde
 import com.example.roleslz_backend.Tables.comentarios.exceptions.*;
 import com.example.roleslz_backend.Tables.events.exceptions.*;
 import com.example.roleslz_backend.Tables.users.exceptions.*;
+import com.example.roleslz_backend.Tables.verificarEmail.exceptions.ErrorOnAccountActivation;
 import com.example.roleslz_backend.Utills.notificationsServices.exceptions.NotifyFail;
+import com.example.roleslz_backend.infra.security.ErrorToGenerateToken;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -19,6 +18,11 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(ErrorToGenerateToken.class)
+    public ResponseEntity<String> ErrorToGenerateToken(ErrorToGenerateToken ex){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
 
     @ExceptionHandler(UserDontExists.class)
     public ResponseEntity<String> UserDontExists(UserDontExists ex){
@@ -55,6 +59,21 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 
+    @ExceptionHandler(AvaliacaoNotAdded.class)
+    public ResponseEntity<String> AvaliacaoNotAdded(AvaliacaoNotAdded ex){
+        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(ErrorOnAccountActivation.class)
+    public ResponseEntity<String> ErrorOnAccountActivation(ErrorOnAccountActivation ex){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(BusinessNotEdited.class)
+    public ResponseEntity<String> BusinessNotEdited(BusinessNotEdited ex){
+        return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body(ex.getMessage());
+    }
+
     @ExceptionHandler(UserExists.class)
     public ResponseEntity<String> UserExists(UserExists ex){
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
@@ -63,6 +82,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(EventNotFounded.class)
     public ResponseEntity<String> EventNotFounded(EventNotFounded ex){
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+    @ExceptionHandler(ErrorOnReturn.class)
+    public ResponseEntity<String> ErrorOnReturn(ErrorOnReturn ex){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 
     @ExceptionHandler(EventExists.class)
@@ -105,8 +128,8 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 
-    @ExceptionHandler(ComentarioNãoAdicionado.class)
-    public ResponseEntity<String> ComentarioNãoAdicionado(ComentarioNãoAdicionado ex){
+    @ExceptionHandler(ComentarioNotAdded.class)
+    public ResponseEntity<String> ComentarioNãoAdicionado(ComentarioNotAdded ex){
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 

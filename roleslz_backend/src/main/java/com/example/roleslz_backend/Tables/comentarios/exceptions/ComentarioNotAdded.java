@@ -1,7 +1,7 @@
 package com.example.roleslz_backend.Tables.comentarios.exceptions;
 
-public class ComentarioNãoAdicionado extends RuntimeException {
-    public ComentarioNãoAdicionado(String message) {
+public class ComentarioNotAdded extends RuntimeException {
+    public ComentarioNotAdded(String message) {
         super(message);
     }
 }

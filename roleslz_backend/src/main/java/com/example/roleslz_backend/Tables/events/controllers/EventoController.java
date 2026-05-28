@@ -7,7 +7,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Set;
 
 @RestController
@@ -21,75 +20,74 @@ public class EventoController {
     }
 
     @PostMapping("create")
-    public ResponseEntity<?> createEvento(@RequestBody EventDTORequestClass eventoDTO){
+    public ResponseEntity<EventDTOClass> createEvento(@RequestBody EventDTORequestClass eventoDTO){
         EventDTOClass evento = eventoService.createEvento(eventoDTO);
         return ResponseEntity.ok(evento);
     }
 
-    @GetMapping("get_events/{pagina}")
-    public ResponseEntity<?> getEventsPagination(@PathVariable("pagina") int pagina, @RequestParam("itens") int itens){
+    @GetMapping("get_many/{pagina}")
+    public ResponseEntity<Set<EventoDTOWithIDClass>> getEventsPagination(@PathVariable("pagina") int pagina, @RequestParam("itens") int itens){
         Set<EventoDTOWithIDClass> response = eventoService.getEventsPagination(pagina, itens);
         return ResponseEntity.status(200).body(response);
     }
 
     @PatchMapping("changing_event_privacity/{id}")
-    public ResponseEntity<?> changingEventPrivacity(@PathVariable("id") long id){
+    public ResponseEntity<String> changingEventPrivacity(@PathVariable("id") long id){
         eventoService.changePrivacity(id);
         return ResponseEntity.ok("Privacidade do evento alterada");
     }
 
     @PostMapping("add_category")
-    public ResponseEntity<?> addCategoria(@RequestBody CategoryAddRequestDTO dto){
+    public ResponseEntity<String> addCategoria(@RequestBody CategoryAddRequestDTO dto){
         eventoService.addCategoria(dto.eventoId(), dto.categoriaName());
         return ResponseEntity.status(202).body("Categoria adicionada");
     }
 
-    @GetMapping("get_events_around")
-    public ResponseEntity<?> getEventsAround(@RequestBody GetEventsAroundDTO getEventsAroundDTO){
-        Set<EventoDTOResponseDistanceClass> eventos = eventoService.getEventsAround(getEventsAroundDTO.lat(), getEventsAroundDTO.lng(), getEventsAroundDTO.raioKm());
-
-        return ResponseEntity.ok(eventos);
-    }
-
     @GetMapping("get_events_in_map_area")
-    public ResponseEntity<?> getEventsInMapArea(@RequestBody GetsEventsInMapAreaDTO getsEventsInMapAreaDTO){
+    public ResponseEntity<Set<EventoDTOResponseDistanceClass>> getEventsInMapArea(@RequestBody GetsEventsInMapAreaDTO getsEventsInMapAreaDTO){
         Set<EventoDTOResponseDistanceClass> eventos = eventoService.getEventosInMapArea(getsEventsInMapAreaDTO.minLat(), getsEventsInMapAreaDTO.minLon(), getsEventsInMapAreaDTO.maxLat(), getsEventsInMapAreaDTO.maxLon());
         return ResponseEntity.ok(eventos);
     }
 
     @GetMapping("get/{id}")
-    public ResponseEntity<?> getEvent(@PathVariable long id){
-        EventDTOClass evento = eventoService.getEvento(id);
+    public ResponseEntity<EventDTOClass> getEventById(@PathVariable long id){
+        EventDTOClass evento = eventoService.getEventoById(id);
+        return ResponseEntity.ok(evento);
+    }
+
+    @GetMapping("get_by_title")
+    public ResponseEntity<EventDTOClass> getEventByTitle(@RequestParam String title){
+        EventDTOClass evento = eventoService.getEventoByTitle(title);
         return ResponseEntity.ok(evento);
     }
 
 
     @PatchMapping("edit/{id}")
-    public ResponseEntity<?> editEvent(@PathVariable long id, @RequestBody EventDTORequestClass eventoDTO){
+    public ResponseEntity<EventDTOClass> editEvent(@PathVariable long id, @RequestBody EventDTORequestClass eventoDTO){
         EventDTOClass evento = eventoService.editEvento(id, eventoDTO);
         return ResponseEntity.ok(evento);
     }
 
     @PatchMapping("edit_price/{id}")
-    public ResponseEntity<?> editPrice(@PathVariable long id, @RequestBody NewPriceDTO newPriceDTO){
+    public ResponseEntity<NewPriceDTO> editPrice(@PathVariable long id, @RequestBody NewPriceDTO newPriceDTO){
         eventoService.editPrice(id, newPriceDTO);
         return ResponseEntity.ok(newPriceDTO);
     }
 
     @GetMapping("get_confirms/{id}")
-    public ResponseEntity<?> getConfirms(@PathVariable long id){
+    public ResponseEntity<Set<UserDTODetails>> getConfirms(@PathVariable long id){
         Set<UserDTODetails> confirms = eventoService.getConfirms(id);
         return ResponseEntity.ok(confirms);
     }
 
     @PatchMapping("remove_confirm/{event_id}/user/{user_id}")
-    public ResponseEntity<?> removeConfirm(@PathVariable long event_id, @PathVariable long user_id){
+    public ResponseEntity<String> removeConfirm(@PathVariable long event_id, @PathVariable long user_id){
         eventoService.removeConfirms(event_id, user_id);
         return ResponseEntity.status(202).body("Confirmação removida");
     }
 
     @DeleteMapping("delete/{id}")
-    public ResponseEntity<?> delete(@PathVariable long id){
+    public ResponseEntity<String> delete(@PathVariable long id){
         eventoService.deleteEvento(id);
         return ResponseEntity.status(HttpStatus.OK).body("Evento deletado");
     }

@@ -17,7 +17,7 @@ public class ComentariosController {
     }
 
     @PostMapping("add")
-    public ResponseEntity<?> addComentario(@RequestBody ComentariosDTO comentariosDTO){
+    public ResponseEntity<ComentariosDTO> addComentario(@RequestBody ComentariosDTO comentariosDTO){
         ComentariosDTO comentario = comentariosService.addComentario(comentariosDTO);
         return ResponseEntity.ok(comentario);
     }
@@ -29,7 +29,7 @@ public class ComentariosController {
     }
 
     @PatchMapping("edit/{id}")
-    public ResponseEntity<?> editComentario(@PathVariable long id, @RequestBody ComentariosDTO comentariosDTO){
+    public ResponseEntity<ComentariosDTO> editComentario(@PathVariable long id, @RequestBody ComentariosDTO comentariosDTO){
         ComentariosDTO comentario = comentariosService.editComentario(id, comentariosDTO);
         return ResponseEntity.ok(comentario);
     }

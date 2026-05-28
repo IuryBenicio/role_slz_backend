@@ -1,4 +1,10 @@
 package com.example.roleslz_backend.Tables.users.DTOS.Req;
 
-public record PasswordDTOReset() {
+import jakarta.validation.constraints.NotBlank;
+
+public record PasswordDTOReset(
+        @NotBlank String email,
+        @NotBlank String codigo,
+        @NotBlank String novaSenha
+) {
 }

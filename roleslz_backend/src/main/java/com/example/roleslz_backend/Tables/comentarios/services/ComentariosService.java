@@ -59,12 +59,12 @@ public class ComentariosService {
             ComentarioEntity salvo = comentariosRepository.save(novoComentario);
             return comentariosMapper.toDTO(salvo);
         } catch (Exception e) {
-            throw new ComentarioNãoAdicionado("Comentário não adicionado");
+            throw new ComentarioNotAdded("Comentário não adicionado");
         }
     }
 
     public void deleteComentario(long comentarioId){
-        ComentarioEntity comentario = comentariosRepository.findById(comentarioId).orElseThrow(()-> new ComentarioNotFounded("Comentário não encontrado"));
+        comentariosRepository.findById(comentarioId).orElseThrow(()-> new ComentarioNotFounded("Comentário não encontrado"));
 
         try{
             comentariosRepository.deleteById(comentarioId);

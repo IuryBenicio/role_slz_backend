@@ -2,7 +2,9 @@ package com.example.roleslz_backend.Tables.users.controllers;
 
 import com.example.roleslz_backend.Tables.events.DTO.EventoDTO;
 import com.example.roleslz_backend.Tables.users.DTOS.PasswordDTO;
+import com.example.roleslz_backend.Tables.users.DTOS.Req.UserDTOProfileReq;
 import com.example.roleslz_backend.Tables.users.DTOS.UserDTODetails;
+import com.example.roleslz_backend.Tables.users.DTOS.UserProjectionProfile;
 import com.example.roleslz_backend.Tables.users.services.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -19,20 +21,25 @@ public class UserController {
 
     public UserController(UserService userService) {
         this.userService = userService;
-
     }
 
     //rotas
 
     @PatchMapping("edit/{id}")
-    public ResponseEntity<?> editUser(@PathVariable long id, @Valid @RequestBody UserDTODetails userDTODetails){
+    public ResponseEntity<UserDTODetails> editUser(@PathVariable long id, @Valid @RequestBody UserDTODetails userDTODetails){
         UserDTODetails user = userService.editUserDetails(userDTODetails, id);
         return ResponseEntity.ok(user);
     }
 
     @GetMapping("user/{id}")
-    public ResponseEntity<?> getUser(@PathVariable long id){
+    public ResponseEntity<UserDTODetails> getUser(@PathVariable long id){
         UserDTODetails user = userService.getUserById(id);
+        return ResponseEntity.ok(user);
+    }
+
+    @GetMapping("user_profile")
+    public ResponseEntity<UserProjectionProfile> getUserProfile(@RequestBody UserDTOProfileReq dto){
+        UserProjectionProfile user = userService.getUserProfile(dto);
         return ResponseEntity.ok(user);
     }
 
@@ -49,14 +56,26 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.OK).body("Senha verificada");
     }
 
+    @GetMapping("user_has_event/{id}")
+    public ResponseEntity<Boolean> userHasEvent(@PathVariable("id") long id){
+        boolean response = userService.userHasEvent(id);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("user_has_business/{id}")
+    public ResponseEntity<Boolean> userHasBusiness(@PathVariable("id") long id){
+        boolean response = userService.userHasBusiness(id);
+        return ResponseEntity.ok(response);
+    }
+
     @PatchMapping("verify_email")
-    public ResponseEntity<String> verifyPassword(@RequestParam("token") String token){
+    public ResponseEntity<String> verifyEmail(@RequestParam("token") String token){
         userService.verifyUserByEmail(token);
         return ResponseEntity.status(HttpStatus.OK).body("Usuário verificado");
     }
 
     @PatchMapping("get-user/{pagina}")
-    public ResponseEntity<?> getUsersPages(@PathVariable("pagina") int pagina, @RequestParam("itens") int itens){
+    public ResponseEntity<Set<UserDTODetails>> getUsersPages(@PathVariable("pagina") int pagina, @RequestParam("itens") int itens){
         Set<UserDTODetails> response = userService.getUsersPages(pagina,itens);
         return ResponseEntity.status(200).body(response);
     }

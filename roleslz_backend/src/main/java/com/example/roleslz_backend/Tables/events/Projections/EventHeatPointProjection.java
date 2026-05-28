@@ -6,7 +6,7 @@ import org.locationtech.jts.geom.Point;
 
 import java.util.Set;
 
-public interface EventHeatPoint {
+public interface EventHeatPointProjection {
     long getId();
     UserSummaryDTO getOrganizador();
     EventDTOSumary getEventType();

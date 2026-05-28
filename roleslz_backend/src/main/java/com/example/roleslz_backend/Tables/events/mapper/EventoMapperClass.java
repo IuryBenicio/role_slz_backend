@@ -1,45 +1,40 @@
 package com.example.roleslz_backend.Tables.events.mapper;
 
 import com.example.roleslz_backend.Tables.avaliacao.mapper.AvaliacaoMapperClass;
+import com.example.roleslz_backend.Tables.categoria.DTO.CategoriaSumaryDTO;
 import com.example.roleslz_backend.Tables.categoria.entity.CategoriaEntity;
-import com.example.roleslz_backend.Tables.categoria.mapper.CategoriaMapper;
 import com.example.roleslz_backend.Tables.categoria.repository.CategoriaRepository;
 import com.example.roleslz_backend.Tables.comentarios.mappers.ComentariosMapperClass;
 import com.example.roleslz_backend.Tables.events.DTO.*;
 import com.example.roleslz_backend.Tables.events.Projections.EventoComDistanciaProjection;
+import com.example.roleslz_backend.Tables.events.entity.EstadoEvento;
 import com.example.roleslz_backend.Tables.events.entity.EventoEntity;
 import com.example.roleslz_backend.Tables.spot.entity.SpotEntity;
+import com.example.roleslz_backend.Tables.users.DTOS.UserSummaryDTO;
 import com.example.roleslz_backend.Tables.users.entity.UserEntity;
 import com.example.roleslz_backend.Tables.users.exceptions.UserNotFounded;
-import com.example.roleslz_backend.Tables.users.mapper.UserDetailsMapperClass;
 import com.example.roleslz_backend.Tables.users.repository.UserRepository;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
 public class EventoMapperClass {
 
-    private final UserDetailsMapperClass userDetailsMapper;
     private final AvaliacaoMapperClass avaliacaoMapperClass;
     private final UserRepository userRepository;
     private final ComentariosMapperClass comentariosMapper;
-    private final CategoriaMapper categoriaMapper;
     private final CategoriaRepository categoriaRepository;
 
-    public EventoMapperClass(UserDetailsMapperClass userDetailsMapper, AvaliacaoMapperClass avaliacaoMapperClass, UserRepository userRepository, ComentariosMapperClass comentariosMapper, CategoriaMapper categoriaMapper, CategoriaRepository categoriaRepository) {
-        this.userDetailsMapper = userDetailsMapper;
+    public EventoMapperClass(AvaliacaoMapperClass avaliacaoMapperClass, UserRepository userRepository, ComentariosMapperClass comentariosMapper, CategoriaRepository categoriaRepository) {
         this.avaliacaoMapperClass = avaliacaoMapperClass;
         this.userRepository = userRepository;
         this.comentariosMapper = comentariosMapper;
-        this.categoriaMapper = categoriaMapper;
         this.categoriaRepository = categoriaRepository;
     }
 
@@ -64,10 +59,10 @@ public class EventoMapperClass {
         dto.setStartDate(entity.getStartDate());
         dto.setEndDate(entity.getEndDate());
         dto.setEnderecoExtenso(entity.getEnderecoExtenso());
-        dto.setOrganizador(userDetailsMapper.toSummaryDTO(entity.getOrganizador()));
+        dto.setOrganizador(UserSummaryDTO.toSummaryDTO(entity.getOrganizador()));
 
         dto.setConfirmacoes(users.stream()
-                .map(userDetailsMapper::toSummaryDTO)
+                .map(UserSummaryDTO::toSummaryDTO)
                 .collect(Collectors.toSet()));
 
         dto.setImageUrl(entity.getImageUrl());
@@ -81,7 +76,7 @@ public class EventoMapperClass {
         dto.setAvaliacoes(entity.getAvaliacoes().stream()
                 .map(avaliacaoMapperClass::toDto).collect(Collectors.toSet()));
         dto.setCategorias(entity.getCategorias().stream()
-                .map(categoriaMapper::toSummaryDTO).collect(Collectors.toSet()));
+                .map(CategoriaSumaryDTO::toSummaryDTO).collect(Collectors.toSet()));
 
         return dto;
     }
@@ -96,16 +91,15 @@ public class EventoMapperClass {
         dto.setDescription(projection.getDescription());
         dto.setStartDate(projection.getStartDate());
         dto.setEndDate(projection.getEndDate());
-        dto.setPrice(projection.getPrice());
         dto.setImageUrl(projection.getImageUrl());
-        dto.setEnderecoExtenso(projection.getEnderecoExtenso());
-        dto.setEventPrivacity(projection.getEventPrivacity());
-        dto.setEventType(projection.getEventType());
-
-        if (projection.getLocalizacao() != null) {
-            dto.setLat(projection.getLocalizacao().getY());
-            dto.setLng(projection.getLocalizacao().getX());
-        }
+        dto.setConfirmacoes(projection.getConfirmacoesCount());
+        dto.setEstadoEvento(EstadoEvento.valueOf(projection.getEstadoEvento()));
+        dto.setSpotNome(projection.getSpotNome());
+        dto.setSpotId(projection.getSpotId());
+        dto.setOrganizadorId(projection.getOrganizadorId());
+        dto.setOrganizadorNome(projection.getOrganizadorNome());
+        dto.setLat(projection.getLat());
+        dto.setLng(projection.getLng());
 
         dto.setDistanciaMetros(projection.getDistancia_metros());
 
@@ -133,14 +127,14 @@ public class EventoMapperClass {
         dto.setStartDate(entity.getStartDate());
         dto.setEndDate(entity.getEndDate());
         dto.setEnderecoExtenso(entity.getEnderecoExtenso());
-        dto.setOrganizador(userDetailsMapper.toSummaryDTO(entity.getOrganizador()));
+        dto.setOrganizador(UserSummaryDTO.toSummaryDTO(entity.getOrganizador()));
 
         dto.setEventType(entity.getEventType());
         dto.setEventPrivacity(entity.getEventPrivacity());
 
 
         dto.setConfirmacoes(users.stream()
-                .map(userDetailsMapper::toSummaryDTO)
+                .map(UserSummaryDTO::toSummaryDTO)
                 .collect(Collectors.toSet()));
 
         dto.setImageUrl(entity.getImageUrl());
@@ -149,12 +143,18 @@ public class EventoMapperClass {
         dto.setLatitude(y);
         dto.setLongitude(x);
 
-        dto.setComentarios(entity.getComentarios().stream()
-                .map(comentariosMapper::toDTO).collect(Collectors.toSet()));
-        dto.setAvaliacoes(entity.getAvaliacoes().stream()
+        if(dto.getComentarios() != null){
+            dto.setComentarios(entity.getComentarios().stream()
+                    .map(comentariosMapper::toDTO).collect(Collectors.toSet()));
+        }
+        if(dto.getAvaliacoes() != null){
+                dto.setAvaliacoes(entity.getAvaliacoes().stream()
                 .map(avaliacaoMapperClass::toDto).collect(Collectors.toSet()));
-        dto.setCategorias(entity.getCategorias().stream()
-                .map(categoriaMapper::toSummaryDTO).collect(Collectors.toSet()));
+        }
+        if(dto.getCategorias() != null){
+            dto.setCategorias(entity.getCategorias().stream()
+                    .map(CategoriaSumaryDTO::toSummaryDTO).collect(Collectors.toSet()));
+        }
 
         return dto;
     }
@@ -181,13 +181,13 @@ public class EventoMapperClass {
         dto.setStartDate(entity.getStartDate());
         dto.setEndDate(entity.getEndDate());
         dto.setEnderecoExtenso(entity.getEnderecoExtenso());
-        dto.setOrganizador(userDetailsMapper.toSummaryDTO(entity.getOrganizador()));
+        dto.setOrganizador(UserSummaryDTO.toSummaryDTO(entity.getOrganizador()));
         dto.setEventType(entity.getEventType());
         dto.setEventPrivacity(entity.getEventPrivacity());
 
 
         dto.setConfirmacoes(users.stream()
-                .map(userDetailsMapper::toSummaryDTO)
+                .map(UserSummaryDTO::toSummaryDTO)
                 .collect(Collectors.toSet()));
 
         dto.setImageUrl(entity.getImageUrl());
@@ -200,7 +200,7 @@ public class EventoMapperClass {
                 .map(comentariosMapper::toDTO).collect(Collectors.toSet()));
         dto.setAvaliacoes(entity.getAvaliacoes().stream()
                 .map(avaliacaoMapperClass::toDto).collect(Collectors.toSet()));
-        dto.setCategorias(entity.getCategorias().stream().map(categoriaMapper::toSummaryDTO).collect(Collectors.toSet()));
+        dto.setCategorias(entity.getCategorias().stream().map(CategoriaSumaryDTO::toSummaryDTO).collect(Collectors.toSet()));
 
         return dto;
     }
@@ -237,7 +237,7 @@ public class EventoMapperClass {
         entity.setEventType(dto.getEventType());
         entity.setEventPrivacity(dto.getEventPrivacity());
 
-        if (dto.getLatitude() != null || dto.getLongitude() != null) {
+        if (dto.getLatitude() != null && dto.getLongitude() != null) {
 
             GeometryFactory geometryFactory = new GeometryFactory();
 
@@ -293,7 +293,7 @@ public class EventoMapperClass {
             entity.setOrganizador(organizadorEntity);
         }
         if(dto.getComentarios() != null){
-            entity.setComentarios(dto.getComentarios().stream().map(e -> comentariosMapper.toEntity(e)).collect(Collectors.toSet()));
+            entity.setComentarios(dto.getComentarios().stream().map(comentariosMapper::toEntity).collect(Collectors.toSet()));
         }
 
         if (dto.getEventPrivacity() != null){
@@ -317,10 +317,5 @@ public class EventoMapperClass {
                 entity.setSpot(newSpot);
             }
         }
-    }
-
-    public EventDTOSumary toSummaryDTO(EventoEntity entity) {
-        if (entity == null) return null;
-        return new EventDTOSumary(entity.getId(), entity.getTitle(), entity.getDescription(), entity.getStartDate(), entity.getImageUrl(), entity.getPrice(), entity.getSpot().getLocalizacao().getY(), entity.getSpot().getLocalizacao().getX());
     }
 }

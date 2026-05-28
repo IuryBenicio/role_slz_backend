@@ -1,31 +1,29 @@
 package com.example.roleslz_backend.Tables.events.Projections;
 
-import com.example.roleslz_backend.Tables.events.DTO.EventDTOSumary;
-import com.example.roleslz_backend.Tables.events.entity.EstadoEvento;
-import com.example.roleslz_backend.Tables.events.entity.EventPrivacity;
-import com.example.roleslz_backend.Tables.events.entity.EventType;
-import com.example.roleslz_backend.Tables.spot.entity.SpotEntity;
-import com.example.roleslz_backend.Tables.users.entity.UserEntity;
-import org.locationtech.jts.geom.Point;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public interface EventoComDistanciaProjection {
-    long getId();
+
+    // Dados Básicos do Evento
+    Long getId();
     String getTitle();
-    String getDescription();
+     String getDescription();
     LocalDateTime getStartDate();
     LocalDateTime getEndDate();
-    String getEnderecoExtenso();
-    UserEntity getOrganizador();
     String getImageUrl();
-    EstadoEvento getEstadoEvento();
-    BigDecimal getPrice();
-    SpotEntity getSpot();
-    EventDTOSumary getEventType();
-    EventPrivacity getEventPrivacity();
-    //DISTANCIA ATRAVÉS DO POSTGIS
-    Point getLocalizacao();
+    String getEstadoEvento();
+    // Dados do Organizador (Achatado)
+    Long getOrganizadorId();
+    String getOrganizadorNome();
+    // O Spot (Achatado)
+    Long getSpotId();
+    String getSpotNome();
+    // O "Peso" para o Mapa)
+    Integer getConfirmacoesCount();
+    // Coordenadas Desmembradas
+    Double getLat();
+    Double getLng();
+    // Distância calculada pelo PostGIS
     Double getDistancia_metros();
 }

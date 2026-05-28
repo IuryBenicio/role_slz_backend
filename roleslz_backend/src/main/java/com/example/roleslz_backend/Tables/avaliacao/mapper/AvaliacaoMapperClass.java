@@ -27,15 +27,13 @@ public class AvaliacaoMapperClass {
             return null;
         }
 
-        AvaliacaoDTO dto = new AvaliacaoDTO(
+        return new AvaliacaoDTO(
                 entity.getId(),
                 entity.getNota(),
                 entity.getUser(),
                 entity.getEvento(),
                 entity.getCreatedAt()
         );
-
-        return dto;
     }
 
 }

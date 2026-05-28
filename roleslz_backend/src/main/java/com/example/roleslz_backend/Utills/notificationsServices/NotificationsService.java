@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Service
 public class NotificationsService {
@@ -32,9 +31,9 @@ public class NotificationsService {
         try{
             // Enviamos para o tópico específico deste evento
             // Quem estiver no app ouvindo '/topic/evento/123' receberá isso instantaneamente
-            messagingTemplate.convertAndSend("/topic/evento/" + evento.getId(), (Object) notification);
+            messagingTemplate.convertAndSend("/topic/evento/" + evento.getId(), notification);
         } catch (Exception e) {
-            System.err.println("Falha ao notificar via websockets" + e);
+            System.getLogger("Falha ao notificar via websockets" + e);
         }
 
     }
@@ -43,8 +42,7 @@ public class NotificationsService {
         List<String> tokens = evento.getConfirmacoes()
                 .stream()
                 .map(UserEntity::getFcmToken)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+                .filter(Objects::nonNull).toList();
 
         if(tokens.isEmpty()) return;
 
@@ -64,9 +62,9 @@ public class NotificationsService {
         try{
             //envia a mensagem
             BatchResponse response = FirebaseMessaging.getInstance().sendEachForMulticast(message);
-            System.out.println("Push enviado com sucesso: -> " + response.getSuccessCount());
+            System.getLogger("Push enviado com sucesso: -> " + response.getSuccessCount());
         }catch (FirebaseMessagingException e){
-            System.err.println("Erro ao enviar: -> " + e.getMessage());
+            System.getLogger("Erro ao enviar: -> " + e.getMessage());
         }
     }
 }

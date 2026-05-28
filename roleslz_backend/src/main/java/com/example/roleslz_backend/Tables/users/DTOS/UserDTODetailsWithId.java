@@ -1,10 +1,6 @@
 package com.example.roleslz_backend.Tables.users.DTOS;
 
 import com.example.roleslz_backend.Tables.events.DTO.EventDTOSumary;
-import com.example.roleslz_backend.Tables.events.DTO.EventoDTO;
-import com.example.roleslz_backend.Tables.events.DTO.EventoDTOWithID;
-import com.example.roleslz_backend.Tables.events.DTO.EventoDTOWithIDClass;
-import com.example.roleslz_backend.Tables.events.entity.EventoEntity;
 import com.example.roleslz_backend.Tables.users.entity.Sexo;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -26,7 +22,7 @@ public class UserDTODetailsWithId {
     @NotBlank private String email;
     @NotBlank private Integer idade;
     @NotNull private List<EventDTOSumary> eventos;
-    @NotNull private List<EventoDTOWithIDClass> historicoEventos;
+    @NotNull private List<EventDTOSumary> historicoEventos;
     @NotNull private Set<UserSummaryDTO> following;
     @NotNull private Set<UserSummaryDTO> followers;
     @NotNull private String fcmToken;

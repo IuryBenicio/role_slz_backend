@@ -4,11 +4,9 @@ import com.example.roleslz_backend.Tables.comentarios.DTO.ComentariosDTO;
 import com.example.roleslz_backend.Tables.comentarios.entity.ComentarioEntity;
 import com.example.roleslz_backend.Tables.events.DTO.EventDTOSumary;
 import com.example.roleslz_backend.Tables.events.entity.EventoEntity;
-import com.example.roleslz_backend.Tables.events.mapper.EventoMapperClass;
 import com.example.roleslz_backend.Tables.events.repository.EventoRepository;
 import com.example.roleslz_backend.Tables.users.DTOS.UserSummaryDTO;
 import com.example.roleslz_backend.Tables.users.entity.UserEntity;
-import com.example.roleslz_backend.Tables.users.mapper.UserDetailsMapperClass;
 import com.example.roleslz_backend.Tables.users.repository.UserRepository;
 import org.springframework.stereotype.Component;
 
@@ -17,14 +15,10 @@ public class ComentariosMapperClass {
 
     private final UserRepository userRepository;
     private final EventoRepository eventoRepository;
-    private final UserDetailsMapperClass userDetailsMapperClass;
-    private final EventoMapperClass eventoMapperClass;
 
-    public ComentariosMapperClass(UserRepository userRepository, EventoRepository eventoRepository, UserDetailsMapperClass userDetailsMapperClass, EventoMapperClass eventoMapperClass) {
+    public ComentariosMapperClass(UserRepository userRepository, EventoRepository eventoRepository) {
         this.userRepository = userRepository;
         this.eventoRepository = eventoRepository;
-        this.userDetailsMapperClass = userDetailsMapperClass;
-        this.eventoMapperClass = eventoMapperClass;
     }
 
     public ComentarioEntity toEntity(ComentariosDTO dto) {
@@ -48,8 +42,8 @@ public class ComentariosMapperClass {
             return null;
         }
 
-        UserSummaryDTO usuario = userDetailsMapperClass.toSummaryDTO(entity.getUser());
-        EventDTOSumary evento = eventoMapperClass.toSummaryDTO(entity.getEvento());
+        UserSummaryDTO usuario = UserSummaryDTO.toSummaryDTO(entity.getUser());
+        EventDTOSumary evento = EventDTOSumary.toSummaryDTO(entity.getEvento());
         return new ComentariosDTO(
                 usuario,
                 entity.getTitle(),

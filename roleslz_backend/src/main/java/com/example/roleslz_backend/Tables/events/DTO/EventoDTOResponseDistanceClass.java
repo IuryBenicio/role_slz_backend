@@ -1,15 +1,10 @@
 package com.example.roleslz_backend.Tables.events.DTO;
 
 import com.example.roleslz_backend.Tables.events.entity.EstadoEvento;
-import com.example.roleslz_backend.Tables.events.entity.EventPrivacity;
-import com.example.roleslz_backend.Tables.events.entity.EventType;
-import com.example.roleslz_backend.Tables.users.DTOS.UserSummaryDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.awt.*;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -21,14 +16,14 @@ public class EventoDTOResponseDistanceClass {
     private String description;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
-    private Point local;
     private String enderecoExtenso;
-    private UserSummaryDTO organizador;
+    private Long spotId;
+    private String spotNome;
+    private long organizadorId;
+    private String organizadorNome;
     private String imageUrl;
     private EstadoEvento estadoEvento;
-    private BigDecimal price;
-    private EventDTOSumary eventType;
-    private EventPrivacity eventPrivacity;
+    private Integer confirmacoes;
     private double lat;
     private double lng;
     private double distanciaMetros;

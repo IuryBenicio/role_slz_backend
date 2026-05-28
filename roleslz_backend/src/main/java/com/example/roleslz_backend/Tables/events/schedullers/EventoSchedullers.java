@@ -33,13 +33,13 @@ public class EventoSchedullers {
         LocalDateTime agora = LocalDateTime.now();
 
         List<EventoEntity> eventos5pos = eventoRepository
-                .findByEstadoEventoAndStartDateBefore(EstadoEvento.PRE_CONFIRMADO,agora.plusMinutes(5))
+                .findByEstadoEventoAndStartDateBefore(EstadoEvento.PRE,agora.plusMinutes(5))
                 .orElse(List.of());
         for (EventoEntity evento: eventos5pos){
             //Envia notificação via websockets
             notificationsService.sendNotificationWebsocket(evento, EstadoEvento.DURANTE, msg5pre);
 
-            //Envia notificação via fire
+            //Envia notificação via firebase
             notificationsService.sendNotificationFirebase(evento, msg5pre);
 
             //muda estado do evento
@@ -47,7 +47,7 @@ public class EventoSchedullers {
                 evento.setEstadoEvento(EstadoEvento.DURANTE);
                 eventoRepository.save(evento);
             } catch (Exception e) {
-                throw new EventNotEdited("Estado do evento não mudado!");
+                throw new EventNotEdited("Estado do evento não alterado!");
             }
         }
 
@@ -59,20 +59,28 @@ public class EventoSchedullers {
             //Envia notificação via websockets
             notificationsService.sendNotificationWebsocket(evento, EstadoEvento.DURANTE, msg30pre);
 
-            //Envia notificação via fire
+            //Envia notificação via firebase
             notificationsService.sendNotificationFirebase(evento, msg30pre);
-
-            //muda estado do evento
-            try{
-                evento.setEstadoEvento(EstadoEvento.PRE_CONFIRMADO);
-                eventoRepository.save(evento);
-            } catch (Exception e) {
-                throw new EventNotEdited("Estado do evento não mudado!");
-            }
-
-
         }
 
+    }
+
+    @Scheduled(fixedDelay = 60000)
+    public void EventoFinalizado(){
+        LocalDateTime agora = LocalDateTime.now();
+
+        List<EventoEntity> evento5pos = eventoRepository
+                .findByEstadoEventoAndEndDateBefore(EstadoEvento.DURANTE, agora.plusMinutes(5))
+                .orElse(List.of());
+
+        for(EventoEntity evento: evento5pos){
+         try{
+            evento.setEstadoEvento(EstadoEvento.ENCERRADO);
+            eventoRepository.save(evento);
+         } catch (Exception e) {
+             throw new EventNotEdited("Estado do evento não alterado!");
+         }
+        }
     }
 
 }

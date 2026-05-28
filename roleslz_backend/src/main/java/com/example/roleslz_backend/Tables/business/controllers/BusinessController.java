@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("owner")
+@RequestMapping("business")
 public class BusinessController {
 
     private final BusinessServices businessServices;
@@ -17,7 +17,7 @@ public class BusinessController {
     }
 
     @PostMapping("register_business")
-    public ResponseEntity<?> registerBusiness(@RequestBody BusinessDTO businessDTO){
+    public ResponseEntity<BusinessDTO> registerBusiness(@RequestBody BusinessDTO businessDTO){
         BusinessDTO business = businessServices.createBusiness(businessDTO);
         return ResponseEntity.ok(business);
     }
@@ -29,8 +29,8 @@ public class BusinessController {
     }
 
     @PatchMapping("edit_business/{id}")
-    public ResponseEntity<String> deleteBusiness(@PathVariable long id, @RequestBody BusinessDTO businessDTO){
+    public ResponseEntity<String> editarBusiness(@PathVariable long id, @RequestBody BusinessDTO businessDTO){
         businessServices.editBusiness(id, businessDTO);
-        return ResponseEntity.ok("Empresa deletada");
+        return ResponseEntity.ok("Dados da empresa editada com sucesso!");
     }
 }

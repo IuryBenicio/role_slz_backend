@@ -1,15 +1,20 @@
 package com.example.roleslz_backend.Tables.users.DTOS;
 
 import com.example.roleslz_backend.Tables.users.entity.Sexo;
+import com.example.roleslz_backend.Tables.users.entity.UserEntity;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
 public record UserSummaryDTO(
                             long Id,
-                            @NotBlank String nome,
-                            @NotBlank String sobrenome,
-                            @NotBlank Sexo sexo,
+                             String nome,
+                             String sobrenome,
+                             Sexo sexo,
                             @NotBlank String email,
-                            @NotBlank Integer idade,
-                            @NotNull String fcmToken) {
+                             Integer idade,
+                             String fcmToken) {
+
+    public static UserSummaryDTO toSummaryDTO(UserEntity entity) {
+        if (entity == null) return null;
+        return new UserSummaryDTO(entity.getId(), entity.getNome(), entity.getSobrenome(), entity.getSexo(), entity.getEmail(), entity.getIdade(), entity.getFcmToken());
+    }
 }

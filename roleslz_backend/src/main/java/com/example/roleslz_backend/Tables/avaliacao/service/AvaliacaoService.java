@@ -1,9 +1,6 @@
 package com.example.roleslz_backend.Tables.avaliacao.service;
 
-import com.example.roleslz_backend.Tables.avaliacao.exceptions.AvaliacaoAlreadyExists;
-import com.example.roleslz_backend.Tables.avaliacao.exceptions.AvaliacaoDoesntExists;
-import com.example.roleslz_backend.Tables.avaliacao.exceptions.AvaliacaoNotDeleted;
-import com.example.roleslz_backend.Tables.avaliacao.exceptions.AvaliacaoNotEdited;
+import com.example.roleslz_backend.Tables.avaliacao.exceptions.*;
 import com.example.roleslz_backend.Tables.avaliacao.DTO.AvaliacaoDTO;
 import com.example.roleslz_backend.Tables.avaliacao.entity.AvaliacaoEntity;
 import com.example.roleslz_backend.Tables.avaliacao.mapper.AvaliacaoMapperClass;
@@ -38,7 +35,7 @@ public class AvaliacaoService {
             avaliacaoRepository.save(novaAvaliacao);
             return avaliacaoMapperClass.toDto(novaAvaliacao);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new AvaliacaoNotAdded("Avaliação não adicionada");
         }
     }
 

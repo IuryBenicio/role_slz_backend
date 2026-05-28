@@ -14,8 +14,10 @@ import com.example.roleslz_backend.Tables.events.repository.EventoRepository;
 import com.example.roleslz_backend.Tables.spot.entity.SpotEntity;
 import com.example.roleslz_backend.Tables.users.DTOS.UserDTODetails;
 import com.example.roleslz_backend.Tables.users.entity.UserEntity;
+import com.example.roleslz_backend.Tables.users.exceptions.UserNotFounded;
 import com.example.roleslz_backend.Tables.users.mapper.UserDetailsMapperClass;
 import com.example.roleslz_backend.Tables.users.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
@@ -49,43 +51,32 @@ public class EventoService {
         this.userRepository = userRepository;
     }
 
+    private static final String msgEventNotFounded = "Evento não encontrado!";
+
     private final GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
 
     //Services de localização
-    public Set<EventoDTOResponseDistanceClass> getEventsAround(double lat, double lng, double raioKm){
-        try{
-            //point se usa da Longitude e Latitude
-            Point userPoint = factory.createPoint(new Coordinate(lng, lat));
 
-            //conversão para metros
-            Double raioMetros = raioKm * 1000;
-
-            List<EventoComDistanciaProjection> eventos = eventoRepository.findEventosComDistancia(userPoint, raioMetros);
-
-            return eventos.stream().map((a)->eventoWithDistanciaMapper.toDTOResponseDistance(a)).collect(Collectors.toSet());
-        } catch (Exception e) {
-            throw new RuntimeException("Tivemos problemas para pegar eventos em volta " + e);
-        }
-    }
-
+    @Transactional
     public Set<EventoDTOResponseDistanceClass> getEventosInMapArea(double minLat, double minLon, double maxLat, double maxLon){
         try{
             Point centroMapa = factory.createPoint(new Coordinate((minLon + maxLon)/2, (minLat + maxLat)/2));
 
-            List<EventoComDistanciaProjection> eventos = eventoRepository.findEventosNoMapa(
-                    minLon, minLat, maxLon, maxLat, centroMapa
+            List<EventoComDistanciaProjection> eventos = eventoRepository.buscarEventosProximos(
+                    centroMapa, minLon, minLat, maxLon, maxLat
             );
 
             return eventos.stream()
-                    .map(e->eventoWithDistanciaMapper.toDTOResponseDistance(e)).collect(Collectors.toSet());
+                    .map(eventoWithDistanciaMapper::toDTOResponseDistance).collect(Collectors.toSet());
         } catch (Exception e) {
-            throw new RuntimeException("Tivemos problemas para pegar eventos na area " + e);
+            throw new ErrorOnReturn("Tivemos problemas para pegar eventos na area " + e);
         }
     }
 
     //Services
-    public EventDTOClass getEvento(long id){
-        EventoEntity evento = eventoRepository.findById(id).orElseThrow(()->new EventNotFounded("Evento não encontrado"));
+    @Transactional
+    public EventDTOClass getEventoById(long id){
+        EventoEntity evento = eventoRepository.findById(id).orElseThrow(()->new EventNotFounded(msgEventNotFounded));
         try{
             return eventoMapperClass.toDTO(evento);
         } catch (Exception e) {
@@ -93,13 +84,24 @@ public class EventoService {
         }
     }
 
+    @Transactional
+    public EventDTOClass getEventoByTitle(String title){
+        EventoEntity evento = eventoRepository.findByTitle(title).orElseThrow(()->new EventNotFounded(msgEventNotFounded));
+        try{
+            return eventoMapperClass.toDTO(evento);
+        } catch (Exception e) {
+            throw new EventNotFounded("Evento não retornado");
+        }
+    }
+
+    @Transactional
     public Set<EventoDTOWithIDClass> getEventsPagination(int pagina, int itens){
         Set<EventoEntity> eventos = eventoRepository.findAll(PageRequest.of(pagina, itens)).toSet();
-        return eventos.stream().map(e->eventoMapperClass.toDTOWithID(e)).collect(Collectors.toSet());
+        return eventos.stream().map(eventoMapperClass::toDTOWithID).collect(Collectors.toSet());
     }
 
     public void changePrivacity(long id){
-        EventoEntity evento = eventoRepository.findById(id).orElseThrow(()->new EventNotFounded("Evento não encontrado"));
+        EventoEntity evento = eventoRepository.findById(id).orElseThrow(()->new EventNotFounded(msgEventNotFounded));
 
         try {
             if (evento.getEventPrivacity() == EventPrivacity.PRIVADO) {
@@ -113,8 +115,11 @@ public class EventoService {
         }
     }
 
+
+
+    @Transactional
     public void addCategoria(long id, String categoria){
-        EventoEntity eventoEntity = eventoRepository.findById(id).orElseThrow(()->new EventNotFounded("Evento não encontrado"));
+        EventoEntity eventoEntity = eventoRepository.findById(id).orElseThrow(()->new EventNotFounded(msgEventNotFounded));
         CategoriaEntity categoriaEntity = categoriaRepository.findByName(categoria).orElseThrow(()-> new CategoryNotFounded("Categoria não encontrada"));
 
         eventoEntity.getCategorias().add(categoriaEntity);
@@ -126,6 +131,7 @@ public class EventoService {
         }
     }
 
+    @Transactional
     public EventDTOClass createEvento(EventDTORequestClass eventoDTO){
         Optional<EventoEntity> exists = eventoRepository.findByTitle(eventoDTO.getTitle());
 
@@ -133,31 +139,33 @@ public class EventoService {
             throw new EventExists("Evento já existe");
         }
 
-        if(eventoDTO.getEstadoEvento().equals(EstadoEvento.POS)){
+        if(eventoDTO.getEstadoEvento().equals(EstadoEvento.ENCERRADO)){
             throw new EventExists("Evento com estado incorreto");
         }
 
-        GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
         Point localizacao = factory.createPoint(new Coordinate(eventoDTO.getLongitude(), eventoDTO.getLatitude()));
 
         EventoEntity novoEvento = eventoMapperClass.toEntity(eventoDTO);
 
-        Optional<UserEntity> owner = userRepository.findByEmail(eventoDTO.getOrganizador().email());
+        UserEntity owner = userRepository.findByEmail(eventoDTO.getOrganizador().email()).orElseThrow(()-> new UserNotFounded("Organizador não encontrado!"));
 
 
         SpotEntity spot = new SpotEntity();
 
         spot.setLocalizacao(localizacao);
 
+        
         novoEvento.setSpot(spot);
+        novoEvento.setOrganizador(owner);
 
         EventoEntity evento = eventoRepository.save(novoEvento);
 
         return eventoMapperClass.toDTO(evento);
     }
 
+    @Transactional
     public void editPrice(long id, NewPriceDTO price){
-        EventoEntity evento = eventoRepository.findById(id).orElseThrow(()->new EventNotFounded("Evento não encontrado"));
+        EventoEntity evento = eventoRepository.findById(id).orElseThrow(()->new EventNotFounded(msgEventNotFounded));
 
         BigDecimal zero = BigDecimal.ZERO;
 
@@ -174,6 +182,7 @@ public class EventoService {
 
     }
 
+    @Transactional
     public EventDTOClass editEvento(long id,EventDTORequestClass eventoDTO){
        EventoEntity evento = eventoRepository.findById(id).orElseThrow(()-> new EventNotFounded("Evento não encontrado"));
 
@@ -184,6 +193,7 @@ public class EventoService {
        return eventoMapperClass.toDTO(salvo);
     }
 
+    @Transactional
     public void deleteEvento(long id){
         EventoEntity evento = eventoRepository.findById(id).orElseThrow(()-> new EventNotFounded("Evento não encontrado"));
 
@@ -194,22 +204,22 @@ public class EventoService {
         }
     }
 
+    @Transactional
     public Set<UserDTODetails> getConfirms (long eventoId){
-        EventoEntity evento = eventoRepository.findById(eventoId).orElseThrow(()-> new EventNotFounded("Evento não encontrado"));
+        EventoEntity evento = eventoRepository.findById(eventoId).orElseThrow(()-> new EventNotFounded(msgEventNotFounded));
 
         try{
-            Set<UserEntity> confirms = evento.getConfirmacoes();
-            Set<UserDTODetails> confirmsDto = evento.getConfirmacoes().stream().map(user -> userDetailsMapper.toDTO(user)).collect(Collectors.toSet());
-            return confirmsDto;
+            return evento.getConfirmacoes().stream().map(userDetailsMapper::toDTO).collect(Collectors.toSet());
         } catch (Exception e) {
-            throw new RuntimeException("Confirmações não retornadas " + e.getMessage());
+            throw new ErrorOnReturn("Confirmações não retornadas " + e.getMessage());
         }
     }
 
+    @Transactional
     public void removeConfirms (long event_id, long user_id){
-        EventoEntity evento = eventoRepository.findById(event_id).orElseThrow(()-> new EventNotFounded("Evento não encontrado"));
+        EventoEntity evento = eventoRepository.findById(event_id).orElseThrow(()-> new EventNotFounded(msgEventNotFounded));
 
-        UserEntity confirm = evento.getConfirmacoes().stream().filter((a)-> a.getId() == user_id).findFirst().orElseThrow(()->new EventNotFounded("Confirmação não encontrada"));
+        UserEntity confirm = evento.getConfirmacoes().stream().filter(a -> a.getId() == user_id).findFirst().orElseThrow(()->new EventNotFounded("Confirmação não encontrada"));
 
         try{
             evento.getConfirmacoes().remove(confirm);
