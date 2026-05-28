@@ -2,7 +2,10 @@ package com.example.roleslz_backend.Tables.categoria.mapper;
 
 import com.example.roleslz_backend.Tables.categoria.DTO.CategoriaDTORequestClass;
 import com.example.roleslz_backend.Tables.categoria.DTO.CategoriaDTOResponse;
+import com.example.roleslz_backend.Tables.categoria.DTO.CategoriaSumaryDTO;
 import com.example.roleslz_backend.Tables.categoria.entity.CategoriaEntity;
+import com.example.roleslz_backend.Tables.categoria.services.CategoriaServices;
+import com.example.roleslz_backend.Tables.events.DTO.EventDTOSumary;
 import com.example.roleslz_backend.Tables.events.entity.EventoEntity;
 import com.example.roleslz_backend.Tables.events.mapper.EventoMapperClass;
 import com.example.roleslz_backend.Tables.events.repository.EventoRepository;
@@ -32,7 +35,7 @@ public class CategoriaMapper {
         entity.setName(dto.getName());
 
         if(dto.getEventos().size() > 0 || dto.getEventos()!= null) {
-            List<Long> ids = dto.getEventos().stream().map(e -> e.id()).toList();
+            List<Long> ids = dto.getEventos().stream().map(e -> e.getId()).toList();
 
             List<EventoEntity> eventos = eventoRepository.findAllById(ids);
 
@@ -51,7 +54,7 @@ public class CategoriaMapper {
         dto.setId(entity.getId());
         dto.setName(entity.getName());
         if(dto.getEventos().size() > 0 || dto.getEventos()!= null) {
-            List<Long> ids = dto.getEventos().stream().map(e -> e.id()).toList();
+            List<Long> ids = dto.getEventos().stream().map(e -> e.getId()).toList();
 
             List<EventoEntity> eventos = eventoRepository.findAllById(ids);
 
@@ -59,4 +62,29 @@ public class CategoriaMapper {
         }
         return dto;
     }
+
+    public CategoriaDTORequestClass toDTORequest(CategoriaEntity entity){
+        if(entity == null){
+            return null;
+        }
+
+        CategoriaDTORequestClass dto = new CategoriaDTORequestClass();
+
+        dto.setId(entity.getId());
+        dto.setName(entity.getName());
+        if(dto.getEventos().size() > 0 || dto.getEventos()!= null) {
+            List<Long> ids = dto.getEventos().stream().map(e -> e.getId()).toList();
+
+            List<EventoEntity> eventos = eventoRepository.findAllById(ids);
+
+            entity.setEventos(new HashSet<>(eventos));
+        }
+        return dto;
+    }
+
+    public CategoriaSumaryDTO toSummaryDTO(CategoriaEntity entity) {
+        if (entity == null) return null;
+        return new CategoriaSumaryDTO(entity.getId(), entity.getName());
+    }
+
 }

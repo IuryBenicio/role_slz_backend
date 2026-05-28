@@ -30,7 +30,7 @@ public class ComentariosService {
 
     public ComentariosDTO addComentario(ComentariosDTO comentariosDTO){
 
-        UserEntity user = userRepository.findById(comentariosDTO.user().getId()).orElseThrow(()-> new UserNotFounded("Usuário não encontrado"));
+        UserEntity user = userRepository.findById(comentariosDTO.user().Id()).orElseThrow(()-> new UserNotFounded("Usuário não encontrado"));
 
         EventoEntity evento = eventoRepository.findById(comentariosDTO.evento().getId()).orElseThrow(()-> new EventNotFounded("Evento não encontrado"));
 

@@ -185,4 +185,8 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 
+    @ExceptionHandler(CategoryNotAddedInEvent.class)
+    public ResponseEntity<String> CategoryNotAddedInEvent(CategoryNotAddedInEvent ex){
+        return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body(ex.getMessage());
+    }
 }

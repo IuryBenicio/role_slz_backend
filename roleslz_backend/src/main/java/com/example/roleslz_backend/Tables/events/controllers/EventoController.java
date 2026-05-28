@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Set;
 
 @RestController
@@ -23,6 +24,24 @@ public class EventoController {
     public ResponseEntity<?> createEvento(@RequestBody EventDTORequestClass eventoDTO){
         EventDTOClass evento = eventoService.createEvento(eventoDTO);
         return ResponseEntity.ok(evento);
+    }
+
+    @GetMapping("get_events/{pagina}")
+    public ResponseEntity<?> getEventsPagination(@PathVariable("pagina") int pagina, @RequestParam("itens") int itens){
+        Set<EventoDTOWithIDClass> response = eventoService.getEventsPagination(pagina, itens);
+        return ResponseEntity.status(200).body(response);
+    }
+
+    @PatchMapping("changing_event_privacity/{id}")
+    public ResponseEntity<?> changingEventPrivacity(@PathVariable("id") long id){
+        eventoService.changePrivacity(id);
+        return ResponseEntity.ok("Privacidade do evento alterada");
+    }
+
+    @PostMapping("add_category")
+    public ResponseEntity<?> addCategoria(@RequestBody CategoryAddRequestDTO dto){
+        eventoService.addCategoria(dto.eventoId(), dto.categoriaName());
+        return ResponseEntity.status(202).body("Categoria adicionada");
     }
 
     @GetMapping("get_events_around")

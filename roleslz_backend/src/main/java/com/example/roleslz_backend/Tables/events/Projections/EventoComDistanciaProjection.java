@@ -1,6 +1,9 @@
 package com.example.roleslz_backend.Tables.events.Projections;
 
+import com.example.roleslz_backend.Tables.events.DTO.EventDTOSumary;
 import com.example.roleslz_backend.Tables.events.entity.EstadoEvento;
+import com.example.roleslz_backend.Tables.events.entity.EventPrivacity;
+import com.example.roleslz_backend.Tables.events.entity.EventType;
 import com.example.roleslz_backend.Tables.spot.entity.SpotEntity;
 import com.example.roleslz_backend.Tables.users.entity.UserEntity;
 import org.locationtech.jts.geom.Point;
@@ -20,6 +23,8 @@ public interface EventoComDistanciaProjection {
     EstadoEvento getEstadoEvento();
     BigDecimal getPrice();
     SpotEntity getSpot();
+    EventDTOSumary getEventType();
+    EventPrivacity getEventPrivacity();
     //DISTANCIA ATRAVÉS DO POSTGIS
     Point getLocalizacao();
     Double getDistancia_metros();

@@ -1,11 +1,12 @@
 package com.example.roleslz_backend.Tables.events.DTO;
 
 import com.example.roleslz_backend.Tables.avaliacao.entity.AvaliacaoEntity;
-import com.example.roleslz_backend.Tables.categoria.entity.CategoriaEntity;
+import com.example.roleslz_backend.Tables.categoria.DTO.CategoriaSumaryDTO;
 import com.example.roleslz_backend.Tables.comentarios.entity.ComentarioEntity;
 import com.example.roleslz_backend.Tables.events.entity.EstadoEvento;
-import com.example.roleslz_backend.Tables.users.DTOS.UserDTODetails;
-import com.example.roleslz_backend.Tables.users.entity.UserEntity;
+import com.example.roleslz_backend.Tables.events.entity.EventPrivacity;
+import com.example.roleslz_backend.Tables.events.entity.EventType;
+import com.example.roleslz_backend.Tables.users.DTOS.UserSummaryDTO;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.locationtech.jts.geom.Point;
@@ -20,13 +21,15 @@ public record EventoDTO(@NotBlank String title,
                         @NotNull LocalDateTime endDate,
                         @NotNull Point local,
                         @NotBlank String enderecoExtenso,
-                        @NotNull UserEntity organizador,
-                        @NotNull Set<UserDTODetails> confirmacoes,
+                        @NotNull UserSummaryDTO organizador,
+                        @NotNull Set<UserSummaryDTO> confirmacoes,
                         @NotBlank String imageUrl,
                         @NotNull EstadoEvento estadoEvento,
                         @NotNull Set<ComentarioEntity> comentarios,
                         @NotNull Set<AvaliacaoEntity> avaliacoes,
-                        @NotNull Set<CategoriaEntity> categorias,
+                        @NotNull Set<CategoriaSumaryDTO> categorias,
+                        EventType eventType,
+                        EventPrivacity eventPrivacity,
                         @NotNull BigDecimal price,
                         Double latitude,
                         Double longitude,

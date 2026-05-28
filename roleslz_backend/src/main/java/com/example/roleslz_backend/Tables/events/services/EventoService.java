@@ -1,8 +1,12 @@
 package com.example.roleslz_backend.Tables.events.services;
 
+import com.example.roleslz_backend.Tables.categoria.entity.CategoriaEntity;
+import com.example.roleslz_backend.Tables.categoria.exceptions.CategoryNotFounded;
+import com.example.roleslz_backend.Tables.categoria.repository.CategoriaRepository;
 import com.example.roleslz_backend.Tables.events.DTO.*;
 import com.example.roleslz_backend.Tables.events.Projections.EventoComDistanciaProjection;
 import com.example.roleslz_backend.Tables.events.entity.EstadoEvento;
+import com.example.roleslz_backend.Tables.events.entity.EventPrivacity;
 import com.example.roleslz_backend.Tables.events.entity.EventoEntity;
 import com.example.roleslz_backend.Tables.events.exceptions.*;
 import com.example.roleslz_backend.Tables.events.mapper.EventoMapperClass;
@@ -11,10 +15,12 @@ import com.example.roleslz_backend.Tables.spot.entity.SpotEntity;
 import com.example.roleslz_backend.Tables.users.DTOS.UserDTODetails;
 import com.example.roleslz_backend.Tables.users.entity.UserEntity;
 import com.example.roleslz_backend.Tables.users.mapper.UserDetailsMapperClass;
+import com.example.roleslz_backend.Tables.users.repository.UserRepository;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.PrecisionModel;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -31,12 +37,16 @@ public class EventoService {
     private final EventoMapperClass eventoMapperClass;
     private final EventoMapperClass eventoWithDistanciaMapper;
     private final UserDetailsMapperClass userDetailsMapper;
+    private final CategoriaRepository categoriaRepository;
+    private final UserRepository userRepository;
 
-    public EventoService(EventoRepository eventoRepository, EventoMapperClass eventoMapperClass, EventoMapperClass eventoWithDistanciaMapper, UserDetailsMapperClass userDetailsMapper) {
+    public EventoService(EventoRepository eventoRepository, EventoMapperClass eventoMapperClass, EventoMapperClass eventoWithDistanciaMapper, UserDetailsMapperClass userDetailsMapper, CategoriaRepository categoriaRepository, UserRepository userRepository) {
         this.eventoRepository = eventoRepository;
         this.eventoMapperClass = eventoMapperClass;
         this.eventoWithDistanciaMapper = eventoWithDistanciaMapper;
         this.userDetailsMapper = userDetailsMapper;
+        this.categoriaRepository = categoriaRepository;
+        this.userRepository = userRepository;
     }
 
     private final GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
@@ -73,8 +83,6 @@ public class EventoService {
         }
     }
 
-
-
     //Services
     public EventDTOClass getEvento(long id){
         EventoEntity evento = eventoRepository.findById(id).orElseThrow(()->new EventNotFounded("Evento não encontrado"));
@@ -82,6 +90,39 @@ public class EventoService {
             return eventoMapperClass.toDTO(evento);
         } catch (Exception e) {
             throw new EventNotFounded("Evento não retornado");
+        }
+    }
+
+    public Set<EventoDTOWithIDClass> getEventsPagination(int pagina, int itens){
+        Set<EventoEntity> eventos = eventoRepository.findAll(PageRequest.of(pagina, itens)).toSet();
+        return eventos.stream().map(e->eventoMapperClass.toDTOWithID(e)).collect(Collectors.toSet());
+    }
+
+    public void changePrivacity(long id){
+        EventoEntity evento = eventoRepository.findById(id).orElseThrow(()->new EventNotFounded("Evento não encontrado"));
+
+        try {
+            if (evento.getEventPrivacity() == EventPrivacity.PRIVADO) {
+                evento.setEventPrivacity(EventPrivacity.PUBLICO);
+            } else {
+                evento.setEventPrivacity(EventPrivacity.PRIVADO);
+            }
+            eventoRepository.save(evento);
+        } catch (Exception e) {
+            throw new EventNotEdited("Privacidade do evento não alterada!");
+        }
+    }
+
+    public void addCategoria(long id, String categoria){
+        EventoEntity eventoEntity = eventoRepository.findById(id).orElseThrow(()->new EventNotFounded("Evento não encontrado"));
+        CategoriaEntity categoriaEntity = categoriaRepository.findByName(categoria).orElseThrow(()-> new CategoryNotFounded("Categoria não encontrada"));
+
+        eventoEntity.getCategorias().add(categoriaEntity);
+
+        try{
+            eventoRepository.save(eventoEntity);
+        } catch (Exception e) {
+            throw new CategoryNotAddedInEvent("Categoria não adicionada no evento");
         }
     }
 
@@ -100,6 +141,9 @@ public class EventoService {
         Point localizacao = factory.createPoint(new Coordinate(eventoDTO.getLongitude(), eventoDTO.getLatitude()));
 
         EventoEntity novoEvento = eventoMapperClass.toEntity(eventoDTO);
+
+        Optional<UserEntity> owner = userRepository.findByEmail(eventoDTO.getOrganizador().email());
+
 
         SpotEntity spot = new SpotEntity();
 

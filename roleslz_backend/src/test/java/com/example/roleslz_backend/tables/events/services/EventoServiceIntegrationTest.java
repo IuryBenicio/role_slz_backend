@@ -9,6 +9,7 @@ import com.example.roleslz_backend.Tables.events.repository.EventoRepository;
 import com.example.roleslz_backend.Tables.events.services.EventoService;
 import com.example.roleslz_backend.Tables.spot.entity.SpotEntity;
 import com.example.roleslz_backend.Tables.spot.repository.SpotRepository;
+import com.example.roleslz_backend.Tables.users.entity.Sexo;
 import com.example.roleslz_backend.Tables.users.entity.UserEntity;
 import com.example.roleslz_backend.Tables.users.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -70,6 +71,8 @@ class EventoServiceIntegrationTest {
         organizador.setEmail("organizador@teste.com");
         organizador.setPassword("senha123");
         organizador.setIdade(30);
+        organizador.setSexo(Sexo.MASCULINO);
+        organizador.setEnable(true);
         userRepository.save(organizador);
 
         // Criar e salvar spot (dependência do evento)

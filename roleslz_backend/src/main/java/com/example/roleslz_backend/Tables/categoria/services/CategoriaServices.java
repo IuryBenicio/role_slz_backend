@@ -39,7 +39,7 @@ public class CategoriaServices {
         CategoriaEntity entity = new CategoriaEntity();
         entity.setName(dto.getName());
         if(dto.getEventos().size() > 0 || dto.getEventos() != null){
-            List<Long> ids = dto.getEventos().stream().map(eventoDTOWithID -> eventoDTOWithID.id()).toList();
+            List<Long> ids = dto.getEventos().stream().map(eventoDTOWithID -> eventoDTOWithID.getId()).toList();
 
             List<EventoEntity> eventos = eventoRepository.findAllById(ids);
 

@@ -3,23 +3,23 @@ package com.example.roleslz_backend.Tables.users.controllers;
 import com.example.roleslz_backend.Tables.events.DTO.EventoDTO;
 import com.example.roleslz_backend.Tables.users.DTOS.PasswordDTO;
 import com.example.roleslz_backend.Tables.users.DTOS.UserDTODetails;
-import com.example.roleslz_backend.Tables.users.mapper.UserDetailsMapperClass;
 import com.example.roleslz_backend.Tables.users.services.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Set;
+
 @RestController
 @RequestMapping("/user")
 public class UserController {
 
     private final UserService userService;
-    private final UserDetailsMapperClass userDetailsMapper;
 
-    public UserController(UserService userService, UserDetailsMapperClass userDetailsMapper) {
+    public UserController(UserService userService) {
         this.userService = userService;
-        this.userDetailsMapper = userDetailsMapper;
+
     }
 
     //rotas
@@ -29,6 +29,13 @@ public class UserController {
         UserDTODetails user = userService.editUserDetails(userDTODetails, id);
         return ResponseEntity.ok(user);
     }
+
+    @GetMapping("user/{id}")
+    public ResponseEntity<?> getUser(@PathVariable long id){
+        UserDTODetails user = userService.getUserById(id);
+        return ResponseEntity.ok(user);
+    }
+
 
     @PostMapping("add_f_token/{id}")
     public ResponseEntity<String> addFirebaseToken(@PathVariable long id, @RequestBody String token){
@@ -47,6 +54,13 @@ public class UserController {
         userService.verifyUserByEmail(token);
         return ResponseEntity.status(HttpStatus.OK).body("Usuário verificado");
     }
+
+    @PatchMapping("get-user/{pagina}")
+    public ResponseEntity<?> getUsersPages(@PathVariable("pagina") int pagina, @RequestParam("itens") int itens){
+        Set<UserDTODetails> response = userService.getUsersPages(pagina,itens);
+        return ResponseEntity.status(200).body(response);
+    }
+
 
     @PatchMapping("edit_password/{id}")
     public ResponseEntity<String> editPassword(@PathVariable long id, @Valid @RequestBody PasswordDTO passwordDTO){

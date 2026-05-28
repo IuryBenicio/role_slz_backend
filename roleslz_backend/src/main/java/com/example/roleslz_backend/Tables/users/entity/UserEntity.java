@@ -1,6 +1,7 @@
 package com.example.roleslz_backend.Tables.users.entity;
 
 import com.example.roleslz_backend.Tables.business.entity.BusinessEntity;
+import com.example.roleslz_backend.Tables.users.DTOS.UserFollowerDTO;
 import com.example.roleslz_backend.Utills.BaseEntity.BaseEntity;
 import com.example.roleslz_backend.Tables.events.entity.EventoEntity;
 import jakarta.persistence.*;
@@ -16,6 +17,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table
@@ -80,6 +82,16 @@ public class UserEntity extends BaseEntity implements UserDetails {
     @JoinColumn(name = "business_id")
     private BusinessEntity business;
 
+    @ManyToMany
+    @JoinTable(
+            name = "user_relationships",
+            joinColumns = @JoinColumn(name = "follower_id"),
+            inverseJoinColumns = @JoinColumn(name = "followed_id")
+    )
+    private Set<UserEntity> following;
+
+    @ManyToMany(mappedBy = "following")
+    private Set<UserEntity> followers;
 
     //Spring Security
         @Override

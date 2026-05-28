@@ -1,7 +1,9 @@
 package com.example.roleslz_backend.Tables.events.DTO;
 
 import com.example.roleslz_backend.Tables.events.entity.EstadoEvento;
-import com.example.roleslz_backend.Tables.users.DTOS.UserDTODetailsWithId;
+import com.example.roleslz_backend.Tables.events.entity.EventPrivacity;
+import com.example.roleslz_backend.Tables.events.entity.EventType;
+import com.example.roleslz_backend.Tables.users.DTOS.UserSummaryDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,10 +23,12 @@ public class EventoDTOResponseDistanceClass {
     private LocalDateTime endDate;
     private Point local;
     private String enderecoExtenso;
-    private UserDTODetailsWithId organizador;
+    private UserSummaryDTO organizador;
     private String imageUrl;
     private EstadoEvento estadoEvento;
     private BigDecimal price;
+    private EventDTOSumary eventType;
+    private EventPrivacity eventPrivacity;
     private double lat;
     private double lng;
     private double distanciaMetros;

@@ -35,6 +35,9 @@ public class BusinessEntity extends BaseEntity {
     @OneToOne(mappedBy = "business")
     private UserEntity user;
 
+    @Column(name = "description")
+    private String description;
+
     @Embedded
     private FuncionamentoClass funcionamento;
 

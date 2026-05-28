@@ -1,0 +1,1 @@
+ALTER TABLE owner ADD COLUMN description VARCHAR(255);

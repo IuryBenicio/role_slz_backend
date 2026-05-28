@@ -1,5 +1,5 @@
 package com.example.roleslz_backend.Tables.events.entity;
 
-public enum EventTypes {
+public enum EventPrivacity {
     PRIVADO, PUBLICO
 }

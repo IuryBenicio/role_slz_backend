@@ -1,10 +1,13 @@
 package com.example.roleslz_backend.Tables.events.DTO;
 
 import com.example.roleslz_backend.Tables.avaliacao.DTO.AvaliacaoDTO;
+import com.example.roleslz_backend.Tables.categoria.DTO.CategoriaSumaryDTO;
 import com.example.roleslz_backend.Tables.categoria.entity.CategoriaEntity;
 import com.example.roleslz_backend.Tables.comentarios.DTO.ComentariosDTO;
 import com.example.roleslz_backend.Tables.events.entity.EstadoEvento;
-import com.example.roleslz_backend.Tables.users.DTOS.UserDTODetails;
+import com.example.roleslz_backend.Tables.events.entity.EventPrivacity;
+import com.example.roleslz_backend.Tables.events.entity.EventType;
+import com.example.roleslz_backend.Tables.users.DTOS.UserSummaryDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -25,13 +28,15 @@ public class EventDTOClass {
     private LocalDateTime endDate;
     private Point local;
     private String enderecoExtenso;
-    private UserDTODetails organizador;
-    private Set<UserDTODetails> confirmacoes;
+    private UserSummaryDTO organizador;
+    private Set<UserSummaryDTO> confirmacoes;
     private String imageUrl;
     private EstadoEvento estadoEvento;
     private Set<ComentariosDTO> comentarios;
     private Set<AvaliacaoDTO> avaliacoes;
-    private Set<CategoriaEntity> categorias;
+    private Set<CategoriaSumaryDTO> categorias;
+    private EventType eventType;
+    private EventPrivacity eventPrivacity;
     private BigDecimal price;
     private Double latitude;
     private Double longitude;

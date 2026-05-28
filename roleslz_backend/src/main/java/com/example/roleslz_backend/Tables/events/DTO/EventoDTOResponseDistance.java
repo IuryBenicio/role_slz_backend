@@ -1,6 +1,9 @@
 package com.example.roleslz_backend.Tables.events.DTO;
 
 import com.example.roleslz_backend.Tables.events.entity.EstadoEvento;
+import com.example.roleslz_backend.Tables.events.entity.EventPrivacity;
+import com.example.roleslz_backend.Tables.events.entity.EventType;
+import com.example.roleslz_backend.Tables.users.DTOS.UserSummaryDTO;
 import com.example.roleslz_backend.Tables.users.entity.UserEntity;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -17,10 +20,12 @@ public record EventoDTOResponseDistance(
         @NotNull LocalDateTime endDate,
         @NotNull Point local,
         @NotBlank String enderecoExtenso,
-        @NotNull UserEntity organizador,
+        @NotNull UserSummaryDTO organizador,
         @NotBlank String imageUrl,
         @NotNull EstadoEvento estadoEvento,
         @NotNull BigDecimal price,
+        EventDTOSumary eventType,
+        EventPrivacity eventPrivacity,
         //SPOT
         @NotBlank double lat,
         @NotBlank double lng,

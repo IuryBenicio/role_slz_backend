@@ -45,6 +45,14 @@ public class EventoEntity extends BaseEntity {
     @NotBlank(message = "campo obrigatório")
     private String enderecoExtenso;
 
+    @Column(name = "event_type")
+    @Enumerated(EnumType.STRING)
+    private EventType eventType;
+
+    @Column(name = "event_privacity")
+    @Enumerated(EnumType.STRING)
+    private EventPrivacity eventPrivacity;
+
     @ManyToOne()
     @JoinColumn(nullable = false, name = "user_id")
     private UserEntity organizador;

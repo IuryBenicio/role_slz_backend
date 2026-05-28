@@ -8,6 +8,7 @@ public record BusinessDTO(
         @NotBlank String cnpj,
         @NotBlank String nomeFantasia,
         @NotBlank String logoTipoUrl,
-        @Embedded FuncionamentoClass funcionamentoClass
+        @Embedded FuncionamentoClass funcionamentoClass,
+        String description
         ) {
 }

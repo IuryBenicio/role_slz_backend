@@ -14,9 +14,17 @@ import com.example.roleslz_backend.Tables.users.entity.UserEntity;
 import com.example.roleslz_backend.Tables.users.exceptions.*;
 import com.example.roleslz_backend.Tables.users.repository.UserRepository;
 import com.example.roleslz_backend.infra.service.SecurityService;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -78,6 +86,16 @@ public class UserService {
         }
 
         return user;
+    }
+
+    public UserDTODetails getUserById(long id){
+        UserEntity user = userRepository.findById(id).orElseThrow(()->new UserDontExists("Usuário não encontrado"));
+        return userDetailsMapper.toDTO(user);
+    }
+
+    public Set<UserDTODetails>getUsersPages(int pagina, int itens){
+        Set<UserEntity> users = userRepository.findAll(PageRequest.of(pagina, itens)).toSet();
+        return users.stream().map(e->userDetailsMapper.toDTO(e)).collect(Collectors.toSet());
     }
 
     public UserDTODetails editUserDetails(UserDTODetails userDTODetails, long id){
