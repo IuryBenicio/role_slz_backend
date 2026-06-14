@@ -24,6 +24,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 
+    @ExceptionHandler(ErrorInAddImages.class)
+    public ResponseEntity<String> ErrorInAddImages(ErrorInAddImages ex){
+        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(ex.getMessage());
+    }
+
     @ExceptionHandler(UserDontExists.class)
     public ResponseEntity<String> UserDontExists(UserDontExists ex){
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());

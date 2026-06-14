@@ -22,5 +22,7 @@ public record UserDTODetails(
         @Nullable AuthProvider authProvider,
         Set<UserSummaryDTO> following,
         Set<UserSummaryDTO> followers,
-        @NotNull String fcmToken) {
+        @NotNull String fcmToken,
+        String image // Adicionado ao final
+) {
 }

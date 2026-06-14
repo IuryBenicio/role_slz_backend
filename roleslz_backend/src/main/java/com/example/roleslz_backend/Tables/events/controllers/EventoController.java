@@ -3,10 +3,13 @@ package com.example.roleslz_backend.Tables.events.controllers;
 import com.example.roleslz_backend.Tables.events.DTO.*;
 import com.example.roleslz_backend.Tables.events.services.EventoService;
 import com.example.roleslz_backend.Tables.users.DTOS.UserDTODetails;
+import com.example.roleslz_backend.Utills.UploadImage.CloudinaryService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Set;
 
 @RestController
@@ -14,9 +17,11 @@ import java.util.Set;
 public class EventoController {
 
     private final EventoService eventoService;
+    private final CloudinaryService cloudinaryService;
 
-    public EventoController(EventoService eventoService) {
+    public EventoController(EventoService eventoService, CloudinaryService cloudinaryService) {
         this.eventoService = eventoService;
+        this.cloudinaryService = cloudinaryService;
     }
 
     @PostMapping("create")
@@ -43,7 +48,13 @@ public class EventoController {
         return ResponseEntity.status(202).body("Categoria adicionada");
     }
 
-    @GetMapping("get_events_in_map_area")
+    @PostMapping("/{id}/upload_photos")
+    public ResponseEntity<List<PhotosEventoDTORes>> uploadPhotos(@PathVariable Long id, @RequestBody List<MultipartFile> file) {
+        List<PhotosEventoDTORes> url = eventoService.uploadFotos(file, id);
+        return ResponseEntity.ok(url);
+    }
+
+    @PostMapping("get_events_in_map_area")
     public ResponseEntity<Set<EventoDTOResponseDistanceClass>> getEventsInMapArea(@RequestBody GetsEventsInMapAreaDTO getsEventsInMapAreaDTO){
         Set<EventoDTOResponseDistanceClass> eventos = eventoService.getEventosInMapArea(getsEventsInMapAreaDTO.minLat(), getsEventsInMapAreaDTO.minLon(), getsEventsInMapAreaDTO.maxLat(), getsEventsInMapAreaDTO.maxLon());
         return ResponseEntity.ok(eventos);
@@ -59,6 +70,12 @@ public class EventoController {
     public ResponseEntity<EventDTOClass> getEventByTitle(@RequestParam String title){
         EventDTOClass evento = eventoService.getEventoByTitle(title);
         return ResponseEntity.ok(evento);
+    }
+
+    @GetMapping("get_by_owner/{id}")
+    public ResponseEntity<Set<EventoDTOWithIDClass>> getEventByOwner(@PathVariable long id){
+        Set<EventoDTOWithIDClass> eventos = eventoService.getEventoByOwnerId(id);
+        return ResponseEntity.ok(eventos);
     }
 
 

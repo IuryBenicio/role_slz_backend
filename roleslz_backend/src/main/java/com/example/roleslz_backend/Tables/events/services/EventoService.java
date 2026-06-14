@@ -8,15 +8,19 @@ import com.example.roleslz_backend.Tables.events.Projections.EventoComDistanciaP
 import com.example.roleslz_backend.Tables.events.entity.EstadoEvento;
 import com.example.roleslz_backend.Tables.events.entity.EventPrivacity;
 import com.example.roleslz_backend.Tables.events.entity.EventoEntity;
+import com.example.roleslz_backend.Tables.events.entity.PhotosEventoEntity;
 import com.example.roleslz_backend.Tables.events.exceptions.*;
 import com.example.roleslz_backend.Tables.events.mapper.EventoMapperClass;
+import com.example.roleslz_backend.Tables.events.mapper.PhotoEventoMapper;
 import com.example.roleslz_backend.Tables.events.repository.EventoRepository;
+import com.example.roleslz_backend.Tables.events.repository.PhotosEventoRepository;
 import com.example.roleslz_backend.Tables.spot.entity.SpotEntity;
 import com.example.roleslz_backend.Tables.users.DTOS.UserDTODetails;
 import com.example.roleslz_backend.Tables.users.entity.UserEntity;
 import com.example.roleslz_backend.Tables.users.exceptions.UserNotFounded;
 import com.example.roleslz_backend.Tables.users.mapper.UserDetailsMapperClass;
 import com.example.roleslz_backend.Tables.users.repository.UserRepository;
+import com.example.roleslz_backend.Utills.UploadImage.StorageFile;
 import jakarta.transaction.Transactional;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -24,8 +28,10 @@ import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -35,21 +41,27 @@ import java.util.stream.Collectors;
 public class EventoService {
 
     private final EventoRepository eventoRepository;
-
+    private final PhotosEventoRepository photosEventoRepository;
+    private final PhotoEventoMapper photoEventoMapper;
     private final EventoMapperClass eventoMapperClass;
     private final EventoMapperClass eventoWithDistanciaMapper;
     private final UserDetailsMapperClass userDetailsMapper;
     private final CategoriaRepository categoriaRepository;
     private final UserRepository userRepository;
+    private final StorageFile storageFile;
 
-    public EventoService(EventoRepository eventoRepository, EventoMapperClass eventoMapperClass, EventoMapperClass eventoWithDistanciaMapper, UserDetailsMapperClass userDetailsMapper, CategoriaRepository categoriaRepository, UserRepository userRepository) {
+    public EventoService(EventoRepository eventoRepository, PhotosEventoRepository photosEventoRepository, PhotoEventoMapper photoEventoMapper, EventoMapperClass eventoMapperClass, EventoMapperClass eventoWithDistanciaMapper, UserDetailsMapperClass userDetailsMapper, CategoriaRepository categoriaRepository, UserRepository userRepository, StorageFile storageFile) {
         this.eventoRepository = eventoRepository;
+        this.photosEventoRepository = photosEventoRepository;
+        this.photoEventoMapper = photoEventoMapper;
         this.eventoMapperClass = eventoMapperClass;
         this.eventoWithDistanciaMapper = eventoWithDistanciaMapper;
         this.userDetailsMapper = userDetailsMapper;
         this.categoriaRepository = categoriaRepository;
         this.userRepository = userRepository;
+        this.storageFile = storageFile;
     }
+
 
     private static final String msgEventNotFounded = "Evento não encontrado!";
 
@@ -67,7 +79,7 @@ public class EventoService {
             );
 
             return eventos.stream()
-                    .map(eventoWithDistanciaMapper::toDTOResponseDistance).collect(Collectors.toSet());
+                    .map(eventoMapperClass::toDTOResponseDistance).collect(Collectors.toSet());
         } catch (Exception e) {
             throw new ErrorOnReturn("Tivemos problemas para pegar eventos na area " + e);
         }
@@ -81,6 +93,30 @@ public class EventoService {
             return eventoMapperClass.toDTO(evento);
         } catch (Exception e) {
             throw new EventNotFounded("Evento não retornado");
+        }
+    }
+
+    @Transactional
+    public List<PhotosEventoDTORes> uploadFotos(List<MultipartFile> fotos, long id){
+
+        List<String> urls = storageFile.uploadMultipleFiles(fotos);
+
+        EventoEntity evento = eventoRepository.findById(id).orElseThrow(()->new EventNotFounded(msgEventNotFounded));
+
+        List<PhotosEventoEntity> ListaFotos = new ArrayList<>();
+
+        for (String url: urls){
+            PhotosEventoEntity photosEventoEntity = new PhotosEventoEntity();
+            photosEventoEntity.setLink(url);
+            photosEventoEntity.setEvento(evento);
+            ListaFotos.add(photosEventoEntity);
+        }
+
+        try{
+            photosEventoRepository.saveAll(ListaFotos);
+            return ListaFotos.stream().map(photoEventoMapper::toDTO).collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new ErrorInAddImages("Erro ao adicionar imagem");
         }
     }
 
@@ -115,6 +151,15 @@ public class EventoService {
         }
     }
 
+    public Set<EventoDTOWithIDClass> getEventoByOwnerId(long id){
+        UserEntity user = userRepository.findById(id).orElseThrow(()-> new UserNotFounded("Usuário não encontrado!"));
+
+        if(user.getEventos().isEmpty()){
+            throw new EventNotFounded("Eventos não encontrados");
+        }
+
+        return user.getEventos().stream().map(eventoMapperClass::toDTOWithID).collect(Collectors.toSet());
+    }
 
 
     @Transactional
@@ -149,14 +194,23 @@ public class EventoService {
 
         UserEntity owner = userRepository.findByEmail(eventoDTO.getOrganizador().email()).orElseThrow(()-> new UserNotFounded("Organizador não encontrado!"));
 
-
         SpotEntity spot = new SpotEntity();
 
         spot.setLocalizacao(localizacao);
 
-        
         novoEvento.setSpot(spot);
         novoEvento.setOrganizador(owner);
+
+        // Lógica do placeholder
+        if (novoEvento.getImages() == null || novoEvento.getImages().isEmpty()) {
+            PhotosEventoEntity placeholder = new PhotosEventoEntity();
+            placeholder.setLink("https://placehold.co/600x400");
+            placeholder.setEvento(novoEvento);
+            
+            List<PhotosEventoEntity> images = new ArrayList<>();
+            images.add(placeholder);
+            novoEvento.setImages(images);
+        }
 
         EventoEntity evento = eventoRepository.save(novoEvento);
 

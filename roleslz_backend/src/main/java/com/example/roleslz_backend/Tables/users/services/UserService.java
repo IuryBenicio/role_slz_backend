@@ -2,6 +2,8 @@ package com.example.roleslz_backend.Tables.users.services;
 
 import com.example.roleslz_backend.Tables.users.DTOS.*;
 import com.example.roleslz_backend.Tables.users.DTOS.Req.UserDTOProfileReq;
+import com.example.roleslz_backend.Tables.users.DTOS.Req.UserEditDTO;
+import com.example.roleslz_backend.Tables.users.DTOS.Req.UserProjectionProfile;
 import com.example.roleslz_backend.Tables.users.entity.AuthProvider;
 import com.example.roleslz_backend.Tables.users.mapper.UserDetailsMapperClass;
 import com.example.roleslz_backend.Tables.users.mapper.UserRegisterMapperClass;
@@ -111,7 +113,7 @@ public class UserService {
     }
 
     public UserProjectionProfile getUserProfile(UserDTOProfileReq dto){
-        UserProjectionProfile user = userRepository.findByNome(dto.getEmail()).orElseThrow(()->new UserExists("Não encontramos nenhum usuário ligado a esse email"));
+        UserProjectionProfile user = userRepository.findByNome(dto.getEmail()).orElseThrow(()-> new UserNotFounded("Usuário não encontrado"));
 
         if(user == null){
             throw new UserNotFounded("Usuário não encontrado");
@@ -147,14 +149,14 @@ public class UserService {
     }
 
     @Transactional
-    public UserDTODetails editUserDetails(UserDTODetails userDTODetails, long id){
+    public UserEditDTO editUserDetails(UserEditDTO dto, long id){
         UserEntity userBefore = userRepository.findById(id).orElseThrow(()->new UserDontExists("Usuário não encontrado"));
 
-        userDetailsMapper.updateEntityFromDto(userDTODetails, userBefore);
+        userDetailsMapper.updateEntityFromDtoEdit(dto, userBefore);
 
         try{
             userRepository.save(userBefore);
-            return userDetailsMapper.toDTO(userBefore);
+            return userDetailsMapper.toDTOEdit(userBefore);
         } catch (Exception e) {
             throw new UserNotEdited("Usuário não editado");
         }
@@ -281,5 +283,9 @@ public class UserService {
         } catch (Exception e) {
             throw new PresenceNotConfirmated("Presença não retirada" + e.getMessage());
         }
+    }
+
+    public void verifyEmail(String email){
+        UserEntity user = userRepository.findByEmail(email).orElseThrow(()-> new UserNotFounded("Email não encontrado"));
     }
 }

@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UserDTOProfileReq {
     long id;
-    String Nome;
-    String Email;
+    String nome;
+    String email;
 }

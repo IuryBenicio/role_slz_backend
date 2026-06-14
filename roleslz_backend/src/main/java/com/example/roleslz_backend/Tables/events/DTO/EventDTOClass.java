@@ -29,7 +29,7 @@ public class EventDTOClass {
     private String enderecoExtenso;
     private UserSummaryDTO organizador;
     private Set<UserSummaryDTO> confirmacoes;
-    private String imageUrl;
+    private Set<PhotosEventoSummaryDTO> images; // Atualizado
     private EstadoEvento estadoEvento;
     private Set<ComentariosDTO> comentarios;
     private Set<AvaliacaoDTO> avaliacoes;

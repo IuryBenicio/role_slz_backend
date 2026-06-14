@@ -78,6 +78,9 @@ public class UserEntity extends BaseEntity implements UserDetails {
     @NotNull(message = "idade é obrigatória")
     private Integer idade;
 
+    @Column(name="image")
+    private String image;
+
     @OneToMany(mappedBy = "organizador")
     private List<EventoEntity> eventos;
 

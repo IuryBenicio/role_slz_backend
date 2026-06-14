@@ -1,7 +1,7 @@
 package com.example.roleslz_backend.Tables.users.repository;
 
 import com.example.roleslz_backend.Tables.events.entity.EventoEntity;
-import com.example.roleslz_backend.Tables.users.DTOS.UserProjectionProfile;
+import com.example.roleslz_backend.Tables.users.DTOS.Req.UserProjectionProfile;
 import com.example.roleslz_backend.Tables.users.entity.AuthProvider;
 import com.example.roleslz_backend.Tables.users.entity.UserEntity;
 import org.springframework.data.domain.Page;

@@ -21,6 +21,7 @@ public class UserDTODetailsWithId {
     @NotBlank private Sexo sexo;
     @NotBlank private String email;
     @NotBlank private Integer idade;
+    private String image;
     @NotNull private List<EventDTOSumary> eventos;
     @NotNull private List<EventDTOSumary> historicoEventos;
     @NotNull private Set<UserSummaryDTO> following;

@@ -3,8 +3,9 @@ package com.example.roleslz_backend.Tables.users.controllers;
 import com.example.roleslz_backend.Tables.events.DTO.EventoDTO;
 import com.example.roleslz_backend.Tables.users.DTOS.PasswordDTO;
 import com.example.roleslz_backend.Tables.users.DTOS.Req.UserDTOProfileReq;
+import com.example.roleslz_backend.Tables.users.DTOS.Req.UserEditDTO;
+import com.example.roleslz_backend.Tables.users.DTOS.Req.UserProjectionProfile;
 import com.example.roleslz_backend.Tables.users.DTOS.UserDTODetails;
-import com.example.roleslz_backend.Tables.users.DTOS.UserProjectionProfile;
 import com.example.roleslz_backend.Tables.users.services.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -26,8 +27,8 @@ public class UserController {
     //rotas
 
     @PatchMapping("edit/{id}")
-    public ResponseEntity<UserDTODetails> editUser(@PathVariable long id, @Valid @RequestBody UserDTODetails userDTODetails){
-        UserDTODetails user = userService.editUserDetails(userDTODetails, id);
+    public ResponseEntity<UserEditDTO> editUser(@PathVariable long id, @Valid @RequestBody UserEditDTO dto){
+        UserEditDTO user = userService.editUserDetails(dto, id);
         return ResponseEntity.ok(user);
     }
 
@@ -54,6 +55,12 @@ public class UserController {
     public ResponseEntity<String> verifyPassword(@PathVariable long id, @Valid @RequestBody PasswordDTO passwordDTO){
             userService.verifyPassword(id, passwordDTO);
             return ResponseEntity.status(HttpStatus.OK).body("Senha verificada");
+    }
+
+    @GetMapping("verify_email/{email}")
+    public ResponseEntity<String> verifyEmailByEmail(@PathVariable String email){
+        userService.verifyEmail(email);
+        return ResponseEntity.ok("Email verificado");
     }
 
     @GetMapping("user_has_event/{id}")

@@ -25,6 +25,9 @@ public interface EventoRepository extends JpaRepository<EventoEntity, Long> {
     @EntityGraph(attributePaths = {"confirmacoes"})
     Optional<List<EventoEntity>> findByEstadoEventoAndEndDateBefore(EstadoEvento estadoEvento, LocalDateTime data);
 
+    Optional<List<EventoEntity>> findByOrganizadorId(long id);
+
+
     @Query(value = """
         SELECT 
             e.id AS id, 
@@ -32,38 +35,39 @@ public interface EventoRepository extends JpaRepository<EventoEntity, Long> {
             e.description AS description, 
             e.start_date AS startDate, 
             e.end_date AS endDate,
-            e.image_url AS imageUrl,
-            e.estado_evento AS estadoEvento,
+            
+            /* OPÇÃO 1: Pegando da tabela de fotos (ajuste o nome da tabela/coluna se precisar) */
+            (SELECT p.link FROM evento_galery p WHERE p.evento_id = e.id LIMIT 1) AS imageUrl,            e.estado_evento AS estadoEvento,
     
             u.id AS organizadorId, 
             u.nome AS organizadorNome,
-            u.avatar AS organizadorAvatar,
+            u.image AS organizadorAvatar,
     
             s.id AS spotId,
             s.nome AS spotNome,
     
-            (SELECT count(*) FROM usuario_evento ue WHERE ue.evento_id = e.id) AS confirmacoesCount,
-    
+            (SELECT count(*) FROM eventos_confirmacoes ue WHERE ue.evento_id = e.id) AS confirmacoesCount,    
             ST_Y(s.localizacao) AS lat, 
             ST_X(s.localizacao) AS lng,
     
             ST_DistanceSphere(s.localizacao, :posicaoUsuario) AS distancia_metros
     
-        FROM evento e
+        FROM eventos e
         INNER JOIN spot s ON e.spot_id = s.id
-        INNER JOIN usuario u ON e.organizador_id = u.id
+        INNER JOIN users u ON e.user_id = u.id
         WHERE 
             /* 1. Filtro de Estado do evento */
             e.estado_evento != 'ENCERRADO' 
     
-            /* 2. Filtro de Visibilidade */
-            AND e.visibilidade = 'PUBLICO'
+            /* 2. Filtro de Visibilidade CORRIGIDO (Era e.visibilidade) */
+            AND e.event_privacity = 'PUBLICO'
     
             /* 3. Filtro Espacial (Bounding Box) */
             AND s.localizacao && ST_MakeEnvelope(:minLon, :minLat, :maxLon, :maxLat, 4326)
     
             /* 4. Filtro Temporal */
             AND (
+            
                 (e.start_date::date = CURRENT_DATE AND e.start_date >= CURRENT_TIMESTAMP)
                 OR 
                 (CURRENT_TIMESTAMP BETWEEN e.start_date AND e.end_date)

@@ -28,7 +28,7 @@ public class EventDTORequestClass {
     String enderecoExtenso;
     UserSummaryDTO organizador;
     Set<UserSummaryDTO> confirmacoes;
-    String imageUrl;
+    Set<PhotosEventoSummaryDTO> images;
     EstadoEvento estadoEvento;
     Set<ComentariosDTO> comentarios;
     Set<AvaliacaoDTO> avaliacoes;

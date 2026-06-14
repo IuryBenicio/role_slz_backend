@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -56,8 +57,6 @@ public class EventoEntity extends BaseEntity {
     @JoinColumn(nullable = false, name = "user_id")
     private UserEntity organizador;
 
-    @Column(name="image_url")
-    private String imageUrl;
 
     @Column(name = "price")
     private BigDecimal price;
@@ -66,6 +65,8 @@ public class EventoEntity extends BaseEntity {
     @JoinColumn(nullable = false, name = "spot_id")
     private SpotEntity spot;
 
+    @OneToMany(mappedBy = "evento", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PhotosEventoEntity> images;
 
     @ManyToMany
     @JoinTable(
@@ -76,6 +77,7 @@ public class EventoEntity extends BaseEntity {
     private Set<UserEntity> confirmacoes;
 
     @Column(name = "estado_evento")
+    @Enumerated(EnumType.STRING)
     private EstadoEvento estadoEvento;
 
     @ManyToMany
