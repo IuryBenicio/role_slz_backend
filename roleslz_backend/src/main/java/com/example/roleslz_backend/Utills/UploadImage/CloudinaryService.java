@@ -21,9 +21,9 @@ public class CloudinaryService implements StorageFile {
     // Injeção das credenciais via construtor para criar a instância do Cloudinary.
     // Esta é uma abordagem mais limpa do que ter um método de configuração separado na mesma classe.
     public CloudinaryService(
-            @Value("${CLOUDINARY_NAME}") String cloudName,
-            @Value("${CLOUDINARY_KEY}") String apiKey,
-            @Value("${CLOUDINARY_SECRET}") String apiSecret) {
+            @Value("${cloudinary.cloud_name}") String cloudName,
+            @Value("${cloudinary.api_key}") String apiKey,
+            @Value("${cloudinary.api_secret}") String apiSecret) {
         
         Map<String, String> config = ObjectUtils.asMap(
                 "cloud_name", cloudName,
