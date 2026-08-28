@@ -3,31 +3,35 @@ package com.example.roleslz_backend.Tables.events.services;
 import com.example.roleslz_backend.Tables.events.DTO.HeatPointDTO;
 import com.example.roleslz_backend.Tables.events.entity.EstadoEvento;
 import com.example.roleslz_backend.Tables.events.entity.PresencaAtivaEntity;
-import com.example.roleslz_backend.Tables.events.exceptions.EventNotFounded;
 import com.example.roleslz_backend.Tables.events.repository.EventoRepository;
 import com.example.roleslz_backend.Tables.events.repository.PresencaAtivaRepository;
 import com.example.roleslz_backend.Tables.users.entity.UserEntity;
-import com.example.roleslz_backend.Tables.users.exceptions.UserNotFounded;
 import com.example.roleslz_backend.Tables.users.repository.UserRepository;
+import com.example.roleslz_backend.Utills.notificationsServices.UtillsNotification;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @Service
 public class PresencaAtivaService {
 
     private final PresencaAtivaRepository presencaRepository;
     private final EventoRepository eventoRepository;
     private final UserRepository userRepository;
+    private final UtillsNotification utillsNotification;
 
     public PresencaAtivaService(PresencaAtivaRepository presencaRepository,
                                 EventoRepository eventoRepository,
-                                UserRepository userRepository) {
+                                UserRepository userRepository,
+                                UtillsNotification utillsNotification) {
         this.presencaRepository = presencaRepository;
         this.eventoRepository = eventoRepository;
         this.userRepository = userRepository;
+        this.utillsNotification = utillsNotification;
     }
 
     @Transactional
@@ -48,6 +52,16 @@ public class PresencaAtivaService {
             presencaEntity.setUser(user);
 
             presencaRepository.save(presencaEntity);
+
+            // Nudge best-effort: "rolê bombando perto de você". Falha de push NUNCA pode
+            // abortar o check-in (que alimenta o heatmap).
+            if (user.getFcmToken() != null) {
+                try {
+                    utillsNotification.notificarUsuarioProximoGeofence(evento, user.getFcmToken());
+                } catch (Exception e) {
+                    log.error("Falha ao notificar proximidade do evento ID {} para o user ID {}", eventoId, userId, e);
+                }
+            }
         }
     }
 

@@ -1,23 +1,25 @@
 package com.example.roleslz_backend.Utills.notificationsServices;
 
 import com.example.roleslz_backend.Tables.events.entity.EventoEntity;
-import com.example.roleslz_backend.Tables.users.entity.UserEntity;
+import com.example.roleslz_backend.Tables.users.repository.UserRepository;
 import com.example.roleslz_backend.Utills.notificationsServices.exceptions.NotifyFail;
 import com.google.firebase.messaging.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @Slf4j
 @Service
 public class NotificationsService {
 
     private final FirebaseMessaging firebaseMessaging;
+    private final UserRepository userRepository;
 
-    public NotificationsService(FirebaseMessaging firebaseMessaging) {
+    public NotificationsService(FirebaseMessaging firebaseMessaging, UserRepository userRepository) {
         this.firebaseMessaging = firebaseMessaging;
+        this.userRepository = userRepository;
     }
 
     public enum TipoNotificacao {
@@ -50,9 +52,38 @@ public class NotificationsService {
         try {
             BatchResponse response = firebaseMessaging.sendEachForMulticast(message);
             log.info("Push FCM [{}] disparado! Sucesso: {} | Falhas: {}", tipo.name(), response.getSuccessCount(), response.getFailureCount());
+
+            if (response.getFailureCount() > 0) {
+                limparTokensInvalidos(response, tokensAlvo);
+            }
         } catch (FirebaseMessagingException e) {
             log.error("Erro fatal ao enviar Push FCM [{}]", tipo.name(), e);
             throw new NotifyFail("Falha ao enviar notificação push [" + tipo.name() + "] para o evento " + evento.getId() + ": " + e.getMessage());
+        }
+    }
+
+    /**
+     * Zera o fcmToken dos usuários cujos tokens o FCM reportou como mortos (app desinstalado / token
+     * rotacionado). Sem isso o backend fica disparando pushes para tokens que nunca chegam.
+     */
+    private void limparTokensInvalidos(BatchResponse response, List<String> tokensAlvo) {
+        List<SendResponse> responses = response.getResponses();
+        List<String> tokensMortos = new ArrayList<>();
+
+        for (int i = 0; i < responses.size(); i++) {
+            SendResponse item = responses.get(i);
+            if (item.isSuccessful() || item.getException() == null) {
+                continue;
+            }
+            MessagingErrorCode code = item.getException().getMessagingErrorCode();
+            if (code == MessagingErrorCode.UNREGISTERED || code == MessagingErrorCode.INVALID_ARGUMENT) {
+                tokensMortos.add(tokensAlvo.get(i));
+            }
+        }
+
+        if (!tokensMortos.isEmpty()) {
+            userRepository.limparFcmTokens(tokensMortos);
+            log.info("{} token(s) FCM inválido(s) removido(s) dos usuários.", tokensMortos.size());
         }
     }
 }

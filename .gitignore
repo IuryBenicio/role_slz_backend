@@ -1,29 +1,13 @@
-# Build
-target/
-build/
-*.jar
-*.war
-*.zip
-
-# IDE
-.idea/
-*.iml
-*.ipr
-*.iws
-.project
-.classpath
-.settings/
-.springBeans
-.sts4-cache
+# .gitignore da raiz do repositório.
+# O módulo Maven tem o seu próprio em roleslz_backend/.gitignore.
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Logs
-*.log
+# IDE
+.idea/
 
-# Segredos / config local (nunca versionar)
-.env
-.env.*
-src/main/resources/firebasekey.json
+# Artefatos soltos
+*.zip
+*.log

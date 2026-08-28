@@ -101,6 +101,14 @@ public class EventoSchedullers {
             } catch (Exception e) {
                 LOGGER.log(System.Logger.Level.ERROR, "Erro ao encerrar evento ID: " + evento.getId(), e);
             }
+
+            // Convite pós-rolê para avaliação: best-effort, falha de push não pode
+            // impedir a transição DURANTE -> ENCERRADO.
+            try {
+                utillsNotification.notificarAvaliacaoPosRole(evento);
+            } catch (Exception e) {
+                LOGGER.log(System.Logger.Level.ERROR, "Erro ao notificar avaliação pós-rolê do evento ID: " + evento.getId(), e);
+            }
         }
 
         if (!eventosParaSalvar.isEmpty()) {

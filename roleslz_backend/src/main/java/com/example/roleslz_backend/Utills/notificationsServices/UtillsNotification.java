@@ -10,7 +10,7 @@ import java.util.Objects;
 @Component
 public class UtillsNotification {
 
-    NotificationsService notificationsService;
+    private final NotificationsService notificationsService;
 
     public UtillsNotification(NotificationsService notificationsService) {
         this.notificationsService = notificationsService;
@@ -32,7 +32,21 @@ public class UtillsNotification {
         notificationsService.dispararPushFCM(evento, "Rolê bombando perto de você! 🔥", evento.getTitle() + " está acontecendo agora a poucos metros daqui.", NotificationsService.TipoNotificacao.GEOFENCING, List.of(tokenDoUsuario));
     }
 
+    // Usado pelo scheduler quando o evento é ENCERRADO: convida quem confirmou presença a avaliar o rolê.
+    public void notificarAvaliacaoPosRole(EventoEntity evento) {
+        List<String> tokens = extrairTokensDaConfirmacao(evento);
+        notificationsService.dispararPushFCM(
+                evento,
+                "E aí, como foi o rolê? ⭐",
+                "Conta pra galera: avalie \"" + evento.getTitle() + "\" e ajude outras pessoas a decidir.",
+                NotificationsService.TipoNotificacao.AVALIACAO_POS_ROLE,
+                tokens);
+    }
+
     private List<String> extrairTokensDaConfirmacao(EventoEntity evento) {
+        if (evento.getConfirmacoes() == null) {
+            return List.of();
+        }
         return evento.getConfirmacoes().stream()
                 .map(UserEntity::getFcmToken)
                 .filter(Objects::nonNull)

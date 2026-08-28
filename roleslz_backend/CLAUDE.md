@@ -22,8 +22,13 @@ de domínio de heatmap, presença ativa, notificações e entidades JPA.
 ## Testes
 
 - `JAVA_HOME=$(/usr/libexec/java_home -v 21) ./mvnw test` roda tudo.
-- Testes de **repositório** (`EventoRepositoryTest`) usam **Testcontainers + PostGIS** e precisam
-  do **Docker ligado**. Testes de **service** usam Mockito puro.
+- `EventoRepositoryTest` (repositório) e `RoleslzBackendApplicationTests` (smoke do contexto
+  inteiro) usam **Testcontainers + PostGIS** e precisam do **Docker ligado**. Testes de
+  **service** usam Mockito puro.
+- Rode o smoke test sempre que mexer em beans/config/segurança — foi ele que pegaria o bug do
+  `FirebaseApp`.
+- O smoke test usa o perfil `test` (`src/test/resources/application-test.properties`) e um
+  service account **fake** em `src/test/resources/firebasekey-test.json`.
 - Nomeie classes de teste como `*Test`. O Surefire **ignora silenciosamente** nomes como
   `FooTest2`.
 
@@ -35,7 +40,15 @@ de domínio de heatmap, presença ativa, notificações e entidades JPA.
 
 ## Notificações
 
-Todo push passa por `NotificationsService.dispararPushFCM`, que lança `NotifyFail` quando o FCM
-falha — não reverta para catch silencioso. Fluxos de negócio críticos (editar/deletar evento,
-schedulers) devem envolver a notificação em try/catch e só logar. O canal WebSocket
-(`SimpMessagingTemplate`) foi removido; hoje só existe FCM.
+Todo push passa por `NotificationsService.dispararPushFCM` (via os wrappers de
+`UtillsNotification`: `notificarInicioDeEvento`, `notificarAtualizacaoCritica`,
+`notificarUsuarioProximoGeofence`, `notificarAvaliacaoPosRole`), que lança `NotifyFail` quando o
+FCM falha — não reverta para catch silencioso. Fluxos de negócio críticos (editar/deletar evento,
+check-in, schedulers) envolvem a notificação em try/catch e só logam.
+
+- `NotificationsService.limparTokensInvalidos` zera `fcmToken` quando o FCM devolve
+  `UNREGISTERED`/`INVALID_ARGUMENT` — não remova.
+- `FireBaseConfiguration` expõe `@Bean FirebaseApp` **e** `@Bean FirebaseMessaging`. Não junte num
+  `@PostConstruct` sem registrar o `FirebaseApp` (o contexto para de subir).
+- `PresencaAtivaController` pega o usuário do JWT (`UserUtils`), nunca de `@RequestAttribute`.
+- O canal WebSocket (`SimpMessagingTemplate`) foi removido; hoje só existe FCM.

@@ -22,10 +22,10 @@ Este repositório contém a API RESTful do ecossistema **SpotRolê**, desenvolvi
 ### 📌 Módulo de Eventos & Consulta Geoespacial (`/evento`)
 - **Lista de eventos na área do mapa:** `POST /evento/get_events_in_map_area` recebe a caixa delimitadora (*Bounding Box*) enviada pelo mobile e devolve a lista de eventos públicos visíveis na tela (com distância até o centro), usando `ST_MakeEnvelope`/`ST_Intersects` do PostGIS. **Não é o heatmap** — é uma listagem por evento.
 - **Mapa de Calor (Heatmap):** `GET /evento/heatmap?minLat=&minLon=&maxLat=&maxLon=` devolve pontos agregados `{ lat, lng, peso }` (um por spot) prontos para uma camada de heatmap (Google Maps `HeatmapLayer`, Mapbox `heatmap-layer`). O `peso` é a contagem de **check-ins ativos** (`tb_presenca_ativa`) naquele spot, considerando apenas eventos `DURANTE` ou `PRE` a até 90 min de começar, e só eventos `PUBLICO`. A query fica em `PresencaAtivaRepository.findHeatmapData` (native query com `ST_MakeEnvelope`).
-- **Presença Ativa (Geofencing em tempo real):** `POST /api/checkin/{eventoId}` e `DELETE /api/checkin/{eventoId}` — disparados pelo SO do celular ao entrar/sair da geofence do evento. Alimenta a tabela `tb_presenca_ativa`, que é a fonte de dados do heatmap (ver `PresencaAtivaService`/`PresencaAtivaController`).
+- **Presença Ativa (Geofencing em tempo real):** `POST /api/checkin/{eventoId}` e `DELETE /api/checkin/{eventoId}` — disparados pelo SO do celular ao entrar/sair da geofence do evento. O usuário vem do JWT (`UserUtils.getUserLogado()`), não do corpo/atributo da request. Alimenta a tabela `tb_presenca_ativa`, que é a fonte de dados do heatmap (ver `PresencaAtivaService`/`PresencaAtivaController`). No check-in novo, dispara um push *best-effort* de proximidade (`GEOFENCING`) para o próprio usuário — falha de push nunca aborta o check-in.
 - **Galeria de Fotos:** Estrutura relacional 1:N (`PhotosEventoEntity` / `evento_galery`) associada a cada evento com carregamento via Cloudinary.
 - **Paginação:** Utilização nativa do `Pageable` do Spring Data JPA para prevenir *memory leaks* e otimizar listagens infinitas no feed.
-- **Agendadores (Schedulers):** `EventoSchedullers` roda a cada 60s e cobre 3 responsabilidades: (1) notificar 30min/5min antes do evento e transicionar `PRE→DURANTE`; (2) transicionar `DURANTE→ENCERRADO`; (3) limpar `tb_presenca_ativa` do evento encerrado (`presencaLimpa=true`, idempotente) para o heatmap não acumular contagem de eventos já terminados.
+- **Agendadores (Schedulers):** `EventoSchedullers` roda a cada 60s e cobre 4 responsabilidades: (1) notificar 30min/5min antes do evento e transicionar `PRE→DURANTE`; (2) transicionar `DURANTE→ENCERRADO` e convidar quem confirmou presença a avaliar o rolê (push `AVALIACAO_POS_ROLE`, best-effort); (3) limpar `tb_presenca_ativa` do evento encerrado (`presencaLimpa=true`, idempotente) para o heatmap não acumular contagem de eventos já terminados.
 
 ### 🔐 Módulo de Autenticação & Senha (`/auth`)
 - **JWT Authentication:** Emissão e validação de tokens JWT passados via header `Authorization: Bearer <token>`.
@@ -34,6 +34,15 @@ Este repositório contém a API RESTful do ecossistema **SpotRolê**, desenvolvi
 ### 👤 Módulo de Usuários (`/usuario`)
 - Consultas otimizadas de perfil de usuário.
 - Atualização parcial de perfil (`PATCH`).
+- **Registro de token FCM:** `POST /usuario/add_f_token` grava o `fcmToken` do dispositivo no usuário logado (`UserService.addFirebaseToken`).
+
+### 🔔 Módulo de Notificações Push (FCM)
+- **Único ponto de saída:** `NotificationsService.dispararPushFCM(evento, título, corpo, tipo, tokensAlvo)` — monta o `MulticastMessage`, injeta `tipoPush`/`eventoId`/`estadoDoEvento` no *data payload* e envia via `FirebaseMessaging`. Lança `NotifyFail` quando o FCM falha.
+- **Wrappers de domínio (`UtillsNotification`):** `notificarInicioDeEvento`, `notificarAtualizacaoCritica`, `notificarUsuarioProximoGeofence`, `notificarAvaliacaoPosRole`. Chame sempre por aqui, nunca `dispararPushFCM` direto.
+- **Tipos (`TipoNotificacao`):** `ALERTA_TEMPO` (30/5 min antes), `ATUALIZACAO_CRITICA` (edição/exclusão de evento), `GEOFENCING` (proximidade no check-in), `AVALIACAO_POS_ROLE` (convite pós-evento).
+- **Limpeza de tokens mortos:** quando o FCM responde `UNREGISTERED`/`INVALID_ARGUMENT` para um token, o `fcmToken` do usuário é zerado (`UserRepository.limparFcmTokens`) para não seguir disparando push para aparelhos que desinstalaram o app.
+- **Bean do Firebase:** `FireBaseConfiguration` expõe `FirebaseApp` (carrega o service account de `firebase.credentials.classpath`, default `firebasekey.json`) **e** `FirebaseMessaging`. Sem o `@Bean FirebaseApp` o contexto não sobe.
+- **Só existe FCM.** O antigo canal WebSocket (`SimpMessagingTemplate`) foi removido.
 
 ---
 
@@ -56,8 +65,9 @@ A suíte de testes foi focada estrategicamente nas regras de negócio críticas 
 | `EventoServiceTest` | Unitário (Mockito) | Prevenção de IDOR ao deletar evento; regras de check-in por estado do evento (`DURANTE` / `PRE` + janela de 90 min). |
 | `PresencaAtivaServiceTest` | Unitário (Mockito) | Check-in feliz grava em `tb_presenca_ativa`. |
 | `UserServiceTest` | Unitário (Mockito) | Regras do domínio de usuário. |
-| `NotificationsServiceTest` | Unitário (Mockito) | `dispararPushFCM`: envio com tokens, no-op sem tokens/lista nula, e propagação de `NotifyFail` quando o FCM falha. |
+| `NotificationsServiceTest` | Unitário (Mockito) | `dispararPushFCM`: envio com tokens, no-op sem tokens/lista nula, propagação de `NotifyFail` e limpeza de tokens `UNREGISTERED`. |
 | `EventoRepositoryTest` | Integração (Testcontainers) | Sobe um `postgis/postgis:15-3.3` real e roda as *queries* nativas de `buscarEventosEmUmaArea` e `findHeatmapData` para pegar erros de sintaxe/parâmetro do Hibernate. |
+| `RoleslzBackendApplicationTests` | Smoke (Testcontainers + perfil `test`) | Sobe o `ApplicationContext` inteiro (Firebase, JPA/PostGIS, security, schedulers, websocket) para pegar erros de fiação antes de rodar a app. Usa um service account **fake** em `src/test/resources/firebasekey-test.json`. |
 
 ### Como rodar
 
@@ -151,8 +161,11 @@ Sempre que o evento for ENCERRADO, o scheduler EventoSchedullers.EventoFinalizad
 Gestão de Sessão e Autenticação:
 Lembre-se de que a redefinição de senha recorre ao Redis para validação de códigos temporários com tempo de expiração ativado.
 Notificações Push (FCM):
-Todo envio de push passa por NotificationsService.dispararPushFCM, que lança NotifyFail quando o FCM falha — NÃO reverta isso para um catch silencioso. Use sempre os wrappers de UtillsNotification (notificarInicioDeEvento, notificarAtualizacaoCritica, notificarUsuarioProximoGeofence) em vez de chamar dispararPushFCM diretamente.
-Como NotifyFail é lançada, qualquer chamador cujo fluxo principal NÃO pode falhar por causa de um push (ex.: editar evento, editar preço, deletar evento, transicionar estado do evento no scheduler) deve envolver a chamada de notificação em try/catch e apenas logar — nunca deixe a notificação abortar uma operação de negócio crítica.
+Todo envio de push passa por NotificationsService.dispararPushFCM, que lança NotifyFail quando o FCM falha — NÃO reverta isso para um catch silencioso. Use sempre os wrappers de UtillsNotification (notificarInicioDeEvento, notificarAtualizacaoCritica, notificarUsuarioProximoGeofence, notificarAvaliacaoPosRole) em vez de chamar dispararPushFCM diretamente.
+Como NotifyFail é lançada, qualquer chamador cujo fluxo principal NÃO pode falhar por causa de um push (ex.: editar evento, editar preço, deletar evento, check-in de presença, transicionar estado do evento no scheduler) deve envolver a chamada de notificação em try/catch e apenas logar — nunca deixe a notificação abortar uma operação de negócio crítica.
+NÃO remova a limpeza de tokens mortos em NotificationsService.limparTokensInvalidos (zera fcmToken quando o FCM devolve UNREGISTERED/INVALID_ARGUMENT) — sem ela o backend fica disparando push para sempre em aparelhos que desinstalaram o app.
+FireBaseConfiguration DEVE expor tanto o @Bean FirebaseApp quanto o @Bean FirebaseMessaging; se você juntar tudo num @PostConstruct sem registrar o FirebaseApp como bean, o contexto não sobe (foi o bug corrigido).
 O antigo envio via WebSocket (SimpMessagingTemplate) foi removido; hoje só existe o canal Firebase (FCM).
+Antes de dar por "pronto" qualquer mudança que toque em beans/config, rode o smoke test RoleslzBackendApplicationTests (precisa de Docker).
 Projeções e Performance:
 Sempre que criar listagens leves (para feed ou mapa), crie Java Records como Projeções em vez de retornar a entidade EventoEntity completa.

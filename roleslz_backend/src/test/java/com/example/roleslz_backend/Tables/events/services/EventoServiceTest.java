@@ -8,6 +8,7 @@ import com.example.roleslz_backend.Tables.events.repository.PresencaAtivaReposit
 import com.example.roleslz_backend.Tables.users.entity.UserEntity;
 import com.example.roleslz_backend.Tables.users.repository.UserRepository;
 import com.example.roleslz_backend.Tables.users.services.UserUtils;
+import com.example.roleslz_backend.Utills.notificationsServices.UtillsNotification;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -37,6 +38,9 @@ class EventoServiceTest {
 
     @Mock
     private UserUtils userUtils;
+
+    @Mock
+    private UtillsNotification utillsNotification;
 
     @InjectMocks
     private EventoService eventoService;
