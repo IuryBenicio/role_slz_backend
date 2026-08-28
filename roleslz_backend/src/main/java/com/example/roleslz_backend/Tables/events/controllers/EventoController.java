@@ -2,12 +2,11 @@ package com.example.roleslz_backend.Tables.events.controllers;
 
 import com.example.roleslz_backend.Tables.events.DTO.*;
 import com.example.roleslz_backend.Tables.events.services.EventoService;
+import com.example.roleslz_backend.Tables.events.services.PresencaAtivaService;
 import com.example.roleslz_backend.Tables.users.DTOS.UserDTODetails;
-import com.example.roleslz_backend.Utills.UploadImage.CloudinaryService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Set;
@@ -17,11 +16,11 @@ import java.util.Set;
 public class EventoController {
 
     private final EventoService eventoService;
-    private final CloudinaryService cloudinaryService;
+    private final PresencaAtivaService presencaAtivaService;
 
-    public EventoController(EventoService eventoService, CloudinaryService cloudinaryService) {
+    public EventoController(EventoService eventoService, PresencaAtivaService presencaAtivaService) {
         this.eventoService = eventoService;
-        this.cloudinaryService = cloudinaryService;
+        this.presencaAtivaService = presencaAtivaService;
     }
 
     @PostMapping("create")
@@ -30,10 +29,22 @@ public class EventoController {
         return ResponseEntity.ok(evento);
     }
 
-    @GetMapping("get_many/{pagina}")
-    public ResponseEntity<Set<EventoDTOWithIDClass>> getEventsPagination(@PathVariable("pagina") int pagina, @RequestParam("itens") int itens){
-        Set<EventoDTOWithIDClass> response = eventoService.getEventsPagination(pagina, itens);
+    @GetMapping("get_many")
+    public ResponseEntity<PaginationWraper> getEventsPagination(
+            @RequestParam("pagina") int pagina,
+            @RequestParam("itens") int itens,
+            @RequestParam String filtro){
+        PaginationWraper response = eventoService.getEventsFuturePagination(pagina, itens, filtro);
+        System.out.println("TESTE: " + response.content().stream().map(a-> a.toString()));
         return ResponseEntity.status(200).body(response);
+    }
+
+    @GetMapping("get_many_now")
+    public ResponseEntity<PaginationWraper> getEventsNowPagination(
+            @RequestParam("pagina") int pagina,
+            @RequestParam("itens") int itens){
+        PaginationWraper response = eventoService.getEventsNowPagination(pagina, itens);
+        return ResponseEntity.ok(response);
     }
 
     @PatchMapping("changing_event_privacity/{id}")
@@ -48,16 +59,38 @@ public class EventoController {
         return ResponseEntity.status(202).body("Categoria adicionada");
     }
 
-    @PostMapping("/{id}/upload_photos")
-    public ResponseEntity<List<PhotosEventoDTORes>> uploadPhotos(@PathVariable Long id, @RequestBody List<MultipartFile> file) {
-        List<PhotosEventoDTORes> url = eventoService.uploadFotos(file, id);
-        return ResponseEntity.ok(url);
+    @GetMapping("proximos")
+    public ResponseEntity<List<EventDTOSumary>> getEventosProximosGeoFence(
+            @RequestParam Double lat,
+            @RequestParam Double lng) {
+        // Busca eventos num raio de 5000 metros (5km)
+        return ResponseEntity.ok(eventoService.buscarProximos(lat, lng, 5000.0));
+    }
+
+    @GetMapping("minha_agenda")
+    public ResponseEntity<PaginationWraper> getMinhaAgenda(
+            @RequestParam(defaultValue = "0") int pagina,
+            @RequestParam(defaultValue = "10") int itens) {
+
+        PaginationWraper response = eventoService.getMinhaAgendaPaginada(pagina, itens);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("get_events_in_map_area")
-    public ResponseEntity<Set<EventoDTOResponseDistanceClass>> getEventsInMapArea(@RequestBody GetsEventsInMapAreaDTO getsEventsInMapAreaDTO){
-        Set<EventoDTOResponseDistanceClass> eventos = eventoService.getEventosInMapArea(getsEventsInMapAreaDTO.minLat(), getsEventsInMapAreaDTO.minLon(), getsEventsInMapAreaDTO.maxLat(), getsEventsInMapAreaDTO.maxLon());
-        return ResponseEntity.ok(eventos);
+    public ResponseEntity<Set<EventoDTOResponseDistanceClass>> getEventsInMapArea(@RequestBody GetsEventsInMapAreaDTO dto){
+       Set<EventoDTOResponseDistanceClass> eventos = eventoService.getEventosInMapArea(
+                dto.minLat(), dto.minLon(), dto.maxLat(), dto.maxLon()
+        );        return ResponseEntity.ok(eventos);
+    }
+
+    @GetMapping("heatmap")
+    public ResponseEntity<List<HeatPointDTO>> getHeatmap(
+            @RequestParam Double minLat,
+            @RequestParam Double minLon,
+            @RequestParam Double maxLat,
+            @RequestParam Double maxLon) {
+        List<HeatPointDTO> pontos = presencaAtivaService.getHeatmapData(minLat, minLon, maxLat, maxLon);
+        return ResponseEntity.ok(pontos);
     }
 
     @GetMapping("get/{id}")
@@ -79,9 +112,9 @@ public class EventoController {
     }
 
 
-    @PatchMapping("edit/{id}")
-    public ResponseEntity<EventDTOClass> editEvent(@PathVariable long id, @RequestBody EventDTORequestClass eventoDTO){
-        EventDTOClass evento = eventoService.editEvento(id, eventoDTO);
+    @PatchMapping("edit")
+    public ResponseEntity<EventDTOClass> editEvent(@RequestBody EventDTORequestClass eventoDTO){
+        EventDTOClass evento = eventoService.editEvento(eventoDTO);
         return ResponseEntity.ok(evento);
     }
 
@@ -97,15 +130,15 @@ public class EventoController {
         return ResponseEntity.ok(confirms);
     }
 
-    @PatchMapping("remove_confirm/{event_id}/user/{user_id}")
-    public ResponseEntity<String> removeConfirm(@PathVariable long event_id, @PathVariable long user_id){
-        eventoService.removeConfirms(event_id, user_id);
+    @PatchMapping("remove_confirm/{event_id}")
+    public ResponseEntity<String> removeConfirm(@PathVariable long event_id){
+        eventoService.removeConfirms(event_id);
         return ResponseEntity.status(202).body("Confirmação removida");
     }
 
-    @DeleteMapping("delete/{id}")
-    public ResponseEntity<String> delete(@PathVariable long id){
-        eventoService.deleteEvento(id);
+    @DeleteMapping("delete/{name}")
+    public ResponseEntity<String> delete(@PathVariable("name") String name){
+        eventoService.deleteEvento(name);
         return ResponseEntity.status(HttpStatus.OK).body("Evento deletado");
     }
 }

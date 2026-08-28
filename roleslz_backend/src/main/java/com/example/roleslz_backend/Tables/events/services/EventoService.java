@@ -20,23 +20,27 @@ import com.example.roleslz_backend.Tables.users.entity.UserEntity;
 import com.example.roleslz_backend.Tables.users.exceptions.UserNotFounded;
 import com.example.roleslz_backend.Tables.users.mapper.UserDetailsMapperClass;
 import com.example.roleslz_backend.Tables.users.repository.UserRepository;
-import com.example.roleslz_backend.Utills.UploadImage.StorageFile;
+import com.example.roleslz_backend.Tables.users.services.UserUtils;
+import com.example.roleslz_backend.Utills.notificationsServices.NotificationsService;
+import com.example.roleslz_backend.Utills.notificationsServices.UtillsNotification;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
+import org.hibernate.grammars.hql.HqlParser;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.PrecisionModel;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class EventoService {
 
@@ -48,9 +52,10 @@ public class EventoService {
     private final UserDetailsMapperClass userDetailsMapper;
     private final CategoriaRepository categoriaRepository;
     private final UserRepository userRepository;
-    private final StorageFile storageFile;
+    private final UserUtils userUtils;
+    private final UtillsNotification utillsNotification;
 
-    public EventoService(EventoRepository eventoRepository, PhotosEventoRepository photosEventoRepository, PhotoEventoMapper photoEventoMapper, EventoMapperClass eventoMapperClass, EventoMapperClass eventoWithDistanciaMapper, UserDetailsMapperClass userDetailsMapper, CategoriaRepository categoriaRepository, UserRepository userRepository, StorageFile storageFile) {
+    public EventoService(EventoRepository eventoRepository, PhotosEventoRepository photosEventoRepository, PhotoEventoMapper photoEventoMapper, EventoMapperClass eventoMapperClass, EventoMapperClass eventoWithDistanciaMapper, UserDetailsMapperClass userDetailsMapper, CategoriaRepository categoriaRepository, UserRepository userRepository, UserUtils userUtils, UtillsNotification utillsNotification) {
         this.eventoRepository = eventoRepository;
         this.photosEventoRepository = photosEventoRepository;
         this.photoEventoMapper = photoEventoMapper;
@@ -59,9 +64,9 @@ public class EventoService {
         this.userDetailsMapper = userDetailsMapper;
         this.categoriaRepository = categoriaRepository;
         this.userRepository = userRepository;
-        this.storageFile = storageFile;
+        this.userUtils = userUtils;
+        this.utillsNotification = utillsNotification;
     }
-
 
     private static final String msgEventNotFounded = "Evento não encontrado!";
 
@@ -72,16 +77,18 @@ public class EventoService {
     @Transactional
     public Set<EventoDTOResponseDistanceClass> getEventosInMapArea(double minLat, double minLon, double maxLat, double maxLon){
         try{
-            Point centroMapa = factory.createPoint(new Coordinate((minLon + maxLon)/2, (minLat + maxLat)/2));
+            double centerLng = (minLon + maxLon) / 2.0;
+            double centerLat = (minLat + maxLat) / 2.0;
 
-            List<EventoComDistanciaProjection> eventos = eventoRepository.buscarEventosProximos(
-                    centroMapa, minLon, minLat, maxLon, maxLat
+            List<EventoComDistanciaProjection> eventos = eventoRepository.buscarEventosEmUmaArea(
+                    centerLng, centerLat, minLon, minLat, maxLon, maxLat
             );
 
             return eventos.stream()
                     .map(eventoMapperClass::toDTOResponseDistance).collect(Collectors.toSet());
         } catch (Exception e) {
-            throw new ErrorOnReturn("Tivemos problemas para pegar eventos na area " + e);
+            e.printStackTrace();
+            throw new ErrorOnReturn("Tivemos problemas para pegar eventos na area " + e.getMessage());
         }
     }
 
@@ -89,35 +96,32 @@ public class EventoService {
     @Transactional
     public EventDTOClass getEventoById(long id){
         EventoEntity evento = eventoRepository.findById(id).orElseThrow(()->new EventNotFounded(msgEventNotFounded));
+        EventDTOClass dto = eventoMapperClass.toDTO(evento);
+        if (!evento.getExibirConfirmacoesPublicamente() && evento.getOrganizador().getId() != userUtils.getUserLogado().getId()) {
+            // ...escondemos a lista!
+            dto.setConfirmacoes(new HashSet<>()); // Manda a lista vazia ou null
+        }
         try{
-            return eventoMapperClass.toDTO(evento);
         } catch (Exception e) {
             throw new EventNotFounded("Evento não retornado");
         }
+        return dto;
     }
 
-    @Transactional
-    public List<PhotosEventoDTORes> uploadFotos(List<MultipartFile> fotos, long id){
+    public List<EventDTOSumary> buscarProximos(Double lat, Double lng, Double raioKm) {
+        Double raioEmMetros = raioKm * 1000;
 
-        List<String> urls = storageFile.uploadMultipleFiles(fotos);
+        List<EventoEntity> eventos = eventoRepository.findEventosProximosGeoFence(lat, lng, raioEmMetros);
 
-        EventoEntity evento = eventoRepository.findById(id).orElseThrow(()->new EventNotFounded(msgEventNotFounded));
-
-        List<PhotosEventoEntity> ListaFotos = new ArrayList<>();
-
-        for (String url: urls){
-            PhotosEventoEntity photosEventoEntity = new PhotosEventoEntity();
-            photosEventoEntity.setLink(url);
-            photosEventoEntity.setEvento(evento);
-            ListaFotos.add(photosEventoEntity);
-        }
-
-        try{
-            photosEventoRepository.saveAll(ListaFotos);
-            return ListaFotos.stream().map(photoEventoMapper::toDTO).collect(Collectors.toList());
-        } catch (Exception e) {
-            throw new ErrorInAddImages("Erro ao adicionar imagem");
-        }
+        // Mapeia para um DTO leve (apenas o necessário para o Fence e identificação)
+        return eventos.stream().map(evento -> {
+            EventDTOSumary dto = new EventDTOSumary();
+            dto.setId(evento.getId());
+            dto.setTitle(evento.getTitle());
+            dto.setLatitude(evento.getSpot().getLocalizacao().getY());
+            dto.setLongitude(evento.getSpot().getLocalizacao().getX());
+            return dto;
+        }).toList();
     }
 
     @Transactional
@@ -137,18 +141,15 @@ public class EventoService {
     }
 
     public void changePrivacity(long id){
-        EventoEntity evento = eventoRepository.findById(id).orElseThrow(()->new EventNotFounded(msgEventNotFounded));
+        EventoEntity evento = eventoRepository.findByIdAndOrganizadorId(id, userUtils.getUserLogado().getId()).orElseThrow(()-> new EventNotFounded("Nenhum evento foi encontrado pertencendo ao usuário logado!"));
 
-        try {
-            if (evento.getEventPrivacity() == EventPrivacity.PRIVADO) {
-                evento.setEventPrivacity(EventPrivacity.PUBLICO);
-            } else {
-                evento.setEventPrivacity(EventPrivacity.PRIVADO);
-            }
-            eventoRepository.save(evento);
-        } catch (Exception e) {
-            throw new EventNotEdited("Privacidade do evento não alterada!");
-        }
+        EventPrivacity novaPrivacidade = (evento.getEventPrivacity() == EventPrivacity.PRIVADO)
+                ? EventPrivacity.PUBLICO
+                : EventPrivacity.PRIVADO;
+
+        evento.setEventPrivacity(novaPrivacidade);
+
+        eventoRepository.save(evento);
     }
 
     public Set<EventoDTOWithIDClass> getEventoByOwnerId(long id){
@@ -164,16 +165,13 @@ public class EventoService {
 
     @Transactional
     public void addCategoria(long id, String categoria){
-        EventoEntity eventoEntity = eventoRepository.findById(id).orElseThrow(()->new EventNotFounded(msgEventNotFounded));
+        EventoEntity eventoEntity = eventoRepository.findByIdAndOrganizadorId(id, userUtils.getUserLogado().getId()).orElseThrow(()->new EventNotFounded(msgEventNotFounded));
         CategoriaEntity categoriaEntity = categoriaRepository.findByName(categoria).orElseThrow(()-> new CategoryNotFounded("Categoria não encontrada"));
 
         eventoEntity.getCategorias().add(categoriaEntity);
 
-        try{
-            eventoRepository.save(eventoEntity);
-        } catch (Exception e) {
-            throw new CategoryNotAddedInEvent("Categoria não adicionada no evento");
-        }
+        eventoRepository.save(eventoEntity);
+
     }
 
     @Transactional
@@ -206,7 +204,7 @@ public class EventoService {
             PhotosEventoEntity placeholder = new PhotosEventoEntity();
             placeholder.setLink("https://placehold.co/600x400");
             placeholder.setEvento(novoEvento);
-            
+
             List<PhotosEventoEntity> images = new ArrayList<>();
             images.add(placeholder);
             novoEvento.setImages(images);
@@ -219,7 +217,14 @@ public class EventoService {
 
     @Transactional
     public void editPrice(long id, NewPriceDTO price){
-        EventoEntity evento = eventoRepository.findById(id).orElseThrow(()->new EventNotFounded(msgEventNotFounded));
+        EventoEntity evento = eventoRepository.findByIdAndOrganizadorId(id, userUtils.getUserLogado().getId()).orElseThrow(()->new EventNotFounded(msgEventNotFounded));
+
+        String msg = "O evento " + evento.getTitle() + " ALTEROU SEU PREÇO, entre no app e confira!";
+        try {
+            utillsNotification.notificarAtualizacaoCritica(evento, msg);
+        } catch (Exception e) {
+            log.error("Falha ao notificar alteração de preço do evento ID: {}", evento.getId(), e);
+        }
 
         BigDecimal zero = BigDecimal.ZERO;
 
@@ -227,35 +232,48 @@ public class EventoService {
             throw new InvalidPrice("Preço inválido");
         }
 
-        try{
-            evento.setPrice(price.newPrice());
-            eventoRepository.save(evento);
-        } catch (Exception e) {
-            throw new EventNotEdited("Evento não editado");
-        }
+        evento.setPrice(price.newPrice());
+        eventoRepository.save(evento);
 
     }
 
     @Transactional
-    public EventDTOClass editEvento(long id,EventDTORequestClass eventoDTO){
-       EventoEntity evento = eventoRepository.findById(id).orElseThrow(()-> new EventNotFounded("Evento não encontrado"));
+    public EventDTOClass editEvento(EventDTORequestClass eventoDTO){
+        if (eventoDTO.getId() == null) {
+            throw new EventNotFounded("Id do evento não informado");
+        }
+        EventoEntity evento = eventoRepository.findByIdAndOrganizadorId(eventoDTO.getId(), userUtils.getUserLogado().getId()).orElseThrow(()-> new EventNotFounded("Evento não encontrado"));
 
-       eventoMapperClass.updateEntityFromDto(eventoDTO, evento);
+        String msg = "O evento " + evento.getTitle() + " teve alterações importantes de horário ou local. Confira no app!";
+        try {
+            utillsNotification.notificarAtualizacaoCritica(evento, msg);
+        } catch (Exception e) {
+            log.error("Falha ao notificar edição do evento ID: {}", evento.getId(), e);
+        }
 
-       EventoEntity salvo = eventoRepository.save(evento);
+        eventoMapperClass.updateEntityFromDto(eventoDTO, evento);
 
-       return eventoMapperClass.toDTO(salvo);
+        EventoEntity salvo = eventoRepository.save(evento);
+
+        return eventoMapperClass.toDTO(salvo);
     }
 
     @Transactional
-    public void deleteEvento(long id){
-        EventoEntity evento = eventoRepository.findById(id).orElseThrow(()-> new EventNotFounded("Evento não encontrado"));
+    public void deleteEvento(String name){
+        EventoEntity evento = eventoRepository.findByOrganizadorIdAndTitle(userUtils.getUserLogado().getId(), name).orElseThrow(()-> new EventNotFounded("Evento não encontrado"));
 
-        try{
-            eventoRepository.delete(evento);
-        } catch (Exception e) {
-            throw new EventoNotDeleted("Evento não deletado");
+        LocalDateTime dataHoraAtual = LocalDateTime.now();
+
+        if(evento.getStartDate().isBefore(dataHoraAtual)){
+            String msg = "O evento " + evento.getTitle() + " foi deletado 😞";
+            try {
+                utillsNotification.notificarAtualizacaoCritica(evento, msg);
+            } catch (Exception e) {
+                log.error("Falha ao notificar exclusão do evento ID: {}", evento.getId(), e);
+            }
         }
+
+        eventoRepository.delete(evento);
     }
 
     @Transactional
@@ -269,11 +287,67 @@ public class EventoService {
         }
     }
 
-    @Transactional
-    public void removeConfirms (long event_id, long user_id){
-        EventoEntity evento = eventoRepository.findById(event_id).orElseThrow(()-> new EventNotFounded(msgEventNotFounded));
+    public PaginationWraper getEventsNowPagination(int pagina, int itens) {
+        LocalDateTime agora = LocalDateTime.now();
+        Page<EventoEntity> pageResult = eventoRepository.findByStartDateBetween(
+                agora.minusHours(3), agora.plusHours(6), PageRequest.of(pagina, itens)
+        );
 
-        UserEntity confirm = evento.getConfirmacoes().stream().filter(a -> a.getId() == user_id).findFirst().orElseThrow(()->new EventNotFounded("Confirmação não encontrada"));
+        return new PaginationWraper(
+                pageResult.getContent().stream().map(EventDTOSumary::toSummaryDTO).toList(),
+                pageResult.getNumber(),
+                pageResult.getTotalElements(),
+                pageResult.getTotalPages()
+        );
+    }
+
+    public PaginationWraper getMinhaAgendaPaginada(int pagina, int itens){
+        Page<EventoEntity> pageResult = eventoRepository.findMinhaAgenda(userUtils.getUserLogado().getId(), PageRequest.of(pagina, itens));
+
+        PaginationWraper response = new PaginationWraper(
+                pageResult.getContent().stream().map(EventDTOSumary::toSummaryDTO).toList(),
+                pageResult.getNumber(),
+                pageResult.getTotalElements(),
+                pageResult.getTotalPages()
+        );
+
+        return response;
+    };
+
+    public PaginationWraper getEventsFuturePagination(int pagina, int itens, String filtro) {
+        LocalDateTime agora = LocalDateTime.now();
+        LocalDateTime fim = switch (filtro.toUpperCase()) {
+            case "HOJE" -> agora.toLocalDate().atTime(23, 59, 59);
+            case "SEMANA" -> agora.plusDays(7);
+            case "MES" -> agora.plusMonths(1);
+            default -> agora.plusDays(30);
+        };
+
+        // 2. Busca paginada de eventos futuros
+        Page<EventoEntity> pageResult = eventoRepository.findByStartDateBetween(agora, fim, PageRequest.of(pagina, itens));
+
+        return new PaginationWraper(
+                pageResult.getContent().stream().map(EventDTOSumary::toSummaryDTO).toList(),
+                pageResult.getNumber(),
+                pageResult.getTotalElements(),
+                pageResult.getTotalPages()
+        );
+    }
+
+    @Transactional
+    public void removeConfirms (long event_id){
+        EventoEntity evento = eventoRepository
+                .findById(event_id)
+                .orElseThrow(()-> new EventNotFounded(msgEventNotFounded));
+
+        UserEntity confirm = evento
+                .getConfirmacoes()
+                .stream()
+                .filter(a -> a.getId() == userUtils
+                        .getUserLogado()
+                        .getId())
+                        .findFirst()
+                        .orElseThrow(()->new EventNotFounded("Confirmação não encontrada"));
 
         try{
             evento.getConfirmacoes().remove(confirm);

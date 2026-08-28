@@ -18,6 +18,7 @@ import com.example.roleslz_backend.Utills.GoogleService;
 import com.example.roleslz_backend.infra.service.SecurityService;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -28,7 +29,6 @@ import java.util.stream.Collectors;
 @Service
 public class UserService {
 
-
     private final UserRepository userRepository;
     private final UserRegisterMapperClass userRegisterMapper;
     private final UserDetailsMapperClass userDetailsMapper;
@@ -37,8 +37,9 @@ public class UserService {
     private final SecurityService securityService;
     private final EmailService emailService;
     private final GoogleService googleService;
+    private final UserUtils userUtils;
 
-    public UserService(UserRepository userRepository, UserRegisterMapperClass userRegisterMapper, UserDetailsMapperClass userDetailsMapper, PasswordEncoder passwordEncoder, EventoRepository eventoRepository, SecurityService securityService, EmailService emailService, GoogleService googleService) {
+    public UserService(UserRepository userRepository, UserRegisterMapperClass userRegisterMapper, UserDetailsMapperClass userDetailsMapper, PasswordEncoder passwordEncoder, EventoRepository eventoRepository, SecurityService securityService, EmailService emailService, GoogleService googleService, UserUtils userUtils) {
         this.userRepository = userRepository;
         this.userRegisterMapper = userRegisterMapper;
         this.userDetailsMapper = userDetailsMapper;
@@ -47,6 +48,11 @@ public class UserService {
         this.securityService = securityService;
         this.emailService = emailService;
         this.googleService = googleService;
+        this.userUtils = userUtils;
+    }
+
+    private UserEntity getUserLogado() {
+        return (UserEntity) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 
     @Transactional
@@ -122,17 +128,17 @@ public class UserService {
         return user;
     }
 
-    public UserDTODetails getUserById(long id){
-        UserEntity user = userRepository.findById(id).orElseThrow(()->new UserDontExists("Usuário não encontrado"));
+    public UserDTODetails getUserById(){
+        UserEntity user = userRepository.findById(userUtils.getUserLogado().getId()).orElseThrow(()->new UserDontExists("Usuário não encontrado"));
         return userDetailsMapper.toDTO(user);
     }
 
     public boolean userHasEvent(long id){
-         UserEntity user = userRepository.findById(id).orElseThrow(()-> new UserNotFounded("Usuário não encontrado!"));
-         if(user.getEventos().isEmpty()){
-             return false;
-         }
-         return true;
+        UserEntity user = userRepository.findById(id).orElseThrow(()-> new UserNotFounded("Usuário não encontrado!"));
+        if(user.getEventos().isEmpty()){
+            return false;
+        }
+        return true;
     }
 
     public boolean userHasBusiness(long id){
@@ -149,8 +155,8 @@ public class UserService {
     }
 
     @Transactional
-    public UserEditDTO editUserDetails(UserEditDTO dto, long id){
-        UserEntity userBefore = userRepository.findById(id).orElseThrow(()->new UserDontExists("Usuário não encontrado"));
+    public UserEditDTO editUserDetails(UserEditDTO dto){
+        UserEntity userBefore = userRepository.findById(userUtils.getUserLogado().getId()).orElseThrow(()->new UserDontExists("Usuário não encontrado"));
 
         userDetailsMapper.updateEntityFromDtoEdit(dto, userBefore);
 
@@ -162,8 +168,8 @@ public class UserService {
         }
     }
 
-    public Boolean verifyPassword(long id, PasswordDTO data){
-        UserEntity user = userRepository.findById(id).orElseThrow(()-> new UserNotEdited("Senha não editada"));
+    public Boolean verifyPassword(PasswordDTO data){
+        UserEntity user = userRepository.findById(userUtils.getUserLogado().getId()).orElseThrow(()-> new UserNotEdited("Senha não editada"));
 
         Boolean verificaSenha = passwordEncoder.matches(data.password(), user.getPassword());
 
@@ -176,8 +182,8 @@ public class UserService {
     }
 
     @Transactional
-    public void addFirebaseToken(long id, String token){
-        UserEntity user = userRepository.findById(id).orElseThrow(()->new UserNotFounded("Usuário não encontrado"));
+    public void addFirebaseToken(String token){
+        UserEntity user = userRepository.findById(userUtils.getUserLogado().getId()).orElseThrow(()->new UserNotFounded("Usuário não encontrado"));
         try{
             user.setFcmToken(token);
             userRepository.save(user);
@@ -194,13 +200,13 @@ public class UserService {
         }
 
         UserEntity user = userRepository.findByEmail(email).orElseThrow(()-> new UserNotFounded("Usuário não encontrado pelo email"));
-            user.setEnable(true);
-            userRepository.save(user);
+        user.setEnable(true);
+        userRepository.save(user);
     }
 
     @Transactional
-    public void editPassword(long id ,PasswordDTO data){
-        UserEntity user = userRepository.findById(id).orElseThrow(()-> new UserNotEdited("Senha não editada"));
+    public void editPassword(PasswordDTO data){
+        UserEntity user = userRepository.findById(userUtils.getUserLogado().getId()).orElseThrow(()-> new UserNotEdited("Senha não editada"));
 
         Boolean verificaSenha = passwordEncoder.matches(data.password(), user.getPassword());
 
@@ -240,8 +246,8 @@ public class UserService {
 
 
     @Transactional
-    public void deleteUser(long id){
-        UserEntity user = userRepository.findById(id).orElseThrow(()-> new UserDontExists("usuário não encontrado"));
+    public void deleteUser(){
+        UserEntity user = userRepository.findById(userUtils.getUserLogado().getId()).orElseThrow(()-> new UserDontExists("usuário não encontrado"));
         try{
             userRepository.delete(user);
         } catch (Exception e) {
@@ -250,25 +256,26 @@ public class UserService {
     }
 
     @Transactional
-    public void confirmPresence(long userId, long eventoId){
+    public void confirmPresence(long eventoId){
         EventoEntity evento = eventoRepository.findById(eventoId).orElseThrow(()-> new EventNotFounded("Evento não encontrado"));
-        UserEntity user = userRepository.findById(userId).orElseThrow(()-> new UserNotFounded("Usuário não encontrado"));
+
+        UserEntity user = userRepository.findById(userUtils.getUserLogado().getId()).orElseThrow(()-> new UserNotFounded("Usuário não encontrado"));
 
         try{
-        evento.getConfirmacoes().add(user);
-        user.getEventos().add(evento);
+            evento.getConfirmacoes().add(user);
+            user.getEventos().add(evento);
 
-        userRepository.save(user);
-        eventoRepository.save(evento);
+            userRepository.save(user);
+            eventoRepository.save(evento);
         } catch (Exception e) {
             throw new PresenceNotConfirmated("Presença não confirmada" + e.getMessage());
         }
     }
 
     @Transactional
-    public void unconfirmPresence(long userId, long eventoId){
+    public void unconfirmPresence( long eventoId){
         EventoEntity evento = eventoRepository.findById(eventoId).orElseThrow(()-> new EventNotFounded("Evento não encontrado"));
-        UserEntity user = userRepository.findById(userId).orElseThrow(()-> new UserNotFounded("Usuário não encontrado"));
+        UserEntity user = userRepository.findById(userUtils.getUserLogado().getId()).orElseThrow(()-> new UserNotFounded("Usuário não encontrado"));
 
         try{
             if(evento.getConfirmacoes().contains(user)){

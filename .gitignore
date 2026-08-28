@@ -1,0 +1,29 @@
+# Build
+target/
+build/
+*.jar
+*.war
+*.zip
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.project
+.classpath
+.settings/
+.springBeans
+.sts4-cache
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Segredos / config local (nunca versionar)
+.env
+.env.*
+src/main/resources/firebasekey.json

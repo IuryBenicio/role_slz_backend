@@ -8,10 +8,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,7 +18,8 @@ import java.util.Set;
 
 @Entity
 @Table(name = "users")
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
@@ -40,6 +38,7 @@ public class UserEntity extends BaseEntity implements UserDetails {
     @NotBlank(message = "sobrenome é obrigatório")
     private String sobrenome;
 
+//    token de verificação de auth pelo email
     @Column(name = "verification_token")
     private String verificationToken;
 
@@ -53,24 +52,29 @@ public class UserEntity extends BaseEntity implements UserDetails {
     @NotBlank(message = "email é obrigatório")
     private String email;
 
+//    Ativa a conta apenas depois da confirmação pelo email (email de verificação)
     @Column(name = "is_enable")
-    private boolean enable = false;
+    private boolean enable = true;
 
     @Column(name = "password")
     @NotBlank(message = "senha é obrigatória")
     private String password;
 
+//    Tipo de usuário
     @Column(name = "role")
     @NotNull(message = "role obrigatória")
     private Roles role = Roles.REGULAR;
 
+//    Token usado pelo firebase para notificações
     @Column(name = "fcm_token")
     private String fcmToken;
 
+//    Salvar qual provider foi usado para fazer auth por um provedor (google ou apple)
     @Column(name = "auth_provider")
     @Enumerated(EnumType.STRING)
     private AuthProvider authProvider;
 
+//    Usado para guardar o ID para auth por google ou apple
     @Column(name = "provider_id")
     private String providerId;
 
@@ -78,6 +82,7 @@ public class UserEntity extends BaseEntity implements UserDetails {
     @NotNull(message = "idade é obrigatória")
     private Integer idade;
 
+//    URL da imagem já na nuvem
     @Column(name="image")
     private String image;
 
@@ -92,6 +97,7 @@ public class UserEntity extends BaseEntity implements UserDetails {
     @JoinColumn(name = "business_id")
     private BusinessEntity business;
 
+//    SEGUIDORES E SEGUINDO
     @ManyToMany
     @JoinTable(
             name = "user_relationships",

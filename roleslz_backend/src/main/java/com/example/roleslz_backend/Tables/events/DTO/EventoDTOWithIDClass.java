@@ -35,6 +35,7 @@ public class EventoDTOWithIDClass {
     Set<ComentariosDTO> comentarios;
     Set<AvaliacaoDTO> avaliacoes;
     Set<CategoriaSumaryDTO> categorias;
+    Boolean exibirConfirmacoesPublicamente;
     EventType eventType;
     EventPrivacity eventPrivacity;
     BigDecimal price;

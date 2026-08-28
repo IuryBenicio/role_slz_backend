@@ -26,15 +26,20 @@ public class UserController {
 
     //rotas
 
-    @PatchMapping("edit/{id}")
-    public ResponseEntity<UserEditDTO> editUser(@PathVariable long id, @Valid @RequestBody UserEditDTO dto){
-        UserEditDTO user = userService.editUserDetails(dto, id);
+    @PatchMapping("edit")
+    public ResponseEntity<UserEditDTO> editUser(@Valid @RequestBody UserEditDTO dto){
+        UserEditDTO user = userService.editUserDetails(dto);
         return ResponseEntity.ok(user);
     }
 
-    @GetMapping("user/{id}")
-    public ResponseEntity<UserDTODetails> getUser(@PathVariable long id){
-        UserDTODetails user = userService.getUserById(id);
+    @GetMapping("hello")
+    public ResponseEntity<String> helloCheck(){
+        return ResponseEntity.ok("Checado!");
+    }
+
+    @GetMapping("user")
+    public ResponseEntity<UserDTODetails> getUser(){
+        UserDTODetails user = userService.getUserById();
         return ResponseEntity.ok(user);
     }
 
@@ -45,15 +50,15 @@ public class UserController {
     }
 
 
-    @PostMapping("add_f_token/{id}")
-    public ResponseEntity<String> addFirebaseToken(@PathVariable long id, @RequestBody String token){
-        userService.addFirebaseToken(id,token);
+    @PostMapping("add_f_token")
+    public ResponseEntity<String> addFirebaseToken(@RequestBody String token){
+        userService.addFirebaseToken(token);
         return ResponseEntity.ok("Token atualizado");
     }
 
-    @PatchMapping("verify_password/{id}")
-    public ResponseEntity<String> verifyPassword(@PathVariable long id, @Valid @RequestBody PasswordDTO passwordDTO){
-            userService.verifyPassword(id, passwordDTO);
+    @PatchMapping("verify_password")
+    public ResponseEntity<String> verifyPassword(@Valid @RequestBody PasswordDTO passwordDTO){
+            userService.verifyPassword(passwordDTO);
             return ResponseEntity.status(HttpStatus.OK).body("Senha verificada");
     }
 
@@ -81,34 +86,34 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body("Usuário verificado");
     }
 
-    @PatchMapping("get-user/{pagina}")
+    @GetMapping("get-user/{pagina}")
     public ResponseEntity<Set<UserDTODetails>> getUsersPages(@PathVariable("pagina") int pagina, @RequestParam("itens") int itens){
         Set<UserDTODetails> response = userService.getUsersPages(pagina,itens);
         return ResponseEntity.status(200).body(response);
     }
 
 
-    @PatchMapping("edit_password/{id}")
-    public ResponseEntity<String> editPassword(@PathVariable long id, @Valid @RequestBody PasswordDTO passwordDTO){
-        userService.editPassword(id, passwordDTO);
+    @PatchMapping("edit_password")
+    public ResponseEntity<String> editPassword(@Valid @RequestBody PasswordDTO passwordDTO){
+        userService.editPassword(passwordDTO);
         return ResponseEntity.ok("Senha editada");
     }
 
-    @DeleteMapping("delete/{id}")
-    public ResponseEntity<String> deleteUser(@PathVariable long id){
-        userService.deleteUser(id);
+    @DeleteMapping("delete")
+    public ResponseEntity<String> deleteUser(){
+        userService.deleteUser();
         return ResponseEntity.ok("Usuário deletado");
     }
 
-    @PatchMapping("confirm_presence/{userId}/event/{eventId}")
-    public ResponseEntity<String> confirmePresence(@PathVariable long userId, @PathVariable long eventId, @RequestBody EventoDTO eventoDTO){
-        userService.confirmPresence(userId, eventId);
+    @PatchMapping("confirm_presence/event/{eventId}")
+    public ResponseEntity<String> confirmePresence(@PathVariable long eventId, @RequestBody EventoDTO eventoDTO){
+        userService.confirmPresence(eventId);
         return ResponseEntity.ok("Usuário confirmado no evento "+ eventoDTO.title()+ ".");
     }
 
-    @PatchMapping("unconfirm_presence/{userId}/event/{eventId}")
+    @PatchMapping("unconfirm_presence/event/{eventId}")
     public ResponseEntity<String> unconfirmPresence(@PathVariable long userId, @PathVariable long eventId, @RequestBody EventoDTO eventoDTO){
-        userService.unconfirmPresence(userId, eventId);
+        userService.unconfirmPresence(eventId);
         return ResponseEntity.ok("confirmação retirada do evento "+ eventoDTO.title()+ ".");
     }
 }

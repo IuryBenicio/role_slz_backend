@@ -1,70 +1,58 @@
 package com.example.roleslz_backend.Utills.notificationsServices;
 
-import com.example.roleslz_backend.Tables.events.entity.EstadoEvento;
 import com.example.roleslz_backend.Tables.events.entity.EventoEntity;
 import com.example.roleslz_backend.Tables.users.entity.UserEntity;
+import com.example.roleslz_backend.Utills.notificationsServices.exceptions.NotifyFail;
 import com.google.firebase.messaging.*;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
+@Slf4j
 @Service
 public class NotificationsService {
 
-    private final SimpMessagingTemplate messagingTemplate;
+    private final FirebaseMessaging firebaseMessaging;
 
-    public NotificationsService(SimpMessagingTemplate messagingTemplate) {
-        this.messagingTemplate = messagingTemplate;
+    public NotificationsService(FirebaseMessaging firebaseMessaging) {
+        this.firebaseMessaging = firebaseMessaging;
     }
 
-    public void sendNotificationWebsocket(EventoEntity evento, EstadoEvento estado, String message) {
-        //crio o Json que será enviado via websockets
-        Map<String, Object> notification = new HashMap<>();
-        notification.put("message", message);
-        notification.put("eventoId", evento.getId());
-        notification.put("estadoDoEvento", estado);
+    public enum TipoNotificacao {
+        ALERTA_TEMPO,
+        ATUALIZACAO_CRITICA,
+        GEOFENCING,
+        AVALIACAO_POS_ROLE
+    }
 
-        try{
-            // Enviamos para o tópico específico deste evento
-            // Quem estiver no app ouvindo '/topic/evento/123' receberá isso instantaneamente
-            messagingTemplate.convertAndSend("/topic/evento/" + evento.getId(), notification);
-        } catch (Exception e) {
-            System.getLogger("Falha ao notificar via websockets" + e);
+    public void dispararPushFCM(EventoEntity evento, String titulo, String corpoMensagem, TipoNotificacao tipo, List<String> tokensAlvo) {
+
+        if (tokensAlvo == null || tokensAlvo.isEmpty()) {
+            log.info("Nenhum token FCM válido para enviar a notificação: {}", titulo);
+            return;
         }
 
-    }
-
-    public void sendNotificationFirebase(EventoEntity evento, String msg){
-        List<String> tokens = evento.getConfirmacoes()
-                .stream()
-                .map(UserEntity::getFcmToken)
-                .filter(Objects::nonNull).toList();
-
-        if(tokens.isEmpty()) return;
-
-        Notification notification = Notification
-                .builder()
-                .setTitle("Spot Rolê - " + evento.getTitle())
-                .setBody(msg)
+        Notification notification = Notification.builder()
+                .setTitle(titulo)
+                .setBody(corpoMensagem)
                 .build();
 
-        MulticastMessage message = MulticastMessage
-                .builder()
+        MulticastMessage message = MulticastMessage.builder()
                 .setNotification(notification)
+                .putData("tipoPush", tipo.name()) // O Front-end vai ler isso!
                 .putData("eventoId", String.valueOf(evento.getId()))
-                .addAllTokens(tokens)
+                .putData("estadoDoEvento", evento.getEstadoEvento() != null ? evento.getEstadoEvento().name() : "")
+                .addAllTokens(tokensAlvo)
                 .build();
 
-        try{
-            //envia a mensagem
-            BatchResponse response = FirebaseMessaging.getInstance().sendEachForMulticast(message);
-            System.getLogger("Push enviado com sucesso: -> " + response.getSuccessCount());
-        }catch (FirebaseMessagingException e){
-            System.getLogger("Erro ao enviar: -> " + e.getMessage());
+        try {
+            BatchResponse response = firebaseMessaging.sendEachForMulticast(message);
+            log.info("Push FCM [{}] disparado! Sucesso: {} | Falhas: {}", tipo.name(), response.getSuccessCount(), response.getFailureCount());
+        } catch (FirebaseMessagingException e) {
+            log.error("Erro fatal ao enviar Push FCM [{}]", tipo.name(), e);
+            throw new NotifyFail("Falha ao enviar notificação push [" + tipo.name() + "] para o evento " + evento.getId() + ": " + e.getMessage());
         }
     }
 }

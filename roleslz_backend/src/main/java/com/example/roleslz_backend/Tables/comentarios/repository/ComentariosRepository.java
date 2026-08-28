@@ -11,6 +11,6 @@ public interface ComentariosRepository extends JpaRepository<ComentarioEntity, L
 
     // Busca o comentário mais recente do usuário em um evento específico
     Optional<ComentarioEntity> findFirstByUserAndEventoOrderByCreatedAtDesc(UserEntity user, EventoEntity evento);
-
+    Optional<ComentarioEntity> findByIdAndUserId(long id, long userId);
 }
 

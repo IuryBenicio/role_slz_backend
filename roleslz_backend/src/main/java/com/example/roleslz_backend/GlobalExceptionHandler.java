@@ -9,8 +9,11 @@ import com.example.roleslz_backend.Tables.comentarios.exceptions.*;
 import com.example.roleslz_backend.Tables.events.exceptions.*;
 import com.example.roleslz_backend.Tables.users.exceptions.*;
 import com.example.roleslz_backend.Tables.verificarEmail.exceptions.ErrorOnAccountActivation;
+import com.example.roleslz_backend.Utills.StandardError;
 import com.example.roleslz_backend.Utills.notificationsServices.exceptions.NotifyFail;
 import com.example.roleslz_backend.infra.security.ErrorToGenerateToken;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -18,6 +21,27 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    // Trata erros genéricos de acesso/persistência no banco de dados
+    @ExceptionHandler(DataAccessException.class)
+    public ResponseEntity<StandardError> DatabaseException(DataAccessException e, HttpServletRequest request) {
+        StandardError err = new StandardError(
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                "Ocorreu um erro no servidor ao salvar as alterações. Tente novamente mais tarde.",
+                System.currentTimeMillis()
+        );
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(err);
+    }
+
+    @ExceptionHandler(ActivePresenceNotCleaned.class)
+    public ResponseEntity<String> ActivePresenceNotCleaned(ActivePresenceNotCleaned ex){
+        return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(PresenceNotChecked.class)
+    public ResponseEntity<String> PresenceNotChecked(PresenceNotChecked ex){
+        return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body(ex.getMessage());
+    }
 
     @ExceptionHandler(ErrorToGenerateToken.class)
     public ResponseEntity<String> ErrorToGenerateToken(ErrorToGenerateToken ex){
