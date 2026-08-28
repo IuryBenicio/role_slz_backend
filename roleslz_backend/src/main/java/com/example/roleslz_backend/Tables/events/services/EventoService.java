@@ -113,6 +113,8 @@ public class EventoService {
         // O usuário logado já teve presença confirmada neste evento? (badge "estive presente" + pode avaliar)
         dto.setParticipacaoConfirmada(participacaoRepository.existsByUserIdAndEventoId(userLogadoId, id));
         dto.setJaAvaliei(avaliacaoRepository.existsByUserIdAndEventoId(userLogadoId, id));
+        dto.setInteresseConfirmado(evento.getConfirmacoes() != null
+                && evento.getConfirmacoes().stream().anyMatch(u -> u.getId() == userLogadoId));
 
         return dto;
     }

@@ -12,6 +12,7 @@ import com.example.roleslz_backend.Tables.events.entity.PhotosEventoEntity;
 import com.example.roleslz_backend.Tables.spot.entity.SpotEntity;
 import com.example.roleslz_backend.Tables.users.DTOS.UserSummaryDTO;
 import com.example.roleslz_backend.Tables.users.repository.UserRepository;
+import com.example.roleslz_backend.Utills.UrlUtils;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
@@ -69,6 +70,7 @@ public class EventoMapperClass {
         dto.setEventPrivacity(entity.getEventPrivacity());
         dto.setEstadoEvento(entity.getEstadoEvento());
         dto.setPrice(entity.getPrice());
+        dto.setTicketLink(entity.getTicketLink());
         if (entity.getImages() != null) {
             dto.setImages(entity.getImages().stream()
                     .map(PhotosEventoSummaryDTO::toSummaryDTO)
@@ -106,6 +108,7 @@ public class EventoMapperClass {
         dto.setEventPrivacity(entity.getEventPrivacity());
         dto.setEstadoEvento(entity.getEstadoEvento());
         dto.setPrice(entity.getPrice());
+        dto.setTicketLink(entity.getTicketLink());
         if (entity.getImages() != null) {
             dto.setImages(entity.getImages().stream()
                     .map(PhotosEventoSummaryDTO::toSummaryDTO)
@@ -137,6 +140,7 @@ public class EventoMapperClass {
         entity.setEstadoEvento(dto.getEstadoEvento());
         entity.setEventType(dto.getEventType());
         entity.setEventPrivacity(dto.getEventPrivacity());
+        entity.setTicketLink(UrlUtils.normalizar(dto.getTicketLink()));
 
         if (dto.getOrganizador() != null) {
             entity.setOrganizador(userRepository.getReferenceById(dto.getOrganizador().id()));
@@ -179,6 +183,7 @@ public class EventoMapperClass {
         if (dto.getEndDate() != null) entity.setEndDate(dto.getEndDate());
         if (dto.getEnderecoExtenso() != null) entity.setEnderecoExtenso(dto.getEnderecoExtenso());
         if (dto.getPrice() != null) entity.setPrice(dto.getPrice());
+        if (dto.getTicketLink() != null) entity.setTicketLink(UrlUtils.normalizar(dto.getTicketLink()));
         if (dto.getEstadoEvento() != null) entity.setEstadoEvento(dto.getEstadoEvento());
         if (dto.getEventType() != null) entity.setEventType(dto.getEventType());
         if (dto.getEventPrivacity() != null) entity.setEventPrivacity(dto.getEventPrivacity());

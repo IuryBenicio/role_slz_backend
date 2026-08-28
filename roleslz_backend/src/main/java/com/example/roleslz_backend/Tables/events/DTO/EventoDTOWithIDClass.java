@@ -39,6 +39,7 @@ public class EventoDTOWithIDClass {
     EventType eventType;
     EventPrivacity eventPrivacity;
     BigDecimal price;
+    String ticketLink;
     Double latitude;
     Double longitude;
     Point spot;

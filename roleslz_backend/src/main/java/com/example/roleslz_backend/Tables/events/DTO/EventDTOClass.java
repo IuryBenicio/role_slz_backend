@@ -41,10 +41,12 @@ public class EventDTOClass {
     private EventType eventType;
     private EventPrivacity eventPrivacity;
     private BigDecimal price;
+    private String ticketLink;             // link externo de compra de ingresso (null se não houver)
     private Double latitude;
     private Double longitude;
     private Point spot;
     private boolean participacaoConfirmada; // o usuário logado já teve presença confirmada aqui
     private boolean jaAvaliei;              // o usuário logado já avaliou este evento
+    private boolean interesseConfirmado;   // o usuário logado já marcou "Bora!" neste evento
 
 }

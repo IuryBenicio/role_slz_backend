@@ -65,6 +65,10 @@ public class EventoEntity extends BaseEntity {
     @Column(name = "price")
     private BigDecimal price;
 
+//    Link externo de compra de ingresso (v1: SpotRolê não vende ingresso, só redireciona)
+    @Column(name = "ticket_link")
+    private String ticketLink;
+
 //    Spot é a tabela referente ao local do evento (que pode estar ligado a uma pessoa ou business)
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(nullable = false, name = "spot_id")

@@ -36,6 +36,7 @@ public class EventDTORequestClass {
     Set<CategoriaSumaryDTO> categorias;
     Boolean exibirConfirmacoesPublicamente;
     BigDecimal price;
+    String ticketLink;
     EventType eventType;
     EventPrivacity eventPrivacity;
     //SPOT
