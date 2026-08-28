@@ -10,7 +10,9 @@ import java.time.LocalDateTime;
  */
 public record AvaliacaoResponseDTO(
         long id,
+        long autorId,
         float nota,
+        String comentario,
         String autorNome,
         String autorImage,
         LocalDateTime createdAt
@@ -20,7 +22,9 @@ public record AvaliacaoResponseDTO(
         var autor = entity.getUser();
         return new AvaliacaoResponseDTO(
                 entity.getId(),
+                autor != null ? autor.getId() : 0,
                 entity.getNota(),
+                entity.getComentario(),
                 autor != null ? autor.getNome() : null,
                 autor != null ? autor.getImage() : null,
                 entity.getCreatedAt()

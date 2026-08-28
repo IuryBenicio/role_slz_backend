@@ -22,6 +22,18 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    // Regra de negócio violada (ex.: avaliar evento sem ter ido, confirmar presença antes do fim).
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<String> IllegalState(IllegalStateException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
+
+    // Entrada inválida (ex.: nota fora da faixa 1-5).
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<String> IllegalArgument(IllegalArgumentException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
     // Trata erros genéricos de acesso/persistência no banco de dados
     @ExceptionHandler(DataAccessException.class)
     public ResponseEntity<StandardError> DatabaseException(DataAccessException e, HttpServletRequest request) {

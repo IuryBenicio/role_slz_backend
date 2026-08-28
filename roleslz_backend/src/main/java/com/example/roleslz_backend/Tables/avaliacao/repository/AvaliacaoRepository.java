@@ -6,5 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface AvaliacaoRepository extends JpaRepository<AvaliacaoEntity, Long> {
-    Optional<AvaliacaoEntity> findByUserId(long id);
+
+    boolean existsByUserIdAndEventoId(long userId, long eventoId);
+
+    Optional<AvaliacaoEntity> findByUserIdAndEventoId(long userId, long eventoId);
 }

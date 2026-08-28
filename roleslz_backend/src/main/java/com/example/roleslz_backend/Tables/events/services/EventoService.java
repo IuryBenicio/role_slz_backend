@@ -12,6 +12,7 @@ import com.example.roleslz_backend.Tables.events.entity.PhotosEventoEntity;
 import com.example.roleslz_backend.Tables.events.exceptions.*;
 import com.example.roleslz_backend.Tables.events.mapper.EventoMapperClass;
 import com.example.roleslz_backend.Tables.events.mapper.PhotoEventoMapper;
+import com.example.roleslz_backend.Tables.avaliacao.repository.AvaliacaoRepository;
 import com.example.roleslz_backend.Tables.events.repository.EventoRepository;
 import com.example.roleslz_backend.Tables.events.repository.ParticipacaoRepository;
 import com.example.roleslz_backend.Tables.events.repository.PhotosEventoRepository;
@@ -56,8 +57,9 @@ public class EventoService {
     private final UserUtils userUtils;
     private final UtillsNotification utillsNotification;
     private final ParticipacaoRepository participacaoRepository;
+    private final AvaliacaoRepository avaliacaoRepository;
 
-    public EventoService(EventoRepository eventoRepository, PhotosEventoRepository photosEventoRepository, PhotoEventoMapper photoEventoMapper, EventoMapperClass eventoMapperClass, EventoMapperClass eventoWithDistanciaMapper, UserDetailsMapperClass userDetailsMapper, CategoriaRepository categoriaRepository, UserRepository userRepository, UserUtils userUtils, UtillsNotification utillsNotification, ParticipacaoRepository participacaoRepository) {
+    public EventoService(EventoRepository eventoRepository, PhotosEventoRepository photosEventoRepository, PhotoEventoMapper photoEventoMapper, EventoMapperClass eventoMapperClass, EventoMapperClass eventoWithDistanciaMapper, UserDetailsMapperClass userDetailsMapper, CategoriaRepository categoriaRepository, UserRepository userRepository, UserUtils userUtils, UtillsNotification utillsNotification, ParticipacaoRepository participacaoRepository, AvaliacaoRepository avaliacaoRepository) {
         this.eventoRepository = eventoRepository;
         this.photosEventoRepository = photosEventoRepository;
         this.photoEventoMapper = photoEventoMapper;
@@ -69,6 +71,7 @@ public class EventoService {
         this.userUtils = userUtils;
         this.utillsNotification = utillsNotification;
         this.participacaoRepository = participacaoRepository;
+        this.avaliacaoRepository = avaliacaoRepository;
     }
 
     private static final String msgEventNotFounded = "Evento não encontrado!";
@@ -109,6 +112,7 @@ public class EventoService {
 
         // O usuário logado já teve presença confirmada neste evento? (badge "estive presente" + pode avaliar)
         dto.setParticipacaoConfirmada(participacaoRepository.existsByUserIdAndEventoId(userLogadoId, id));
+        dto.setJaAvaliei(avaliacaoRepository.existsByUserIdAndEventoId(userLogadoId, id));
 
         return dto;
     }

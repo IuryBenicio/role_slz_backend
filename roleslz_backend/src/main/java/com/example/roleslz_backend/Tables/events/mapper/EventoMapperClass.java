@@ -1,7 +1,6 @@
 package com.example.roleslz_backend.Tables.events.mapper;
 
 import com.example.roleslz_backend.Tables.avaliacao.DTO.AvaliacaoResponseDTO;
-import com.example.roleslz_backend.Tables.avaliacao.mapper.AvaliacaoMapperClass;
 import com.example.roleslz_backend.Tables.categoria.DTO.CategoriaSumaryDTO;
 import com.example.roleslz_backend.Tables.categoria.repository.CategoriaRepository;
 import com.example.roleslz_backend.Tables.comentarios.mappers.ComentariosMapperClass;
@@ -26,13 +25,11 @@ import java.util.stream.Collectors;
 @Component
 public class EventoMapperClass {
 
-    private final AvaliacaoMapperClass avaliacaoMapperClass;
     private final UserRepository userRepository;
     private final ComentariosMapperClass comentariosMapper;
     private final CategoriaRepository categoriaRepository;
 
-    public EventoMapperClass(AvaliacaoMapperClass avaliacaoMapperClass, UserRepository userRepository, ComentariosMapperClass comentariosMapper, CategoriaRepository categoriaRepository) {
-        this.avaliacaoMapperClass = avaliacaoMapperClass;
+    public EventoMapperClass(UserRepository userRepository, ComentariosMapperClass comentariosMapper, CategoriaRepository categoriaRepository) {
         this.userRepository = userRepository;
         this.comentariosMapper = comentariosMapper;
         this.categoriaRepository = categoriaRepository;
