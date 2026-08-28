@@ -44,5 +44,6 @@ public class EventDTOClass {
     private Double latitude;
     private Double longitude;
     private Point spot;
+    private boolean participacaoConfirmada; // o usuário logado já teve presença confirmada aqui
 
 }

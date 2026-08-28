@@ -13,6 +13,7 @@ import com.example.roleslz_backend.Tables.events.exceptions.*;
 import com.example.roleslz_backend.Tables.events.mapper.EventoMapperClass;
 import com.example.roleslz_backend.Tables.events.mapper.PhotoEventoMapper;
 import com.example.roleslz_backend.Tables.events.repository.EventoRepository;
+import com.example.roleslz_backend.Tables.events.repository.ParticipacaoRepository;
 import com.example.roleslz_backend.Tables.events.repository.PhotosEventoRepository;
 import com.example.roleslz_backend.Tables.spot.entity.SpotEntity;
 import com.example.roleslz_backend.Tables.users.DTOS.UserDTODetails;
@@ -54,8 +55,9 @@ public class EventoService {
     private final UserRepository userRepository;
     private final UserUtils userUtils;
     private final UtillsNotification utillsNotification;
+    private final ParticipacaoRepository participacaoRepository;
 
-    public EventoService(EventoRepository eventoRepository, PhotosEventoRepository photosEventoRepository, PhotoEventoMapper photoEventoMapper, EventoMapperClass eventoMapperClass, EventoMapperClass eventoWithDistanciaMapper, UserDetailsMapperClass userDetailsMapper, CategoriaRepository categoriaRepository, UserRepository userRepository, UserUtils userUtils, UtillsNotification utillsNotification) {
+    public EventoService(EventoRepository eventoRepository, PhotosEventoRepository photosEventoRepository, PhotoEventoMapper photoEventoMapper, EventoMapperClass eventoMapperClass, EventoMapperClass eventoWithDistanciaMapper, UserDetailsMapperClass userDetailsMapper, CategoriaRepository categoriaRepository, UserRepository userRepository, UserUtils userUtils, UtillsNotification utillsNotification, ParticipacaoRepository participacaoRepository) {
         this.eventoRepository = eventoRepository;
         this.photosEventoRepository = photosEventoRepository;
         this.photoEventoMapper = photoEventoMapper;
@@ -66,6 +68,7 @@ public class EventoService {
         this.userRepository = userRepository;
         this.userUtils = userUtils;
         this.utillsNotification = utillsNotification;
+        this.participacaoRepository = participacaoRepository;
     }
 
     private static final String msgEventNotFounded = "Evento não encontrado!";
@@ -96,15 +99,17 @@ public class EventoService {
     @Transactional
     public EventDTOClass getEventoById(long id){
         EventoEntity evento = eventoRepository.findById(id).orElseThrow(()->new EventNotFounded(msgEventNotFounded));
+        long userLogadoId = userUtils.getUserLogado().getId();
+
         EventDTOClass dto = eventoMapperClass.toDTO(evento);
-        if (!evento.getExibirConfirmacoesPublicamente() && evento.getOrganizador().getId() != userUtils.getUserLogado().getId()) {
-            // ...escondemos a lista!
-            dto.setConfirmacoes(new HashSet<>()); // Manda a lista vazia ou null
+
+        if (!evento.getExibirConfirmacoesPublicamente() && evento.getOrganizador().getId() != userLogadoId) {
+            dto.setConfirmacoes(new HashSet<>());
         }
-        try{
-        } catch (Exception e) {
-            throw new EventNotFounded("Evento não retornado");
-        }
+
+        // O usuário logado já teve presença confirmada neste evento? (badge "estive presente" + pode avaliar)
+        dto.setParticipacaoConfirmada(participacaoRepository.existsByUserIdAndEventoId(userLogadoId, id));
+
         return dto;
     }
 

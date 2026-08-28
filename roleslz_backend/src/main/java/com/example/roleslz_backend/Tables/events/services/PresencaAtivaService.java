@@ -2,8 +2,11 @@ package com.example.roleslz_backend.Tables.events.services;
 
 import com.example.roleslz_backend.Tables.events.DTO.HeatPointDTO;
 import com.example.roleslz_backend.Tables.events.entity.EstadoEvento;
+import com.example.roleslz_backend.Tables.events.entity.OrigemParticipacao;
+import com.example.roleslz_backend.Tables.events.entity.ParticipacaoEntity;
 import com.example.roleslz_backend.Tables.events.entity.PresencaAtivaEntity;
 import com.example.roleslz_backend.Tables.events.repository.EventoRepository;
+import com.example.roleslz_backend.Tables.events.repository.ParticipacaoRepository;
 import com.example.roleslz_backend.Tables.events.repository.PresencaAtivaRepository;
 import com.example.roleslz_backend.Tables.users.entity.UserEntity;
 import com.example.roleslz_backend.Tables.users.repository.UserRepository;
@@ -20,15 +23,18 @@ import java.util.List;
 public class PresencaAtivaService {
 
     private final PresencaAtivaRepository presencaRepository;
+    private final ParticipacaoRepository participacaoRepository;
     private final EventoRepository eventoRepository;
     private final UserRepository userRepository;
     private final UtillsNotification utillsNotification;
 
     public PresencaAtivaService(PresencaAtivaRepository presencaRepository,
+                                ParticipacaoRepository participacaoRepository,
                                 EventoRepository eventoRepository,
                                 UserRepository userRepository,
                                 UtillsNotification utillsNotification) {
         this.presencaRepository = presencaRepository;
+        this.participacaoRepository = participacaoRepository;
         this.eventoRepository = eventoRepository;
         this.userRepository = userRepository;
         this.utillsNotification = utillsNotification;
@@ -45,8 +51,15 @@ public class PresencaAtivaService {
             throw new RuntimeException("Fora da área/horário de check-in.");
         }
 
+        UserEntity user = userRepository.findById(userId).orElseThrow();
+
+        // Registro PERMANENTE de participação (histórico + elegibilidade de avaliação).
+        // O scheduler nunca apaga isso — ao contrário da tb_presenca_ativa.
+        if (!participacaoRepository.existsByUserIdAndEventoId(userId, eventoId)) {
+            participacaoRepository.save(new ParticipacaoEntity(user, evento, OrigemParticipacao.GEOFENCE));
+        }
+
         if (!presencaRepository.existsByUserIdAndEventoId(userId, eventoId)) {
-            UserEntity user = userRepository.findById(userId).orElseThrow();
             PresencaAtivaEntity presencaEntity = new PresencaAtivaEntity();
             presencaEntity.setEvento(evento);
             presencaEntity.setUser(user);
@@ -66,11 +79,16 @@ public class PresencaAtivaService {
     }
 
     /**
-     * Remove a presença (Check-out).
+     * Remove a presença ativa (Check-out do heatmap) e marca a hora de saída no registro
+     * permanente de participação — que NÃO é apagado.
      */
     @Transactional
     public void processarCheckout(Long userId, Long eventoId) {
         presencaRepository.deleteByUserIdAndEventoId(userId, eventoId);
+        participacaoRepository.findByUserIdAndEventoId(userId, eventoId).ifPresent(p -> {
+            p.setCheckOutAt(LocalDateTime.now());
+            participacaoRepository.save(p);
+        });
     }
 
     /**

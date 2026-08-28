@@ -26,7 +26,8 @@ public class NotificationsService {
         ALERTA_TEMPO,
         ATUALIZACAO_CRITICA,
         GEOFENCING,
-        AVALIACAO_POS_ROLE
+        AVALIACAO_POS_ROLE,
+        CONFIRMACAO_PRESENCA
     }
 
     public void dispararPushFCM(EventoEntity evento, String titulo, String corpoMensagem, TipoNotificacao tipo, List<String> tokensAlvo) {

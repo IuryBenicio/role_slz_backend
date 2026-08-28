@@ -4,6 +4,7 @@ import com.example.roleslz_backend.Tables.events.entity.EstadoEvento;
 import com.example.roleslz_backend.Tables.events.entity.EventoEntity;
 import com.example.roleslz_backend.Tables.events.exceptions.EventNotFounded;
 import com.example.roleslz_backend.Tables.events.repository.EventoRepository;
+import com.example.roleslz_backend.Tables.events.repository.ParticipacaoRepository;
 import com.example.roleslz_backend.Tables.events.repository.PresencaAtivaRepository;
 import com.example.roleslz_backend.Tables.users.entity.UserEntity;
 import com.example.roleslz_backend.Tables.users.repository.UserRepository;
@@ -41,6 +42,9 @@ class EventoServiceTest {
 
     @Mock
     private UtillsNotification utillsNotification;
+
+    @Mock
+    private ParticipacaoRepository participacaoRepository;
 
     @InjectMocks
     private EventoService eventoService;

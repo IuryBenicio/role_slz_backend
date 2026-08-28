@@ -2,8 +2,10 @@ package com.example.roleslz_backend.Tables.events.services;
 
 import com.example.roleslz_backend.Tables.events.entity.EstadoEvento;
 import com.example.roleslz_backend.Tables.events.entity.EventoEntity;
+import com.example.roleslz_backend.Tables.events.entity.ParticipacaoEntity;
 import com.example.roleslz_backend.Tables.events.entity.PresencaAtivaEntity;
 import com.example.roleslz_backend.Tables.events.repository.EventoRepository;
+import com.example.roleslz_backend.Tables.events.repository.ParticipacaoRepository;
 import com.example.roleslz_backend.Tables.events.repository.PresencaAtivaRepository;
 import com.example.roleslz_backend.Tables.users.entity.UserEntity;
 import com.example.roleslz_backend.Tables.users.repository.UserRepository;
@@ -26,6 +28,8 @@ class PresencaAtivaServiceTest {
 
     @Mock
     private PresencaAtivaRepository presencaAtivaRepository;
+    @Mock
+    private ParticipacaoRepository participacaoRepository;
     @Mock
     private UserRepository userRepository;
     @Mock
@@ -62,6 +66,42 @@ class PresencaAtivaServiceTest {
         presencaAtivaService.processarCheckin(userId, eventoId);
 
         verify(presencaAtivaRepository, times(1)).save(any(PresencaAtivaEntity.class));
+    }
+
+    @Test
+    void deveGravarParticipacaoPermanenteNoCheckin() {
+        Long userId = 1L;
+        Long eventoId = 100L;
+
+        UserEntity mockUser = new UserEntity();
+        mockUser.setId(userId);
+        EventoEntity mockEvento = eventoAtivo(eventoId);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
+        when(eventoRepository.findById(eventoId)).thenReturn(Optional.of(mockEvento));
+        when(participacaoRepository.existsByUserIdAndEventoId(userId, eventoId)).thenReturn(false);
+
+        presencaAtivaService.processarCheckin(userId, eventoId);
+
+        verify(participacaoRepository, times(1)).save(any(ParticipacaoEntity.class));
+    }
+
+    @Test
+    void naoDeveDuplicarParticipacaoSeJaExiste() {
+        Long userId = 1L;
+        Long eventoId = 100L;
+
+        UserEntity mockUser = new UserEntity();
+        mockUser.setId(userId);
+        EventoEntity mockEvento = eventoAtivo(eventoId);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
+        when(eventoRepository.findById(eventoId)).thenReturn(Optional.of(mockEvento));
+        when(participacaoRepository.existsByUserIdAndEventoId(userId, eventoId)).thenReturn(true);
+
+        presencaAtivaService.processarCheckin(userId, eventoId);
+
+        verify(participacaoRepository, never()).save(any(ParticipacaoEntity.class));
     }
 
     @Test

@@ -2,8 +2,11 @@ package com.example.roleslz_backend.Tables.events.schedullers;
 
 import com.example.roleslz_backend.Tables.events.entity.EstadoEvento;
 import com.example.roleslz_backend.Tables.events.entity.EventoEntity;
+import com.example.roleslz_backend.Tables.events.entity.ParticipacaoEntity;
 import com.example.roleslz_backend.Tables.events.repository.EventoRepository;
+import com.example.roleslz_backend.Tables.events.repository.ParticipacaoRepository;
 import com.example.roleslz_backend.Tables.events.repository.PresencaAtivaRepository;
+import com.example.roleslz_backend.Tables.users.entity.UserEntity;
 import com.example.roleslz_backend.Utills.notificationsServices.UtillsNotification;
 import jakarta.transaction.Transactional;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -12,6 +15,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class EventoSchedullers {
@@ -19,14 +24,17 @@ public class EventoSchedullers {
     private final EventoRepository eventoRepository;
     private final UtillsNotification utillsNotification;
     private final PresencaAtivaRepository presencaAtivaRepository;
+    private final ParticipacaoRepository participacaoRepository;
 
     // Loggers
     private static final System.Logger LOGGER = System.getLogger(EventoSchedullers.class.getName());
 
-    public EventoSchedullers(EventoRepository eventoRepository, UtillsNotification utillsNotification, PresencaAtivaRepository presencaAtivaRepository) {
+    public EventoSchedullers(EventoRepository eventoRepository, UtillsNotification utillsNotification,
+                             PresencaAtivaRepository presencaAtivaRepository, ParticipacaoRepository participacaoRepository) {
         this.eventoRepository = eventoRepository;
         this.utillsNotification = utillsNotification;
         this.presencaAtivaRepository = presencaAtivaRepository;
+        this.participacaoRepository = participacaoRepository;
     }
 
     private final String msg5pre = "Seu evento começou!";
@@ -102,17 +110,44 @@ public class EventoSchedullers {
                 LOGGER.log(System.Logger.Level.ERROR, "Erro ao encerrar evento ID: " + evento.getId(), e);
             }
 
-            // Convite pós-rolê para avaliação: best-effort, falha de push não pode
-            // impedir a transição DURANTE -> ENCERRADO.
+            // Pushes pós-evento: best-effort, nunca podem impedir a transição DURANTE -> ENCERRADO.
             try {
-                utillsNotification.notificarAvaliacaoPosRole(evento);
+                dispararPushesPosEvento(evento);
             } catch (Exception e) {
-                LOGGER.log(System.Logger.Level.ERROR, "Erro ao notificar avaliação pós-rolê do evento ID: " + evento.getId(), e);
+                LOGGER.log(System.Logger.Level.ERROR, "Erro nos pushes pós-evento do evento ID: " + evento.getId(), e);
             }
         }
 
         if (!eventosParaSalvar.isEmpty()) {
             eventoRepository.saveAll(eventosParaSalvar);
+        }
+    }
+
+    /**
+     * Quando o evento encerra:
+     *  - quem ESTEVE lá (participacao_evento) recebe o convite para avaliar;
+     *  - quem demonstrou INTERESSE mas não teve presença detectada recebe o prompt
+     *    "você foi?" — fallback para o geofence que não disparou.
+     */
+    private void dispararPushesPosEvento(EventoEntity evento) {
+        List<ParticipacaoEntity> participacoes = participacaoRepository.findByEventoId(evento.getId());
+        Set<Long> jaParticiparam = participacoes.stream()
+                .map(p -> p.getUser().getId())
+                .collect(Collectors.toSet());
+
+        List<UserEntity> participantes = participacoes.stream().map(ParticipacaoEntity::getUser).toList();
+        if (!participantes.isEmpty()) {
+            utillsNotification.notificarAvaliacaoPosRole(evento, participantes);
+        }
+
+        Set<UserEntity> interessados = evento.getConfirmacoes();
+        if (interessados != null) {
+            List<UserEntity> perguntar = interessados.stream()
+                    .filter(u -> !jaParticiparam.contains(u.getId()))
+                    .toList();
+            if (!perguntar.isEmpty()) {
+                utillsNotification.perguntarPresencaNoEvento(evento, perguntar);
+            }
         }
     }
 

@@ -116,11 +116,26 @@ public interface EventoRepository extends JpaRepository<EventoEntity, Long> {
 
     // Puxa os eventos futuros onde este utilizador confirmou presença, ordenados pelo mais próximo
     @Query("""
-        SELECT e FROM EventoEntity e 
-        JOIN e.confirmacoes c 
-        WHERE c.id = :userId 
+        SELECT e FROM EventoEntity e
+        JOIN e.confirmacoes c
+        WHERE c.id = :userId
         AND e.estadoEvento != 'ENCERRADO'
         ORDER BY e.startDate ASC
     """)
     Page<EventoEntity> findMinhaAgenda(@Param("userId") Long userId, Pageable pageable);
+
+    // Eventos ENCERRADOS recentes em que o usuário demonstrou INTERESSE mas ainda não teve
+    // presença registrada — candidatos ao prompt "você foi ao evento?".
+    @Query("""
+        SELECT e FROM EventoEntity e
+        JOIN e.confirmacoes c
+        WHERE c.id = :userId
+        AND e.estadoEvento = 'ENCERRADO'
+        AND e.endDate >= :desde
+        AND NOT EXISTS (
+            SELECT 1 FROM ParticipacaoEntity p WHERE p.evento = e AND p.user.id = :userId
+        )
+        ORDER BY e.endDate DESC
+    """)
+    List<EventoEntity> findPendentesConfirmacaoPresenca(@Param("userId") Long userId, @Param("desde") LocalDateTime desde);
 }
