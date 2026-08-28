@@ -11,3 +11,7 @@ Thumbs.db
 # Artefatos soltos
 *.zip
 *.log
+
+# Config de cliente mobile — não pertence a este repo
+google-services.json
+GoogleService-Info.plist
