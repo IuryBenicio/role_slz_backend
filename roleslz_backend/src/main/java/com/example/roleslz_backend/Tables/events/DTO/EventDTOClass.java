@@ -21,6 +21,7 @@ import java.util.Set;
 @NoArgsConstructor
 public class EventDTOClass {
 
+    private long id;
     private String title;
     private String description;
     private LocalDateTime startDate;

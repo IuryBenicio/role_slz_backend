@@ -1,6 +1,5 @@
 package com.example.roleslz_backend.Tables.users.controllers;
 
-import com.example.roleslz_backend.Tables.events.DTO.EventoDTO;
 import com.example.roleslz_backend.Tables.users.DTOS.PasswordDTO;
 import com.example.roleslz_backend.Tables.users.DTOS.Req.UserDTOProfileReq;
 import com.example.roleslz_backend.Tables.users.DTOS.Req.UserEditDTO;
@@ -105,15 +104,16 @@ public class UserController {
         return ResponseEntity.ok("Usuário deletado");
     }
 
+    // Usuário vem do JWT e o evento do path — sem corpo.
     @PatchMapping("confirm_presence/event/{eventId}")
-    public ResponseEntity<String> confirmePresence(@PathVariable long eventId, @RequestBody EventoDTO eventoDTO){
+    public ResponseEntity<String> confirmePresence(@PathVariable long eventId){
         userService.confirmPresence(eventId);
-        return ResponseEntity.ok("Usuário confirmado no evento "+ eventoDTO.title()+ ".");
+        return ResponseEntity.ok("Presença confirmada no evento " + eventId + ".");
     }
 
     @PatchMapping("unconfirm_presence/event/{eventId}")
-    public ResponseEntity<String> unconfirmPresence(@PathVariable long userId, @PathVariable long eventId, @RequestBody EventoDTO eventoDTO){
+    public ResponseEntity<String> unconfirmPresence(@PathVariable long eventId){
         userService.unconfirmPresence(eventId);
-        return ResponseEntity.ok("confirmação retirada do evento "+ eventoDTO.title()+ ".");
+        return ResponseEntity.ok("Confirmação retirada do evento " + eventId + ".");
     }
 }

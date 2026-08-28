@@ -60,6 +60,7 @@ public class EventoMapperClass {
     public EventDTOClass toDTO(EventoEntity entity) {
         if (entity == null) return null;
         EventDTOClass dto = new EventDTOClass();
+        dto.setId(entity.getId());
         dto.setTitle(entity.getTitle());
         dto.setDescription(entity.getDescription());
         dto.setStartDate(entity.getStartDate());
