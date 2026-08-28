@@ -1,5 +1,6 @@
 package com.example.roleslz_backend.Tables.events.mapper;
 
+import com.example.roleslz_backend.Tables.avaliacao.DTO.AvaliacaoResponseDTO;
 import com.example.roleslz_backend.Tables.avaliacao.mapper.AvaliacaoMapperClass;
 import com.example.roleslz_backend.Tables.categoria.DTO.CategoriaSumaryDTO;
 import com.example.roleslz_backend.Tables.categoria.repository.CategoriaRepository;
@@ -76,6 +77,21 @@ public class EventoMapperClass {
                     .map(PhotosEventoSummaryDTO::toSummaryDTO)
                     .collect(Collectors.toSet()));
         }
+        if (entity.getConfirmacoes() != null) {
+            dto.setConfirmacoes(entity.getConfirmacoes().stream()
+                    .map(UserSummaryDTO::toSummaryDTO)
+                    .collect(Collectors.toSet()));
+        }
+
+        Set<AvaliacaoResponseDTO> avaliacoes = entity.getAvaliacoes() == null ? Set.of()
+                : entity.getAvaliacoes().stream()
+                    .map(AvaliacaoResponseDTO::fromEntity)
+                    .collect(Collectors.toSet());
+        dto.setAvaliacoes(avaliacoes);
+        dto.setTotalAvaliacoes(avaliacoes.size());
+        dto.setNotaMedia(avaliacoes.isEmpty() ? null
+                : avaliacoes.stream().mapToDouble(AvaliacaoResponseDTO::nota).average().orElse(0.0));
+
         return dto;
     }
 
@@ -126,7 +142,7 @@ public class EventoMapperClass {
         entity.setEventPrivacity(dto.getEventPrivacity());
 
         if (dto.getOrganizador() != null) {
-            entity.setOrganizador(userRepository.getReferenceById(dto.getOrganizador().Id()));
+            entity.setOrganizador(userRepository.getReferenceById(dto.getOrganizador().id()));
         }
 
         if (dto.getImages() != null) {

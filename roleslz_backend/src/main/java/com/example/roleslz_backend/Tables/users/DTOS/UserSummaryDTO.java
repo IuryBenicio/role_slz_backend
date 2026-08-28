@@ -5,7 +5,7 @@ import com.example.roleslz_backend.Tables.users.entity.UserEntity;
 import jakarta.validation.constraints.NotBlank;
 
 public record UserSummaryDTO(
-                            long Id,
+                            long id,
                              String nome,
                              String sobrenome,
                              Sexo sexo,

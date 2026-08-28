@@ -1,6 +1,6 @@
 package com.example.roleslz_backend.Tables.events.DTO;
 
-import com.example.roleslz_backend.Tables.avaliacao.DTO.AvaliacaoDTO;
+import com.example.roleslz_backend.Tables.avaliacao.DTO.AvaliacaoResponseDTO;
 import com.example.roleslz_backend.Tables.categoria.DTO.CategoriaSumaryDTO;
 import com.example.roleslz_backend.Tables.comentarios.DTO.ComentariosDTO;
 import com.example.roleslz_backend.Tables.events.entity.EstadoEvento;
@@ -33,7 +33,9 @@ public class EventDTOClass {
     private Set<PhotosEventoSummaryDTO> images; // Atualizado
     private EstadoEvento estadoEvento;
     private Set<ComentariosDTO> comentarios;
-    private Set<AvaliacaoDTO> avaliacoes;
+    private Set<AvaliacaoResponseDTO> avaliacoes;
+    private Double notaMedia;        // null quando não há avaliações
+    private Integer totalAvaliacoes; // 0 quando não há avaliações
     private Set<CategoriaSumaryDTO> categorias;
     private Boolean exibirConfirmacoesPublicamente;
     private EventType eventType;
