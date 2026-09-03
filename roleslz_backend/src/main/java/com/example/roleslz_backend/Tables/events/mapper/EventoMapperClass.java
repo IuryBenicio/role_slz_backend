@@ -71,6 +71,10 @@ public class EventoMapperClass {
         dto.setEstadoEvento(entity.getEstadoEvento());
         dto.setPrice(entity.getPrice());
         dto.setTicketLink(entity.getTicketLink());
+        if (entity.getSpot() != null && entity.getSpot().getLocalizacao() != null) {
+            dto.setLatitude(entity.getSpot().getLocalizacao().getY());
+            dto.setLongitude(entity.getSpot().getLocalizacao().getX());
+        }
         if (entity.getImages() != null) {
             dto.setImages(entity.getImages().stream()
                     .map(PhotosEventoSummaryDTO::toSummaryDTO)
@@ -109,6 +113,10 @@ public class EventoMapperClass {
         dto.setEstadoEvento(entity.getEstadoEvento());
         dto.setPrice(entity.getPrice());
         dto.setTicketLink(entity.getTicketLink());
+        if (entity.getSpot() != null && entity.getSpot().getLocalizacao() != null) {
+            dto.setLatitude(entity.getSpot().getLocalizacao().getY());
+            dto.setLongitude(entity.getSpot().getLocalizacao().getX());
+        }
         if (entity.getImages() != null) {
             dto.setImages(entity.getImages().stream()
                     .map(PhotosEventoSummaryDTO::toSummaryDTO)
