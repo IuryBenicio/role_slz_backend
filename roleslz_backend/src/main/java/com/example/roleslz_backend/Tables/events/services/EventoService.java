@@ -28,10 +28,6 @@ import com.example.roleslz_backend.Utills.notificationsServices.UtillsNotificati
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.grammars.hql.HqlParser;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.Point;
-import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -76,7 +72,6 @@ public class EventoService {
 
     private static final String msgEventNotFounded = "Evento não encontrado!";
 
-    private final GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
 
     //Services de localização
 
@@ -187,27 +182,23 @@ public class EventoService {
 
     @Transactional
     public EventDTOClass createEvento(EventDTORequestClass eventoDTO){
-        Optional<EventoEntity> exists = eventoRepository.findByTitle(eventoDTO.getTitle());
+        if (eventoDTO.getLatitude() == null || eventoDTO.getLongitude() == null) {
+            throw new IllegalArgumentException("Localização do evento (latitude/longitude) é obrigatória.");
+        }
+        if (eventoDTO.getTitle() == null || eventoDTO.getTitle().isBlank()) {
+            throw new IllegalArgumentException("O nome do evento é obrigatório.");
+        }
 
-        if(exists.isPresent()){
+        if(eventoRepository.findByTitle(eventoDTO.getTitle()).isPresent()){
             throw new EventExists("Evento já existe");
         }
 
-        if(eventoDTO.getEstadoEvento().equals(EstadoEvento.ENCERRADO)){
-            throw new EventExists("Evento com estado incorreto");
-        }
+        // O organizador é sempre o usuário logado (nunca vem do corpo).
+        UserEntity owner = userRepository.findById(userUtils.getUserLogado().getId())
+                .orElseThrow(() -> new UserNotFounded("Organizador não encontrado!"));
 
-        Point localizacao = factory.createPoint(new Coordinate(eventoDTO.getLongitude(), eventoDTO.getLatitude()));
-
-        EventoEntity novoEvento = eventoMapperClass.toEntity(eventoDTO);
-
-        UserEntity owner = userRepository.findByEmail(eventoDTO.getOrganizador().email()).orElseThrow(()-> new UserNotFounded("Organizador não encontrado!"));
-
-        SpotEntity spot = new SpotEntity();
-
-        spot.setLocalizacao(localizacao);
-
-        novoEvento.setSpot(spot);
+        EventoEntity novoEvento = eventoMapperClass.toEntity(eventoDTO); // já monta o spot a partir de lat/lng
+        novoEvento.setEstadoEvento(EstadoEvento.PRE); // evento recém-criado é sempre PRE
         novoEvento.setOrganizador(owner);
 
         // Lógica do placeholder
