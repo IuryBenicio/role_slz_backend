@@ -1,5 +1,6 @@
 package com.example.roleslz_backend.Tables.events.controllers;
 
+import com.example.roleslz_backend.Tables.events.DTO.CheckinRequestDTO;
 import com.example.roleslz_backend.Tables.events.services.PresencaAtivaService;
 import com.example.roleslz_backend.Tables.users.services.UserUtils;
 import org.springframework.http.ResponseEntity;
@@ -17,10 +18,15 @@ public class PresencaAtivaController {
         this.userUtils = userUtils;
     }
 
-    // Disparado quando o SO detecta a entrada na cerca
+    // Chamado pelo app DEPOIS que a permanência mínima na cerca foi cumprida.
+    // O corpo traz o instante da entrada; o service recusa o que não bate com o Dwell Time.
     @PostMapping("/{eventoId}")
-    public ResponseEntity<Void> entrarNoEvento(@PathVariable Long eventoId) {
-        presencaAtivaService.processarCheckin(userUtils.getUserLogado().getId(), eventoId);
+    public ResponseEntity<Void> entrarNoEvento(@PathVariable Long eventoId,
+                                               @RequestBody(required = false) CheckinRequestDTO dto) {
+        presencaAtivaService.processarCheckin(
+                userUtils.getUserLogado().getId(),
+                eventoId,
+                dto == null ? null : dto.entradaEmEpochMs());
         return ResponseEntity.ok().build();
     }
 

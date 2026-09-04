@@ -36,6 +36,10 @@ public class PresencaAtivaEntity {
 
     @PrePersist
     protected void onCreate() {
-        this.dataEntrada = LocalDateTime.now();
+        // Só cai no "agora" se ninguém informou a entrada. Com Dwell Time o check-in
+        // chega minutos depois da entrada real, e é a entrada real que interessa aqui.
+        if (this.dataEntrada == null) {
+            this.dataEntrada = LocalDateTime.now();
+        }
     }
 }
