@@ -66,7 +66,9 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.OK).body(Map.of("token", token,"message", "Usuário registrado através do google"));
     }
 
-    @GetMapping("verify?token={token}")
+    // Era @GetMapping("verify?token={token}") — query string dentro do path não é um
+    // mapping válido no Spring, então esta rota simplesmente não respondia.
+    @GetMapping("verify")
     public ResponseEntity<String> verifyEmailToken (@RequestParam("token") String token){
         emailService.VerifyTokenEmail(token);
         return ResponseEntity.status(200).body("Conta ativada!");
