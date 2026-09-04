@@ -33,7 +33,11 @@ public class ComentariosService {
 
     public ComentariosDTO addComentario(ComentariosDTO comentariosDTO){
 
-        UserEntity user = userRepository.findById(comentariosDTO.user().id()).orElseThrow(()-> new UserNotFounded("Usuário não encontrado"));
+        // O autor é SEMPRE o usuário do token. O campo `user` do corpo é ignorado de
+        // propósito: antes ele era usado para buscar o autor, o que permitia a qualquer
+        // usuário logado publicar comentário em nome de outra pessoa.
+        UserEntity user = userRepository.findById(userUtils.getUserLogado().getId())
+                .orElseThrow(()-> new UserNotFounded("Usuário não encontrado"));
 
         EventoEntity evento = eventoRepository.findById(comentariosDTO.evento().getId()).orElseThrow(()-> new EventNotFounded("Evento não encontrado"));
 
