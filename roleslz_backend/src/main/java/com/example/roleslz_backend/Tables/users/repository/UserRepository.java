@@ -1,7 +1,6 @@
 package com.example.roleslz_backend.Tables.users.repository;
 
 import com.example.roleslz_backend.Tables.events.entity.EventoEntity;
-import com.example.roleslz_backend.Tables.users.DTOS.Req.UserProjectionProfile;
 import com.example.roleslz_backend.Tables.users.entity.AuthProvider;
 import com.example.roleslz_backend.Tables.users.entity.UserEntity;
 import org.springframework.data.domain.Page;
@@ -22,7 +21,6 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     Optional<UserEntity> findByVerificationToken(String token);
     List<EventoEntity> findByEventos_Id(long id);
     Page<UserEntity> findAll(Pageable page);
-    Optional<UserProjectionProfile> findByNome(String nome);
 
     Optional<UserEntity> findByAuthProviderAndProviderId(AuthProvider provider, String providerId);
 

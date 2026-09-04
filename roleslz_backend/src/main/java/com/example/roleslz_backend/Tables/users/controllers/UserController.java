@@ -1,17 +1,15 @@
 package com.example.roleslz_backend.Tables.users.controllers;
 
 import com.example.roleslz_backend.Tables.users.DTOS.PasswordDTO;
-import com.example.roleslz_backend.Tables.users.DTOS.Req.UserDTOProfileReq;
 import com.example.roleslz_backend.Tables.users.DTOS.Req.UserEditDTO;
-import com.example.roleslz_backend.Tables.users.DTOS.Req.UserProjectionProfile;
 import com.example.roleslz_backend.Tables.users.DTOS.UserDTODetails;
+import com.example.roleslz_backend.Tables.users.DTOS.UserProjectionProfile;
 import com.example.roleslz_backend.Tables.users.services.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Set;
 
 @RestController
 @RequestMapping("/user")
@@ -42,10 +40,12 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
+    // Perfil completo do PRÓPRIO usuário logado (id vem do token, nunca do corpo).
+    // Antes era @GetMapping com @RequestBody — o Spring ignora corpo em GET — e o service
+    // buscava findByNome(dto.getEmail()), o que devolveria o perfil de outra pessoa.
     @GetMapping("user_profile")
-    public ResponseEntity<UserProjectionProfile> getUserProfile(@RequestBody UserDTOProfileReq dto){
-        UserProjectionProfile user = userService.getUserProfile(dto);
-        return ResponseEntity.ok(user);
+    public ResponseEntity<UserProjectionProfile> getUserProfile(){
+        return ResponseEntity.ok(userService.getMeuPerfil());
     }
 
 
@@ -61,22 +61,15 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.OK).body("Senha verificada");
     }
 
-    @GetMapping("verify_email/{email}")
-    public ResponseEntity<String> verifyEmailByEmail(@PathVariable String email){
-        userService.verifyEmail(email);
-        return ResponseEntity.ok("Email verificado");
+    // Sem {id}: perguntar isso sobre outra pessoa é vazamento de existência de conta.
+    @GetMapping("user_has_event")
+    public ResponseEntity<Boolean> userHasEvent(){
+        return ResponseEntity.ok(userService.userHasEvent());
     }
 
-    @GetMapping("user_has_event/{id}")
-    public ResponseEntity<Boolean> userHasEvent(@PathVariable("id") long id){
-        boolean response = userService.userHasEvent(id);
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("user_has_business/{id}")
-    public ResponseEntity<Boolean> userHasBusiness(@PathVariable("id") long id){
-        boolean response = userService.userHasBusiness(id);
-        return ResponseEntity.ok(response);
+    @GetMapping("user_has_business")
+    public ResponseEntity<Boolean> userHasBusiness(){
+        return ResponseEntity.ok(userService.userHasBusiness());
     }
 
     @PatchMapping("verify_email")
@@ -84,13 +77,6 @@ public class UserController {
         userService.verifyUserByEmail(token);
         return ResponseEntity.status(HttpStatus.OK).body("Usuário verificado");
     }
-
-    @GetMapping("get-user/{pagina}")
-    public ResponseEntity<Set<UserDTODetails>> getUsersPages(@PathVariable("pagina") int pagina, @RequestParam("itens") int itens){
-        Set<UserDTODetails> response = userService.getUsersPages(pagina,itens);
-        return ResponseEntity.status(200).body(response);
-    }
-
 
     @PatchMapping("edit_password")
     public ResponseEntity<String> editPassword(@Valid @RequestBody PasswordDTO passwordDTO){

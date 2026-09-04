@@ -1,14 +1,14 @@
 package com.example.roleslz_backend.Tables.users.services;
 
 import com.example.roleslz_backend.Tables.users.DTOS.*;
-import com.example.roleslz_backend.Tables.users.DTOS.Req.UserDTOProfileReq;
 import com.example.roleslz_backend.Tables.users.DTOS.Req.UserEditDTO;
-import com.example.roleslz_backend.Tables.users.DTOS.Req.UserProjectionProfile;
 import com.example.roleslz_backend.Tables.users.entity.AuthProvider;
 import com.example.roleslz_backend.Tables.users.mapper.UserDetailsMapperClass;
 import com.example.roleslz_backend.Tables.users.mapper.UserRegisterMapperClass;
 import com.example.roleslz_backend.Tables.verificarEmail.service.EmailService;
+import com.example.roleslz_backend.Tables.events.DTO.EventDTOSumary;
 import com.example.roleslz_backend.Tables.events.entity.EventoEntity;
+import com.example.roleslz_backend.Tables.events.repository.ParticipacaoRepository;
 import com.example.roleslz_backend.Tables.events.exceptions.EventNotFounded;
 import com.example.roleslz_backend.Tables.events.repository.EventoRepository;
 import com.example.roleslz_backend.Tables.users.entity.UserEntity;
@@ -22,9 +22,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -38,8 +39,9 @@ public class UserService {
     private final EmailService emailService;
     private final GoogleService googleService;
     private final UserUtils userUtils;
+    private final ParticipacaoRepository participacaoRepository;
 
-    public UserService(UserRepository userRepository, UserRegisterMapperClass userRegisterMapper, UserDetailsMapperClass userDetailsMapper, PasswordEncoder passwordEncoder, EventoRepository eventoRepository, SecurityService securityService, EmailService emailService, GoogleService googleService, UserUtils userUtils) {
+    public UserService(UserRepository userRepository, UserRegisterMapperClass userRegisterMapper, UserDetailsMapperClass userDetailsMapper, PasswordEncoder passwordEncoder, EventoRepository eventoRepository, SecurityService securityService, EmailService emailService, GoogleService googleService, UserUtils userUtils, ParticipacaoRepository participacaoRepository) {
         this.userRepository = userRepository;
         this.userRegisterMapper = userRegisterMapper;
         this.userDetailsMapper = userDetailsMapper;
@@ -49,7 +51,11 @@ public class UserService {
         this.emailService = emailService;
         this.googleService = googleService;
         this.userUtils = userUtils;
+        this.participacaoRepository = participacaoRepository;
     }
+
+    // Quantos eventos do histórico o perfil devolve de uma vez (o resto vem por /participacao/historico).
+    private static final int HISTORICO_NO_PERFIL = 20;
 
     private UserEntity getUserLogado() {
         return (UserEntity) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -118,14 +124,37 @@ public class UserService {
         return user;
     }
 
-    public UserProjectionProfile getUserProfile(UserDTOProfileReq dto){
-        UserProjectionProfile user = userRepository.findByNome(dto.getEmail()).orElseThrow(()-> new UserNotFounded("Usuário não encontrado"));
+    // Perfil do próprio usuário logado. O id sai do token (userUtils), nunca de parâmetro:
+    // não existe caminho aqui para ler o perfil de outra pessoa.
+    @Transactional
+    public UserProjectionProfile getMeuPerfil(){
+        long userId = userUtils.getUserLogado().getId();
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFounded("Usuário não encontrado"));
 
-        if(user == null){
-            throw new UserNotFounded("Usuário não encontrado");
-        }
+        List<EventDTOSumary> organizados = user.getEventos() == null ? List.of()
+                : user.getEventos().stream()
+                    .sorted(Comparator.comparing(EventoEntity::getStartDate,
+                            Comparator.nullsLast(Comparator.reverseOrder())))
+                    .map(EventDTOSumary::toSummaryDTO)
+                    .toList();
 
-        return user;
+        List<EventDTOSumary> historico = participacaoRepository
+                .findEventosParticipadosByUserId(userId, PageRequest.of(0, HISTORICO_NO_PERFIL))
+                .getContent().stream()
+                .map(EventDTOSumary::toSummaryDTO)
+                .toList();
+
+        return new UserProjectionProfile(
+                user.getId(),
+                user.getNome(),
+                user.getSobrenome(),
+                user.getSexo(),
+                user.getEmail(),
+                user.getIdade(),
+                organizados,
+                historico
+        );
     }
 
     public UserDTODetails getUserById(){
@@ -133,25 +162,16 @@ public class UserService {
         return userDetailsMapper.toDTO(user);
     }
 
-    public boolean userHasEvent(long id){
-        UserEntity user = userRepository.findById(id).orElseThrow(()-> new UserNotFounded("Usuário não encontrado!"));
-        if(user.getEventos().isEmpty()){
-            return false;
-        }
-        return true;
+    public boolean userHasEvent(){
+        UserEntity user = userRepository.findById(userUtils.getUserLogado().getId())
+                .orElseThrow(()-> new UserNotFounded("Usuário não encontrado!"));
+        return user.getEventos() != null && !user.getEventos().isEmpty();
     }
 
-    public boolean userHasBusiness(long id){
-        UserEntity user = userRepository.findById(id).orElseThrow(()-> new UserNotFounded("Usuário não encontrado!"));
-        if(user.getBusiness() == null){
-            return false;
-        }
-        return true;
-    }
-
-    public Set<UserDTODetails>getUsersPages(int pagina, int itens){
-        Set<UserEntity> users = userRepository.findAll(PageRequest.of(pagina, itens)).toSet();
-        return users.stream().map(e->userDetailsMapper.toDTO(e)).collect(Collectors.toSet());
+    public boolean userHasBusiness(){
+        UserEntity user = userRepository.findById(userUtils.getUserLogado().getId())
+                .orElseThrow(()-> new UserNotFounded("Usuário não encontrado!"));
+        return user.getBusiness() != null;
     }
 
     @Transactional
@@ -262,10 +282,11 @@ public class UserService {
         UserEntity user = userRepository.findById(userUtils.getUserLogado().getId()).orElseThrow(()-> new UserNotFounded("Usuário não encontrado"));
 
         try{
+            // `evento.confirmacoes` é o lado dono da relação. `user.eventos` é
+            // @OneToMany(mappedBy="organizador") — mexer nele aqui não persiste nada e
+            // ainda suja a lista de eventos que a pessoa ORGANIZA.
             evento.getConfirmacoes().add(user);
-            user.getEventos().add(evento);
 
-            userRepository.save(user);
             eventoRepository.save(evento);
         } catch (Exception e) {
             throw new PresenceNotConfirmated("Presença não confirmada" + e.getMessage());
@@ -278,21 +299,12 @@ public class UserService {
         UserEntity user = userRepository.findById(userUtils.getUserLogado().getId()).orElseThrow(()-> new UserNotFounded("Usuário não encontrado"));
 
         try{
-            if(evento.getConfirmacoes().contains(user)){
-                evento.getConfirmacoes().remove(user);
-            }
-            if(user.getEventos().contains(evento)){
-                user.getEventos().remove(evento);
-            }
+            evento.getConfirmacoes().remove(user);
 
-            userRepository.save(user);
             eventoRepository.save(evento);
         } catch (Exception e) {
             throw new PresenceNotConfirmated("Presença não retirada" + e.getMessage());
         }
     }
 
-    public void verifyEmail(String email){
-        UserEntity user = userRepository.findByEmail(email).orElseThrow(()-> new UserNotFounded("Email não encontrado"));
-    }
 }
