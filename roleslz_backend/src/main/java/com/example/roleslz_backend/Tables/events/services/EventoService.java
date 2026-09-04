@@ -261,8 +261,9 @@ public class EventoService {
     }
 
     @Transactional
-    public void deleteEvento(String name){
-        EventoEntity evento = eventoRepository.findByOrganizadorIdAndTitle(userUtils.getUserLogado().getId(), name).orElseThrow(()-> new EventNotFounded("Evento não encontrado"));
+    public void deleteEvento(long id){
+        EventoEntity evento = eventoRepository.findByIdAndOrganizadorId(id, userUtils.getUserLogado().getId())
+                .orElseThrow(()-> new EventNotFounded("Evento não encontrado"));
 
         LocalDateTime dataHoraAtual = LocalDateTime.now();
 

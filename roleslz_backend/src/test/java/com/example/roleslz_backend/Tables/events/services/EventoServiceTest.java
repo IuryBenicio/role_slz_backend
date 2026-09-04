@@ -18,6 +18,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import org.springframework.test.util.ReflectionTestUtils;
+
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -71,6 +74,14 @@ class EventoServiceTest {
         eventoMock.setStartDate(LocalDateTime.now().plusDays(1));
     }
 
+    private static final int DWELL_MIN = 15;
+
+    /** Entrada na cerca com folga sobre a permanência mínima. */
+    private long entradaCumprindoDwell() {
+        ReflectionTestUtils.setField(presencaAtivaService, "dwellMinutos", DWELL_MIN);
+        return Instant.now().minusSeconds((DWELL_MIN + 5) * 60L).toEpochMilli();
+    }
+
     // --- TESTES DE SEGURANÇA (EVENTO SERVICE) ---
 
     @Test
@@ -78,10 +89,10 @@ class EventoServiceTest {
     void deleteEvento_ComSucesso_QuandoUsuarioEOrganizador() {
         // Arrange
         when(userUtils.getUserLogado()).thenReturn(organizadorLogado);
-        when(eventoRepository.findByOrganizadorIdAndTitle(1L, "Rolê Teste")).thenReturn(Optional.of(eventoMock));
+        when(eventoRepository.findByIdAndOrganizadorId(100L, 1L)).thenReturn(Optional.of(eventoMock));
 
         // Act
-        eventoService.deleteEvento("Rolê Teste");
+        eventoService.deleteEvento(100L);
 
         // Assert
         verify(eventoRepository, times(1)).delete(eventoMock);
@@ -92,11 +103,11 @@ class EventoServiceTest {
     void deleteEvento_DeveLancarException_QuandoUsuarioNaoEOrganizador() {
         // Arrange
         when(userUtils.getUserLogado()).thenReturn(usuarioComum);
-        when(eventoRepository.findByOrganizadorIdAndTitle(2L, "Rolê Teste")).thenReturn(Optional.empty());
+        when(eventoRepository.findByIdAndOrganizadorId(100L, 2L)).thenReturn(Optional.empty());
 
         // Act & Assert
         EventNotFounded exception = assertThrows(EventNotFounded.class, () -> {
-            eventoService.deleteEvento("Rolê Teste");
+            eventoService.deleteEvento(100L);
         });
 
         assertEquals("Evento não encontrado", exception.getMessage());
@@ -115,7 +126,7 @@ class EventoServiceTest {
         when(userRepository.findById(2L)).thenReturn(Optional.of(usuarioComum));
 
         // Act
-        presencaAtivaService.processarCheckin(2L, 100L);
+        presencaAtivaService.processarCheckin(2L, 100L, entradaCumprindoDwell());
 
         // Assert
         verify(presencaRepository, times(1)).save(any());
@@ -132,7 +143,7 @@ class EventoServiceTest {
 
         // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            presencaAtivaService.processarCheckin(2L, 100L);
+            presencaAtivaService.processarCheckin(2L, 100L, entradaCumprindoDwell());
         });
 
         assertEquals("Fora da área/horário de check-in.", exception.getMessage());

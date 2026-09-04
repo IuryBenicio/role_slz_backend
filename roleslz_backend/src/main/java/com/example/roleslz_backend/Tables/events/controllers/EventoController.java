@@ -63,8 +63,10 @@ public class EventoController {
     public ResponseEntity<List<EventDTOSumary>> getEventosProximosGeoFence(
             @RequestParam Double lat,
             @RequestParam Double lng) {
-        // Busca eventos num raio de 5000 metros (5km)
-        return ResponseEntity.ok(eventoService.buscarProximos(lat, lng, 5000.0));
+        // buscarProximos recebe o raio em QUILÔMETROS e multiplica por 1000 internamente.
+        // Passar 5000.0 aqui virava um raio de 5.000 km — praticamente o país inteiro,
+        // o oposto da janela deslizante de geofences que o app espera.
+        return ResponseEntity.ok(eventoService.buscarProximos(lat, lng, 5.0));
     }
 
     @GetMapping("minha_agenda")
@@ -136,9 +138,10 @@ public class EventoController {
         return ResponseEntity.status(202).body("Confirmação removida");
     }
 
-    @DeleteMapping("delete/{name}")
-    public ResponseEntity<String> delete(@PathVariable("name") String name){
-        eventoService.deleteEvento(name);
+    // Era delete/{name}: apagar por título quebra com nomes repetidos.
+    @DeleteMapping("delete/{id}")
+    public ResponseEntity<String> delete(@PathVariable("id") long id){
+        eventoService.deleteEvento(id);
         return ResponseEntity.status(HttpStatus.OK).body("Evento deletado");
     }
 }
