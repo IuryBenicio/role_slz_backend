@@ -22,6 +22,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    // Nota: 304 Not Modified e 302 Found NÃO carregam corpo — enquanto vários handlers
+    // usavam esses status, o app recebia resposta vazia no lugar da mensagem de erro.
+    // Erro de regra de negócio aqui é 409 Conflict; recurso ausente é 404.
+
     // Regra de negócio violada (ex.: avaliar evento sem ter ido, confirmar presença antes do fim).
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<String> IllegalState(IllegalStateException ex) {
@@ -47,12 +51,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ActivePresenceNotCleaned.class)
     public ResponseEntity<String> ActivePresenceNotCleaned(ActivePresenceNotCleaned ex){
-        return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
     }
 
     @ExceptionHandler(PresenceNotChecked.class)
     public ResponseEntity<String> PresenceNotChecked(PresenceNotChecked ex){
-        return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 
     @ExceptionHandler(ErrorToGenerateToken.class)
@@ -62,7 +66,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ErrorInAddImages.class)
     public ResponseEntity<String> ErrorInAddImages(ErrorInAddImages ex){
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 
     @ExceptionHandler(UserDontExists.class)
@@ -77,7 +81,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(UserNotEdited.class)
     public ResponseEntity<String> UserNotEdited(UserNotEdited ex){
-        return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 
     @ExceptionHandler(UserNotCreated.class)
@@ -102,7 +106,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AvaliacaoNotAdded.class)
     public ResponseEntity<String> AvaliacaoNotAdded(AvaliacaoNotAdded ex){
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
     }
 
     @ExceptionHandler(ErrorOnAccountActivation.class)
@@ -112,7 +116,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BusinessNotEdited.class)
     public ResponseEntity<String> BusinessNotEdited(BusinessNotEdited ex){
-        return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 
     @ExceptionHandler(UserExists.class)
@@ -131,12 +135,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(EventExists.class)
     public ResponseEntity<String> EventExists(EventExists ex){
-        return ResponseEntity.status(HttpStatus.FOUND).body(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 
     @ExceptionHandler(AvaliacaoAlreadyExists.class)
     public ResponseEntity<String> AvaliacaoAlreadyExists(AvaliacaoAlreadyExists ex){
-        return ResponseEntity.status(HttpStatus.FOUND).body(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 
     @ExceptionHandler(AvaliacaoDoesntExists.class)
@@ -151,12 +155,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AvaliacaoNotEdited.class)
     public ResponseEntity<String> AvaliacaoNotEdited(AvaliacaoNotEdited ex){
-        return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 
     @ExceptionHandler(ComentarioNotFounded.class)
     public ResponseEntity<String> ComentarioNotFounded(ComentarioNotFounded ex){
-        return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 
     @ExceptionHandler(TimeDelayComentario.class)
@@ -176,17 +180,17 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ComentarioNotEdited.class)
     public ResponseEntity<String> ComentarioNotEdited(ComentarioNotEdited ex){
-        return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 
     @ExceptionHandler(ComentarioNotDeleted.class)
     public ResponseEntity<String> ComentarioNotDeleted(ComentarioNotDeleted ex){
-        return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 
     @ExceptionHandler(EventoNotDeleted.class)
     public ResponseEntity<String> EventoNotDeleted(EventoNotDeleted ex){
-        return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 
     @ExceptionHandler(BusinessAlreadyCreated.class)
@@ -196,7 +200,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(PresenceNotConfirmated.class)
     public ResponseEntity<String> PresenceNotConfirmated(PresenceNotConfirmated ex){
-        return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 
     @ExceptionHandler(InvalidToken.class)
@@ -206,7 +210,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(EventNotEdited.class)
     public ResponseEntity<String> EventNotEdited(EventNotEdited ex){
-        return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 
     @ExceptionHandler(InvalidPrice.class)
@@ -231,7 +235,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(CategoriaExists.class)
     public ResponseEntity<String> CategoriaExists(CategoriaExists ex){
-        return ResponseEntity.status(HttpStatus.FOUND).body(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 
     @ExceptionHandler(CategoriaNotDeleted.class)
@@ -240,7 +244,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(CategoryNotFounded.class)
-    public ResponseEntity<String> CategoriaNotFounded(CategoriaNotDeleted ex){
+    public ResponseEntity<String> CategoriaNotFounded(CategoryNotFounded ex){
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 
@@ -251,6 +255,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(CategoryNotAddedInEvent.class)
     public ResponseEntity<String> CategoryNotAddedInEvent(CategoryNotAddedInEvent ex){
-        return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 }
