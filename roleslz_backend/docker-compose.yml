@@ -1,40 +1,31 @@
+# Senhas vêm do .env desta pasta (o Docker Compose lê automaticamente) — nunca
+# literais aqui: este arquivo é versionado. As portas ficam presas ao 127.0.0.1
+# para o banco não ficar exposto na rede local.
 services:
-  spotrole-backend:
-    build: .
-    container_name: spotrole_api
-    ports:
-      - "8081:8081"
+  db:
+    image: postgis/postgis:15-3.4
+    container_name: spotrole_db
+    restart: always
     environment:
-      - SPRING_DATASOURCE_URL=${DB_URL}
-      - SPRING_DATASOURCE_USERNAME=${DB_USER}
-      - SPRING_DATASOURCE_PASSWORD=${DB_PASS}
-
-      - SPRING_MAIL=${MAIL_USER}
-      - SPRING_MAIL_PASSWORD=${MAIL_PASS}
-
-      - CLOUDINARY_NAME=${CLOUD_NAME}
-      - CLOUDINARY_API=${CLOUD_API}
-      - CLOUDINARY_SECRET=${CLOUD_SECRET}
-    # Isso diz ao Docker para só ligar a API DEPOIS que o banco existir
-    depends_on:
-      - db_spotrole
-    restart: unless-stopped
-
-  # --- NOSSO BANCO DE DADOS ---
-  db_spotrole:
-    image: postgres:16-alpine
-    container_name: spotrole_database
+      POSTGRES_USER: iurybenicio
+      POSTGRES_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      POSTGRES_DB: spotrole
+      POSTGRES_HOST_AUTH_METHOD: md5
     ports:
-      - "5432:5432"
-    environment:
-      - POSTGRES_DB=spotrole_db
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASS}
+      - "127.0.0.1:5432:5432"
     volumes:
-      # Salva os dados do banco no seu PC para não perder tudo se o container desligar
-      - spotrole_pgdata:/var/lib/postgresql/data
-    restart: unless-stopped
+      - postgres_data:/var/lib/postgresql/data
 
-# Declaração do volume que criamos ali em cima
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: spotrole_pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@spotrole.com
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+    ports:
+      - "127.0.0.1:8080:80"
+    depends_on:
+      - db
 volumes:
-  spotrole_pgdata:
+  postgres_data:

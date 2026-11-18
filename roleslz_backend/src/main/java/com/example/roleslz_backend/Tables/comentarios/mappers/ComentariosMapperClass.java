@@ -27,11 +27,11 @@ public class ComentariosMapperClass {
         }
 
         ComentarioEntity entity = new ComentarioEntity();
-        UserEntity user = userRepository.getReferenceById(dto.user().Id());
+        UserEntity user = userRepository.getReferenceById(dto.user().id());
         entity.setUser(user);
         entity.setTitle(dto.title());
         entity.setComentario(dto.comentario());
-        EventoEntity evento = eventoRepository.getReferenceById(dto.user().Id());
+        EventoEntity evento = eventoRepository.getReferenceById(dto.user().id());
         entity.setEvento(evento);
 
         return entity;
@@ -58,7 +58,7 @@ public class ComentariosMapperClass {
         }
 
         if (dto.user() != null) {
-            UserEntity user = userRepository.getReferenceById(dto.user().Id());
+            UserEntity user = userRepository.getReferenceById(dto.user().id());
             entity.setUser(user);
         }
         if (dto.title() != null) {
@@ -68,7 +68,7 @@ public class ComentariosMapperClass {
             entity.setComentario(dto.comentario());
         }
         if (dto.evento() != null) {
-            EventoEntity evento = eventoRepository.getReferenceById(dto.user().Id());
+            EventoEntity evento = eventoRepository.getReferenceById(dto.user().id());
             entity.setEvento(evento);
         }
     }

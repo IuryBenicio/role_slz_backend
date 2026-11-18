@@ -1,0 +1,19 @@
+# .gitignore da raiz do repositório.
+# O módulo Maven tem o seu próprio em roleslz_backend/.gitignore.
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+# launch.json guarda variaveis de ambiente — nunca versionar
+.vscode/
+
+# Artefatos soltos
+*.zip
+*.log
+
+# Config de cliente mobile — não pertence a este repo
+google-services.json
+GoogleService-Info.plist

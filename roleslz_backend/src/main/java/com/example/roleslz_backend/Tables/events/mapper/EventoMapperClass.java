@@ -1,6 +1,6 @@
 package com.example.roleslz_backend.Tables.events.mapper;
 
-import com.example.roleslz_backend.Tables.avaliacao.mapper.AvaliacaoMapperClass;
+import com.example.roleslz_backend.Tables.avaliacao.DTO.AvaliacaoResponseDTO;
 import com.example.roleslz_backend.Tables.categoria.DTO.CategoriaSumaryDTO;
 import com.example.roleslz_backend.Tables.categoria.repository.CategoriaRepository;
 import com.example.roleslz_backend.Tables.comentarios.mappers.ComentariosMapperClass;
@@ -12,6 +12,7 @@ import com.example.roleslz_backend.Tables.events.entity.PhotosEventoEntity;
 import com.example.roleslz_backend.Tables.spot.entity.SpotEntity;
 import com.example.roleslz_backend.Tables.users.DTOS.UserSummaryDTO;
 import com.example.roleslz_backend.Tables.users.repository.UserRepository;
+import com.example.roleslz_backend.Utills.UrlUtils;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
@@ -25,13 +26,11 @@ import java.util.stream.Collectors;
 @Component
 public class EventoMapperClass {
 
-    private final AvaliacaoMapperClass avaliacaoMapperClass;
     private final UserRepository userRepository;
     private final ComentariosMapperClass comentariosMapper;
     private final CategoriaRepository categoriaRepository;
 
-    public EventoMapperClass(AvaliacaoMapperClass avaliacaoMapperClass, UserRepository userRepository, ComentariosMapperClass comentariosMapper, CategoriaRepository categoriaRepository) {
-        this.avaliacaoMapperClass = avaliacaoMapperClass;
+    public EventoMapperClass(UserRepository userRepository, ComentariosMapperClass comentariosMapper, CategoriaRepository categoriaRepository) {
         this.userRepository = userRepository;
         this.comentariosMapper = comentariosMapper;
         this.categoriaRepository = categoriaRepository;
@@ -60,6 +59,7 @@ public class EventoMapperClass {
     public EventDTOClass toDTO(EventoEntity entity) {
         if (entity == null) return null;
         EventDTOClass dto = new EventDTOClass();
+        dto.setId(entity.getId());
         dto.setTitle(entity.getTitle());
         dto.setDescription(entity.getDescription());
         dto.setStartDate(entity.getStartDate());
@@ -70,11 +70,31 @@ public class EventoMapperClass {
         dto.setEventPrivacity(entity.getEventPrivacity());
         dto.setEstadoEvento(entity.getEstadoEvento());
         dto.setPrice(entity.getPrice());
+        dto.setTicketLink(entity.getTicketLink());
+        if (entity.getSpot() != null && entity.getSpot().getLocalizacao() != null) {
+            dto.setLatitude(entity.getSpot().getLocalizacao().getY());
+            dto.setLongitude(entity.getSpot().getLocalizacao().getX());
+        }
         if (entity.getImages() != null) {
             dto.setImages(entity.getImages().stream()
                     .map(PhotosEventoSummaryDTO::toSummaryDTO)
                     .collect(Collectors.toSet()));
         }
+        if (entity.getConfirmacoes() != null) {
+            dto.setConfirmacoes(entity.getConfirmacoes().stream()
+                    .map(UserSummaryDTO::toSummaryDTO)
+                    .collect(Collectors.toSet()));
+        }
+
+        Set<AvaliacaoResponseDTO> avaliacoes = entity.getAvaliacoes() == null ? Set.of()
+                : entity.getAvaliacoes().stream()
+                    .map(AvaliacaoResponseDTO::fromEntity)
+                    .collect(Collectors.toSet());
+        dto.setAvaliacoes(avaliacoes);
+        dto.setTotalAvaliacoes(avaliacoes.size());
+        dto.setNotaMedia(avaliacoes.isEmpty() ? null
+                : avaliacoes.stream().mapToDouble(AvaliacaoResponseDTO::nota).average().orElse(0.0));
+
         return dto;
     }
 
@@ -92,6 +112,11 @@ public class EventoMapperClass {
         dto.setEventPrivacity(entity.getEventPrivacity());
         dto.setEstadoEvento(entity.getEstadoEvento());
         dto.setPrice(entity.getPrice());
+        dto.setTicketLink(entity.getTicketLink());
+        if (entity.getSpot() != null && entity.getSpot().getLocalizacao() != null) {
+            dto.setLatitude(entity.getSpot().getLocalizacao().getY());
+            dto.setLongitude(entity.getSpot().getLocalizacao().getX());
+        }
         if (entity.getImages() != null) {
             dto.setImages(entity.getImages().stream()
                     .map(PhotosEventoSummaryDTO::toSummaryDTO)
@@ -123,9 +148,10 @@ public class EventoMapperClass {
         entity.setEstadoEvento(dto.getEstadoEvento());
         entity.setEventType(dto.getEventType());
         entity.setEventPrivacity(dto.getEventPrivacity());
+        entity.setTicketLink(UrlUtils.normalizar(dto.getTicketLink()));
 
         if (dto.getOrganizador() != null) {
-            entity.setOrganizador(userRepository.getReferenceById(dto.getOrganizador().Id()));
+            entity.setOrganizador(userRepository.getReferenceById(dto.getOrganizador().id()));
         }
 
         if (dto.getImages() != null) {
@@ -165,6 +191,7 @@ public class EventoMapperClass {
         if (dto.getEndDate() != null) entity.setEndDate(dto.getEndDate());
         if (dto.getEnderecoExtenso() != null) entity.setEnderecoExtenso(dto.getEnderecoExtenso());
         if (dto.getPrice() != null) entity.setPrice(dto.getPrice());
+        if (dto.getTicketLink() != null) entity.setTicketLink(UrlUtils.normalizar(dto.getTicketLink()));
         if (dto.getEstadoEvento() != null) entity.setEstadoEvento(dto.getEstadoEvento());
         if (dto.getEventType() != null) entity.setEventType(dto.getEventType());
         if (dto.getEventPrivacity() != null) entity.setEventPrivacity(dto.getEventPrivacity());

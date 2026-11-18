@@ -4,12 +4,13 @@ import com.example.roleslz_backend.Tables.events.entity.EventoEntity;
 import com.example.roleslz_backend.Utills.BaseEntity.BaseEntity;
 import com.example.roleslz_backend.Tables.users.entity.UserEntity;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Entity
-@Table(name = "avaliacao")
+@Table(
+        name = "avaliacao",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "evento_id"}) // 1 avaliação por pessoa por evento
+)
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
@@ -18,18 +19,17 @@ public class AvaliacaoEntity extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @NotBlank
-    @NotNull(message = "a avaliação precisa de uma nota")
     @Column(name = "nota", nullable = false)
     private float nota;
 
+    @Column(name = "comentario", columnDefinition = "TEXT")
+    private String comentario;
+
     @ManyToOne
-    @NotNull(message = "a avaliação precisa de um autor")
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
 
-    @NotNull
     @ManyToOne
-    @JoinColumn(name = "evento_id")
+    @JoinColumn(name = "evento_id", nullable = false)
     private EventoEntity evento;
 }

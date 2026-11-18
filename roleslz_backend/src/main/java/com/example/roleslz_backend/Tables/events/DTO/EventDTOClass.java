@@ -1,6 +1,6 @@
 package com.example.roleslz_backend.Tables.events.DTO;
 
-import com.example.roleslz_backend.Tables.avaliacao.DTO.AvaliacaoDTO;
+import com.example.roleslz_backend.Tables.avaliacao.DTO.AvaliacaoResponseDTO;
 import com.example.roleslz_backend.Tables.categoria.DTO.CategoriaSumaryDTO;
 import com.example.roleslz_backend.Tables.comentarios.DTO.ComentariosDTO;
 import com.example.roleslz_backend.Tables.events.entity.EstadoEvento;
@@ -21,6 +21,7 @@ import java.util.Set;
 @NoArgsConstructor
 public class EventDTOClass {
 
+    private long id;
     private String title;
     private String description;
     private LocalDateTime startDate;
@@ -32,13 +33,20 @@ public class EventDTOClass {
     private Set<PhotosEventoSummaryDTO> images; // Atualizado
     private EstadoEvento estadoEvento;
     private Set<ComentariosDTO> comentarios;
-    private Set<AvaliacaoDTO> avaliacoes;
+    private Set<AvaliacaoResponseDTO> avaliacoes;
+    private Double notaMedia;        // null quando não há avaliações
+    private Integer totalAvaliacoes; // 0 quando não há avaliações
     private Set<CategoriaSumaryDTO> categorias;
+    private Boolean exibirConfirmacoesPublicamente;
     private EventType eventType;
     private EventPrivacity eventPrivacity;
     private BigDecimal price;
+    private String ticketLink;             // link externo de compra de ingresso (null se não houver)
     private Double latitude;
     private Double longitude;
     private Point spot;
+    private boolean participacaoConfirmada; // o usuário logado já teve presença confirmada aqui
+    private boolean jaAvaliei;              // o usuário logado já avaliou este evento
+    private boolean interesseConfirmado;   // o usuário logado já marcou "Bora!" neste evento
 
 }

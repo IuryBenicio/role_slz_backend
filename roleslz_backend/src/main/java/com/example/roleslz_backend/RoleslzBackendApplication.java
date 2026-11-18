@@ -15,7 +15,6 @@ public class RoleslzBackendApplication {
 
         System.out.println();
         
-        // 2. Injeta as variáveis manualmente no ambiente do System
         dotenv.entries().forEach(entry ->
             System.setProperty(entry.getKey(), entry.getValue())
         );

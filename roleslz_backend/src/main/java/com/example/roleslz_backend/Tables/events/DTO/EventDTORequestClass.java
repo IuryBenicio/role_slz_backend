@@ -20,6 +20,7 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 public class EventDTORequestClass {
+    Long id;
     String title;
     String description;
     LocalDateTime startDate;
@@ -33,7 +34,9 @@ public class EventDTORequestClass {
     Set<ComentariosDTO> comentarios;
     Set<AvaliacaoDTO> avaliacoes;
     Set<CategoriaSumaryDTO> categorias;
+    Boolean exibirConfirmacoesPublicamente;
     BigDecimal price;
+    String ticketLink;
     EventType eventType;
     EventPrivacity eventPrivacity;
     //SPOT

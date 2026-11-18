@@ -1,18 +1,28 @@
 package com.example.roleslz_backend.Tables.spot.entity;
 
 import com.example.roleslz_backend.Tables.events.entity.EventoEntity;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+
 import org.locationtech.jts.geom.Point;
 
 import java.util.List;
 
+import lombok.Getter;
+
 @Entity
 @Table(name = "spot")
-@Data
+@Getter
+@Setter
+@ToString(exclude = {"eventos"})
+@EqualsAndHashCode(of = "id")
 @AllArgsConstructor
 @NoArgsConstructor
 public class SpotEntity {

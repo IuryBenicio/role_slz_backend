@@ -17,7 +17,7 @@ import java.util.Set;
 @NoArgsConstructor
 public class EventDTOSumary {
     @NotNull
-    long Id;
+    long id;
     @NotBlank
     String title;
     @NotBlank String description;

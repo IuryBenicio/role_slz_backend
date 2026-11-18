@@ -1,86 +1,71 @@
 package com.example.roleslz_backend.Tables.events.schedullers;
 
-import com.example.roleslz_backend.Tables.events.entity.EstadoEvento;
-import com.example.roleslz_backend.Tables.events.entity.EventoEntity;
-import com.example.roleslz_backend.Tables.events.exceptions.EventNotEdited;
-import com.example.roleslz_backend.Tables.events.repository.EventoRepository;
-import com.example.roleslz_backend.Utills.notificationsServices.NotificationsService;
+import com.example.roleslz_backend.Utills.notificationsServices.PushDispatcher;
+import com.example.roleslz_backend.Utills.notificationsServices.PushJob;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * O despertador do ciclo de vida dos eventos: roda a cada minuto e NÃO é transacional.
+ *
+ * <p>O trabalho de banco fica em {@link EventoCicloService}, que abre e fecha a própria
+ * transação. Aqui só sobra despachar os pushes que ele devolveu — já fora da transação,
+ * com a conexão do pool devolvida, e em um pool de threads separado.
+ *
+ * <p>É o que garante que a latência do Firebase não apareça como lentidão no banco.
+ */
 @Service
 public class EventoSchedullers {
 
-    private final EventoRepository eventoRepository;
-    private final NotificationsService notificationsService;
+    private static final System.Logger LOGGER = System.getLogger(EventoSchedullers.class.getName());
 
+    private final EventoCicloService eventoCicloService;
+    private final PushDispatcher pushDispatcher;
 
-    public EventoSchedullers(EventoRepository eventoRepository, NotificationsService notificationsService) {
-        this.eventoRepository = eventoRepository;
-        this.notificationsService = notificationsService;
-    }
-
-
-    private String msg5pre = "Seu evento começou!";
-    private String msg30pre = "Seu evento irá começar em 30 minutos!";
-
-    @Scheduled(fixedDelay = 60000)
-    public void EventoIniciando(){
-
-        LocalDateTime agora = LocalDateTime.now();
-
-        List<EventoEntity> eventos5pos = eventoRepository
-                .findByEstadoEventoAndStartDateBefore(EstadoEvento.PRE,agora.plusMinutes(5))
-                .orElse(List.of());
-        for (EventoEntity evento: eventos5pos){
-            //Envia notificação via websockets
-            notificationsService.sendNotificationWebsocket(evento, EstadoEvento.DURANTE, msg5pre);
-
-            //Envia notificação via firebase
-            notificationsService.sendNotificationFirebase(evento, msg5pre);
-
-            //muda estado do evento
-            try{
-                evento.setEstadoEvento(EstadoEvento.DURANTE);
-                eventoRepository.save(evento);
-            } catch (Exception e) {
-                throw new EventNotEdited("Estado do evento não alterado!");
-            }
-        }
-
-        List<EventoEntity> eventos30pos = eventoRepository
-                .findByEstadoEventoAndStartDateBefore(EstadoEvento.PRE,agora.plusMinutes(30))
-                .orElse(List.of());
-
-        for (EventoEntity evento: eventos30pos){
-            //Envia notificação via websockets
-            notificationsService.sendNotificationWebsocket(evento, EstadoEvento.DURANTE, msg30pre);
-
-            //Envia notificação via firebase
-            notificationsService.sendNotificationFirebase(evento, msg30pre);
-        }
-
+    public EventoSchedullers(EventoCicloService eventoCicloService, PushDispatcher pushDispatcher) {
+        this.eventoCicloService = eventoCicloService;
+        this.pushDispatcher = pushDispatcher;
     }
 
     @Scheduled(fixedDelay = 60000)
-    public void EventoFinalizado(){
-        LocalDateTime agora = LocalDateTime.now();
-
-        List<EventoEntity> evento5pos = eventoRepository
-                .findByEstadoEventoAndEndDateBefore(EstadoEvento.DURANTE, agora.plusMinutes(5))
-                .orElse(List.of());
-
-        for(EventoEntity evento: evento5pos){
-         try{
-            evento.setEstadoEvento(EstadoEvento.ENCERRADO);
-            eventoRepository.save(evento);
-         } catch (Exception e) {
-             throw new EventNotEdited("Estado do evento não alterado!");
-         }
+    public void EventoIniciando() {
+        try {
+            despachar(eventoCicloService.iniciarEventos());
+        } catch (Exception e) {
+            LOGGER.log(System.Logger.Level.ERROR, "Falha na rotina de início de eventos.", e);
         }
     }
 
+    @Scheduled(fixedDelay = 60000)
+    public void EventoFinalizado() {
+        try {
+            despachar(eventoCicloService.encerrarEventos());
+        } catch (Exception e) {
+            LOGGER.log(System.Logger.Level.ERROR, "Falha na rotina de encerramento de eventos.", e);
+        }
+    }
+
+    @Scheduled(fixedDelay = 60000)
+    public void EventoFinalizadoHeatMap() {
+        try {
+            eventoCicloService.limparHeatmap();
+        } catch (Exception e) {
+            LOGGER.log(System.Logger.Level.ERROR, "Falha na limpeza do heatmap.", e);
+        }
+    }
+
+    /**
+     * Entrega cada push ao executor dedicado. Um push que falhe não derruba os outros:
+     * o {@link PushDispatcher} já registra e engole a própria exceção.
+     */
+    private void despachar(List<PushJob> pushes) {
+        if (pushes == null || pushes.isEmpty()) {
+            return;
+        }
+        for (PushJob push : pushes) {
+            pushDispatcher.enviar(push);
+        }
+    }
 }

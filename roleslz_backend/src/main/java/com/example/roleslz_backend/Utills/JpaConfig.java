@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 @Configuration
 @EnableJpaAuditing
 public class JpaConfig {
-    // O Spring agora passará a monitorar suas entidades que possuem o AuditingEntityListener.
+    // O Spring passará a monitorar suas entidades que possuem o AuditingEntityListener.
 }

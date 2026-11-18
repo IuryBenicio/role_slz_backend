@@ -1,18 +1,15 @@
 package com.example.roleslz_backend.Tables.users.controllers;
 
-import com.example.roleslz_backend.Tables.events.DTO.EventoDTO;
 import com.example.roleslz_backend.Tables.users.DTOS.PasswordDTO;
-import com.example.roleslz_backend.Tables.users.DTOS.Req.UserDTOProfileReq;
 import com.example.roleslz_backend.Tables.users.DTOS.Req.UserEditDTO;
-import com.example.roleslz_backend.Tables.users.DTOS.Req.UserProjectionProfile;
 import com.example.roleslz_backend.Tables.users.DTOS.UserDTODetails;
+import com.example.roleslz_backend.Tables.users.DTOS.UserProjectionProfile;
 import com.example.roleslz_backend.Tables.users.services.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Set;
 
 @RestController
 @RequestMapping("/user")
@@ -26,53 +23,53 @@ public class UserController {
 
     //rotas
 
-    @PatchMapping("edit/{id}")
-    public ResponseEntity<UserEditDTO> editUser(@PathVariable long id, @Valid @RequestBody UserEditDTO dto){
-        UserEditDTO user = userService.editUserDetails(dto, id);
+    @PatchMapping("edit")
+    public ResponseEntity<UserEditDTO> editUser(@Valid @RequestBody UserEditDTO dto){
+        UserEditDTO user = userService.editUserDetails(dto);
         return ResponseEntity.ok(user);
     }
 
-    @GetMapping("user/{id}")
-    public ResponseEntity<UserDTODetails> getUser(@PathVariable long id){
-        UserDTODetails user = userService.getUserById(id);
+    @GetMapping("hello")
+    public ResponseEntity<String> helloCheck(){
+        return ResponseEntity.ok("Checado!");
+    }
+
+    @GetMapping("user")
+    public ResponseEntity<UserDTODetails> getUser(){
+        UserDTODetails user = userService.getUserById();
         return ResponseEntity.ok(user);
     }
 
+    // Perfil completo do PRÓPRIO usuário logado (id vem do token, nunca do corpo).
+    // Antes era @GetMapping com @RequestBody — o Spring ignora corpo em GET — e o service
+    // buscava findByNome(dto.getEmail()), o que devolveria o perfil de outra pessoa.
     @GetMapping("user_profile")
-    public ResponseEntity<UserProjectionProfile> getUserProfile(@RequestBody UserDTOProfileReq dto){
-        UserProjectionProfile user = userService.getUserProfile(dto);
-        return ResponseEntity.ok(user);
+    public ResponseEntity<UserProjectionProfile> getUserProfile(){
+        return ResponseEntity.ok(userService.getMeuPerfil());
     }
 
 
-    @PostMapping("add_f_token/{id}")
-    public ResponseEntity<String> addFirebaseToken(@PathVariable long id, @RequestBody String token){
-        userService.addFirebaseToken(id,token);
+    @PostMapping("add_f_token")
+    public ResponseEntity<String> addFirebaseToken(@RequestBody String token){
+        userService.addFirebaseToken(token);
         return ResponseEntity.ok("Token atualizado");
     }
 
-    @PatchMapping("verify_password/{id}")
-    public ResponseEntity<String> verifyPassword(@PathVariable long id, @Valid @RequestBody PasswordDTO passwordDTO){
-            userService.verifyPassword(id, passwordDTO);
+    @PatchMapping("verify_password")
+    public ResponseEntity<String> verifyPassword(@Valid @RequestBody PasswordDTO passwordDTO){
+            userService.verifyPassword(passwordDTO);
             return ResponseEntity.status(HttpStatus.OK).body("Senha verificada");
     }
 
-    @GetMapping("verify_email/{email}")
-    public ResponseEntity<String> verifyEmailByEmail(@PathVariable String email){
-        userService.verifyEmail(email);
-        return ResponseEntity.ok("Email verificado");
+    // Sem {id}: perguntar isso sobre outra pessoa é vazamento de existência de conta.
+    @GetMapping("user_has_event")
+    public ResponseEntity<Boolean> userHasEvent(){
+        return ResponseEntity.ok(userService.userHasEvent());
     }
 
-    @GetMapping("user_has_event/{id}")
-    public ResponseEntity<Boolean> userHasEvent(@PathVariable("id") long id){
-        boolean response = userService.userHasEvent(id);
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("user_has_business/{id}")
-    public ResponseEntity<Boolean> userHasBusiness(@PathVariable("id") long id){
-        boolean response = userService.userHasBusiness(id);
-        return ResponseEntity.ok(response);
+    @GetMapping("user_has_business")
+    public ResponseEntity<Boolean> userHasBusiness(){
+        return ResponseEntity.ok(userService.userHasBusiness());
     }
 
     @PatchMapping("verify_email")
@@ -81,34 +78,28 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body("Usuário verificado");
     }
 
-    @PatchMapping("get-user/{pagina}")
-    public ResponseEntity<Set<UserDTODetails>> getUsersPages(@PathVariable("pagina") int pagina, @RequestParam("itens") int itens){
-        Set<UserDTODetails> response = userService.getUsersPages(pagina,itens);
-        return ResponseEntity.status(200).body(response);
-    }
-
-
-    @PatchMapping("edit_password/{id}")
-    public ResponseEntity<String> editPassword(@PathVariable long id, @Valid @RequestBody PasswordDTO passwordDTO){
-        userService.editPassword(id, passwordDTO);
+    @PatchMapping("edit_password")
+    public ResponseEntity<String> editPassword(@Valid @RequestBody PasswordDTO passwordDTO){
+        userService.editPassword(passwordDTO);
         return ResponseEntity.ok("Senha editada");
     }
 
-    @DeleteMapping("delete/{id}")
-    public ResponseEntity<String> deleteUser(@PathVariable long id){
-        userService.deleteUser(id);
+    @DeleteMapping("delete")
+    public ResponseEntity<String> deleteUser(){
+        userService.deleteUser();
         return ResponseEntity.ok("Usuário deletado");
     }
 
-    @PatchMapping("confirm_presence/{userId}/event/{eventId}")
-    public ResponseEntity<String> confirmePresence(@PathVariable long userId, @PathVariable long eventId, @RequestBody EventoDTO eventoDTO){
-        userService.confirmPresence(userId, eventId);
-        return ResponseEntity.ok("Usuário confirmado no evento "+ eventoDTO.title()+ ".");
+    // Usuário vem do JWT e o evento do path — sem corpo.
+    @PatchMapping("confirm_presence/event/{eventId}")
+    public ResponseEntity<String> confirmePresence(@PathVariable long eventId){
+        userService.confirmPresence(eventId);
+        return ResponseEntity.ok("Presença confirmada no evento " + eventId + ".");
     }
 
-    @PatchMapping("unconfirm_presence/{userId}/event/{eventId}")
-    public ResponseEntity<String> unconfirmPresence(@PathVariable long userId, @PathVariable long eventId, @RequestBody EventoDTO eventoDTO){
-        userService.unconfirmPresence(userId, eventId);
-        return ResponseEntity.ok("confirmação retirada do evento "+ eventoDTO.title()+ ".");
+    @PatchMapping("unconfirm_presence/event/{eventId}")
+    public ResponseEntity<String> unconfirmPresence(@PathVariable long eventId){
+        userService.unconfirmPresence(eventId);
+        return ResponseEntity.ok("Confirmação retirada do evento " + eventId + ".");
     }
 }

@@ -11,6 +11,7 @@ import com.example.roleslz_backend.Tables.events.repository.EventoRepository;
 import com.example.roleslz_backend.Tables.users.entity.UserEntity;
 import com.example.roleslz_backend.Tables.users.exceptions.UserNotFounded;
 import com.example.roleslz_backend.Tables.users.repository.UserRepository;
+import com.example.roleslz_backend.Tables.users.services.UserUtils;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -20,17 +21,23 @@ public class ComentariosService {
     private final EventoRepository eventoRepository;
     private final UserRepository userRepository;
     private final ComentariosMapperClass comentariosMapper;
+    private final UserUtils userUtils;
 
-    public ComentariosService(ComentariosRepository comentariosRepository, EventoRepository eventoRepository, UserRepository userRepository, ComentariosMapperClass comentariosMapper) {
+    public ComentariosService(ComentariosRepository comentariosRepository, EventoRepository eventoRepository, UserRepository userRepository, ComentariosMapperClass comentariosMapper, UserUtils userUtils) {
         this.comentariosRepository = comentariosRepository;
         this.eventoRepository = eventoRepository;
         this.userRepository = userRepository;
         this.comentariosMapper = comentariosMapper;
+        this.userUtils = userUtils;
     }
 
     public ComentariosDTO addComentario(ComentariosDTO comentariosDTO){
 
-        UserEntity user = userRepository.findById(comentariosDTO.user().Id()).orElseThrow(()-> new UserNotFounded("Usuário não encontrado"));
+        // O autor é SEMPRE o usuário do token. O campo `user` do corpo é ignorado de
+        // propósito: antes ele era usado para buscar o autor, o que permitia a qualquer
+        // usuário logado publicar comentário em nome de outra pessoa.
+        UserEntity user = userRepository.findById(userUtils.getUserLogado().getId())
+                .orElseThrow(()-> new UserNotFounded("Usuário não encontrado"));
 
         EventoEntity evento = eventoRepository.findById(comentariosDTO.evento().getId()).orElseThrow(()-> new EventNotFounded("Evento não encontrado"));
 
@@ -64,7 +71,7 @@ public class ComentariosService {
     }
 
     public void deleteComentario(long comentarioId){
-        comentariosRepository.findById(comentarioId).orElseThrow(()-> new ComentarioNotFounded("Comentário não encontrado"));
+        comentariosRepository.findByIdAndUserId(comentarioId, userUtils.getUserLogado().getId()).orElseThrow(()-> new ComentarioNotFounded("Comentário não encontrado"));
 
         try{
             comentariosRepository.deleteById(comentarioId);
@@ -75,7 +82,7 @@ public class ComentariosService {
     }
 
     public ComentariosDTO editComentario(long comentarioId, ComentariosDTO comentariosDTO){
-        ComentarioEntity comentario = comentariosRepository.findById(comentarioId).orElseThrow(()-> new ComentarioNotFounded("Comentário não encontrado"));
+        ComentarioEntity comentario = comentariosRepository.findByIdAndUserId(comentarioId, userUtils.getUserLogado().getId()).orElseThrow(()-> new ComentarioNotFounded("Comentário não encontrado"));
 
         if (comentario.getComentario().equalsIgnoreCase(comentariosDTO.comentario())){
             throw new ComentarioDuplicado("Comentário duplicado");

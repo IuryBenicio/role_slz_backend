@@ -8,9 +8,7 @@ import com.example.roleslz_backend.Utills.BaseEntity.BaseEntity;
 import com.example.roleslz_backend.Tables.users.entity.UserEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -19,7 +17,9 @@ import java.util.Set;
 
 @Entity
 @Table(name = "eventos")
-@Data
+@Getter
+@Setter
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 public class EventoEntity extends BaseEntity {
@@ -41,33 +41,48 @@ public class EventoEntity extends BaseEntity {
     @Column(name = "end_date")
     private LocalDateTime endDate;
 
+//    Endereço escrito por extenso sem ser baseado em localização Lat e Long
     @Column(name = "endereco_ext")
     @NotBlank(message = "campo obrigatório")
     private String enderecoExtenso;
 
+//    Tipo de evento (coorporativo ou pessoal)
     @Column(name = "event_type")
     @Enumerated(EnumType.STRING)
     private EventType eventType;
 
+//    Privacidade do evento(público ou privado)
     @Column(name = "event_privacity")
     @Enumerated(EnumType.STRING)
     private EventPrivacity eventPrivacity;
 
+//    Usuário responsável pelo evento
     @ManyToOne()
     @JoinColumn(nullable = false, name = "user_id")
     private UserEntity organizador;
 
-
+//    Opcional(pagamento ainda será implementado em uma versão 1.2)
     @Column(name = "price")
     private BigDecimal price;
 
+//    Link externo de compra de ingresso (v1: SpotRolê não vende ingresso, só redireciona)
+    @Column(name = "ticket_link")
+    private String ticketLink;
+
+//    Spot é a tabela referente ao local do evento (que pode estar ligado a uma pessoa ou business)
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(nullable = false, name = "spot_id")
     private SpotEntity spot;
 
+//    Campo para verificaçao de presençao de heatmap
+    @Column(name = "presenca_limpa", nullable = false)
+    private Boolean presencaLimpa = false;
+
+//    Imagens do evento
     @OneToMany(mappedBy = "evento", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PhotosEventoEntity> images;
 
+//    Confirmações de usuários ara comparecer ao evento
     @ManyToMany
     @JoinTable(
             name = "eventos_confirmacoes",
@@ -95,6 +110,9 @@ public class EventoEntity extends BaseEntity {
             inverseJoinColumns = @JoinColumn(name = "categoria_id")
     )
     private Set<CategoriaEntity> categorias;
+
+    @Column(name = "exibir_confirmacoes_publicamente", nullable = false)
+    private Boolean exibirConfirmacoesPublicamente = true;
 
     @OneToMany(mappedBy = "evento")
     private Set<AvaliacaoEntity> avaliacoes;
